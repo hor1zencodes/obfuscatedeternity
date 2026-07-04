@@ -95,7 +95,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
   
-  const SCRIPT = `loadstring(game:HttpGet("https://eternity.vercel.app", true))()`;
+  const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
   const DISCORD_NAME = "hor1zen.";
 
   const fallbackCopy = (text: string, callback: () => void) => {
@@ -168,7 +168,7 @@ export default function Home() {
               <span className="prompt-icon">&gt;_</span>
               <span className="script-code">
                 loadstring(game:HttpGet(
-                <span className="script-url">"https://eternity.vercel.app"</span>, true))()
+                <span className="script-url">"https://zeneternity.vercel.app"</span>, true))()
               </span>
             </div>
             <button
