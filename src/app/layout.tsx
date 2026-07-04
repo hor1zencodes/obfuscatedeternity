@@ -10,11 +10,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Eternity',
     description: 'Optimized for low-end PCs with fast, stable, and lightweight performance.',
-    url: 'https://eternity.rajmroy-17.workers.dev',
+    url: 'https://zeneternity.vercel.app',
     type: 'website',
     images: [
       {
-        url: 'https://i.postimg.cc/L4WMpQGs/file-000000006ef872079e1ec29fbc60ad15.png',
+        url: 'https://zeneternity.vercel.app/eternitylogo.png',
         width: 1200,
         height: 630,
       }
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Eternity',
     description: 'Optimized for low-end PCs with fast, stable, and lightweight performance.',
-    images: ['https://i.postimg.cc/L4WMpQGs/file-000000006ef872079e1ec29fbc60ad15.png'],
+    images: ['https://zeneternity.vercel.app/eternitylogo.png'],
   },
 }
 
