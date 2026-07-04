@@ -12,10 +12,9 @@ export function middleware(request: NextRequest) {
                    userAgent.toLowerCase().includes('wave') ||
                    userAgent.toLowerCase().includes('macsploit');
 
-  // 2. If it's Roblox, rewrite the request to serve the raw script
-  // The script is now safely located in the 'public' folder
+  // 2. If it's Roblox, invisibly proxy the request to your new raw GitHub repo!
   if (userAgent.toLowerCase().includes('roblox')) {
-    return NextResponse.rewrite(new URL('/api/script', request.url))
+    return NextResponse.rewrite(new URL('https://raw.githubusercontent.com/hor1zencodes/patanahi/main/yearnerzen.lua'))
   }
 
   // 3. If it's a normal web browser, proceed to render the React page
