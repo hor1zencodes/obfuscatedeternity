@@ -110,6 +110,9 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-btn:hover { 
@@ -123,4 +126,84 @@ body {
   border-color: #4ade80; 
   background: rgba(74, 222, 128, 0.1);
   box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+}
+
+/* NEW ASSETS & LAYOUT */
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; /* Restored healthy gap since logo is at bottom now */
+  width: 100%;
+  margin-top: -12vh;
+}
+
+.main-logo {
+  max-width: 280px; /* Slightly bigger now that it has room */
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.3));
+  animation: float 6s ease-in-out infinite;
+  margin-top: -20px; /* Slight tuck under the discord card */
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0px); }
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.discord-wrapper {
+  max-width: 550px; /* Increased width to prevent the sentence from wrapping */
+  width: 100%;
+  border-radius: 18px;
+}
+
+.discord-box {
+  padding: 14px 20px;
+  border-radius: 16px;
+  justify-content: center;
+  gap: 20px;
+}
+
+.discord-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap; /* Forces everything inside this container onto one line */
+}
+
+.discord-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.discord-label {
+  color: #ffaa00;
+  font-size: 15px;
+  font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap; /* Forces the text to stay on one single line */
+}
+
+.discord-username {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.discord-copy {
+  padding: 10px;
+}
+.discord-copy .btn-icon {
+  margin: 0;
+  width: 18px;
+  height: 18px;
 }

@@ -8,7 +8,6 @@ function FullscreenShader() {
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
   const { size } = useThree();
 
-  // Create a small static noise texture for iChannel0
   const noiseTexture = useMemo(() => {
     const w = 256;
     const h = 256;
@@ -45,22 +44,19 @@ function FullscreenShader() {
         depthTest={false}
         transparent={false}
         uniforms={uniforms}
-        vertexShader={/* glsl */ `
+        vertexShader={`
           varying vec2 vUv;
           void main() {
             vUv = uv;
             gl_Position = vec4(position, 1.0);
           }
         `}
-        fragmentShader={/* glsl */ `
+        fragmentShader={`
           precision highp float;
 
           uniform float iTime;
           uniform vec2 iResolution;
           uniform sampler2D iChannel0;
-
-          // "Starship" by @XorDev (adapted)
-          vec4 O_color;
 
           void mainImage(out vec4 O, vec2 I)
           {
@@ -80,8 +76,6 @@ function FullscreenShader() {
 
                   p += .02 * cos(i*(C.xz+8.0+i) + T + T);
               }
-
-              // Black background only: remove sky term (p.x*--C) but keep tanh tonemap
               O = vec4(tanh((S*S).rgb), 1.0);
           }
 
@@ -99,26 +93,14 @@ function FullscreenShader() {
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
-  const SCRIPT = `loadstring(game:HttpGet("https://eternity.rajmroy-17.workers.dev", true))()`;
+  const [discordCopied, setDiscordCopied] = useState(false);
+  
+  const SCRIPT = `loadstring(game:HttpGet("https://eternity.vercel.app", true))()`;
+  const DISCORD_NAME = "hor1zen.";
 
-  const copyScript = () => {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(SCRIPT).then(markCopied).catch(fallbackCopy);
-    } else {
-      fallbackCopy();
-    }
-  };
-
-  const markCopied = () => {
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
-  };
-
-  const fallbackCopy = () => {
+  const fallbackCopy = (text: string, callback: () => void) => {
     const ta = document.createElement('textarea');
-    ta.value = SCRIPT;
+    ta.value = text;
     ta.style.position = 'fixed';
     ta.style.opacity = '0';
     document.body.appendChild(ta);
@@ -128,7 +110,41 @@ export default function Home() {
       document.execCommand('copy');
     } catch (e) {}
     document.body.removeChild(ta);
-    markCopied();
+    callback();
+  };
+
+  const copyScript = () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(SCRIPT).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => fallbackCopy(SCRIPT, () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }));
+    } else {
+      fallbackCopy(SCRIPT, () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
+
+  const copyDiscord = () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(DISCORD_NAME).then(() => {
+        setDiscordCopied(true);
+        setTimeout(() => setDiscordCopied(false), 2000);
+      }).catch(() => fallbackCopy(DISCORD_NAME, () => {
+        setDiscordCopied(true);
+        setTimeout(() => setDiscordCopied(false), 2000);
+      }));
+    } else {
+      fallbackCopy(DISCORD_NAME, () => {
+        setDiscordCopied(true);
+        setTimeout(() => setDiscordCopied(false), 2000);
+      });
+    }
   };
 
   return (
@@ -142,25 +158,53 @@ export default function Home() {
       </div>
 
       {/* Foreground UI Layer */}
-      <div className="container">
+      <div className="container layout-wrapper">
+
+
+        {/* Loadstring Card */}
         <div className="animated-border-box">
           <div className="script-box">
-          <div className="script-text">
-            <span className="prompt-icon">&gt;_</span>
-            <span className="script-code">
-              loadstring(game:HttpGet(
-              <span className="script-url">"https://eternity.rajmroy-17.workers.dev"</span>, true))()
-            </span>
-          </div>
-          <button
-            className={`copy-btn ${copied ? 'copied' : ''}`}
-            id="copy-btn"
-            onClick={copyScript}
-          >
-            {copied ? 'COPIED' : 'COPY'}
-          </button>
+            <div className="script-text">
+              <span className="prompt-icon">&gt;_</span>
+              <span className="script-code">
+                loadstring(game:HttpGet(
+                <span className="script-url">"https://eternity.vercel.app"</span>, true))()
+              </span>
+            </div>
+            <button
+              className={`copy-btn ${copied ? 'copied' : ''}`}
+              id="copy-btn"
+              onClick={copyScript}
+            >
+              <img src="/copy.png" alt="copy" className="btn-icon" />
+              {copied ? 'COPIED' : 'COPY'}
+            </button>
           </div>
         </div>
+
+        {/* Discord Card */}
+        <div className="animated-border-box discord-wrapper">
+          <div className="script-box discord-box">
+            <div className="discord-text">
+              <img src="/discord.png" alt="Discord" className="discord-icon" />
+              <span className="discord-label">Developer Discord :</span>
+              <span className="discord-username">{DISCORD_NAME}</span>
+            </div>
+            <button
+              className={`copy-btn discord-copy ${discordCopied ? 'copied' : ''}`}
+              onClick={copyDiscord}
+              title="Copy Discord"
+            >
+              <img src="/copy.png" alt="copy" className="btn-icon" />
+            </button>
+          </div>
+        </div>
+
+        {/* Main Logo (Moved below Discord card) */}
+        <div className="logo-container">
+          <img src="/eternitylogo.png" alt="Eternity" className="main-logo" />
+        </div>
+
       </div>
     </>
   );
