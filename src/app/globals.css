@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e8e8e8;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.animated-border-box {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  padding: 2px;
+  display: flex;
+  box-shadow: 0 0 30px rgba(255, 160, 0, 0.15);
+}
+
+.animated-border-box::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0%,
+    transparent 40%,
+    #ffaa00 50%,
+    transparent 50%,
+    transparent 90%,
+    #ffaa00 100%
+  );
+  animation: rotateBorder 3s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateBorder {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.script-box {
+  background: #0f0800; /* Solid dark color so the gradient doesn't bleed through the middle */
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  gap: 16px;
+  width: 100%;
+  z-index: 1;
+}
+
+.script-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.prompt-icon {
+  color: #ffb700;
+  font-size: 18px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(255, 183, 0, 0.5);
+}
+
+.script-code { font-family: var(--font-vt323), monospace; font-size: 20px; color: #ffdca8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.script-url { color: #ff9d00; text-shadow: 0 0 8px rgba(255, 157, 0, 0.3); }
+
+.copy-btn {
+  background: rgba(255, 160, 0, 0.05);
+  border: 1px solid rgba(255, 160, 0, 0.4);
+  color: #ffb700;
+  padding: 9px 24px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border-radius: 12px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover { 
+  background: rgba(255, 160, 0, 0.15); 
+  border-color: rgba(255, 160, 0, 0.8); 
+  box-shadow: 0 0 15px rgba(255, 160, 0, 0.2);
+}
+
+.copy-btn.copied { 
+  color: #4ade80; 
+  border-color: #4ade80; 
+  background: rgba(74, 222, 128, 0.1);
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+}
