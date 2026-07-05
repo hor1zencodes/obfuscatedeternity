@@ -723,10 +723,18 @@ function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (
   );
 }
 
+const SONGS = [
+  { title: "Main Atraction", url: "/Main%20Atraction.mp3" },
+  { title: "Too Many Nights", url: "/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" },
+  { title: "Right On", url: "/Right%20On.mp3" },
+  { title: "Timeless", url: "/The%20Weeknd%20%26%20Playboi%20Carti%20-%20Timeless%20(Clean%20Lyrics).mp3" }
+];
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
   const [bgIndex, setBgIndex] = useState<number | null>(null);
+  const [songIndex, setSongIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.05); // Start at 5% volume
   const [hasEntered, setHasEntered] = useState(false);
@@ -757,6 +765,9 @@ export default function Home() {
     
     sessionStorage.setItem('lastBgIndex', nextBg.toString());
     setBgIndex(nextBg);
+
+    // Pick a random song on initial load
+    setSongIndex(Math.floor(Math.random() * SONGS.length));
   }, []);
   
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
@@ -817,6 +828,20 @@ export default function Home() {
     setVolume(parseFloat(e.target.value));
   };
 
+  const nextSong = () => {
+    if (songIndex !== null) setSongIndex((songIndex + 1) % SONGS.length);
+  };
+
+  const prevSong = () => {
+    if (songIndex !== null) setSongIndex((songIndex - 1 + SONGS.length) % SONGS.length);
+  };
+
+  useEffect(() => {
+    if (audioRef.current && isPlaying && songIndex !== null) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [songIndex]);
+
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -870,31 +895,56 @@ export default function Home() {
       {/* Foreground UI Layer */}
       <div className={`container layout-wrapper ${bgIndex === 1 || bgIndex === 2 || bgIndex === 3 || bgIndex === 4 ? 'theme-white' : ''}`}>
 
-        {/* Music Player */}
-        <div className="music-player">
-          <button onClick={togglePlay} className="music-btn" title="Play/Pause Music">
-            {isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        {/* Advanced Music Player */}
+        <div className="music-player-advanced">
+          <div className="music-controls">
+            <button onClick={prevSong} className="music-btn-small" title="Previous Song">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
               </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
+            </button>
+            <button onClick={togglePlay} className="music-btn" title="Play/Pause Music">
+              {isPlaying ? (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </button>
+            <button onClick={nextSong} className="music-btn-small" title="Next Song">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
               </svg>
-            )}
-          </button>
-          <input 
-            type="range" 
-            min="0" 
-            max="1" 
-            step="0.01" 
-            value={volume} 
-            onChange={handleVolumeChange} 
-            className="volume-slider" 
-            title="Volume"
-          />
+            </button>
+          </div>
+          
+          <div className="music-info">
+            <div className="music-title">
+              {songIndex !== null ? SONGS[songIndex].title : ''}
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.01" 
+              value={volume} 
+              onChange={handleVolumeChange} 
+              className="volume-slider" 
+              title="Volume"
+            />
+          </div>
         </div>
-        <audio ref={audioRef} src="/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" loop />
+        
+        {songIndex !== null && (
+           <audio 
+             ref={audioRef} 
+             src={SONGS[songIndex].url} 
+             onEnded={nextSong} 
+           />
+        )}
 
         {/* Theme Switcher */}
         <CustomThemeSwitcher currentBg={bgIndex} setBg={setBgIndex} />
