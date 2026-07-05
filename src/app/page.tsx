@@ -169,6 +169,8 @@ function FullscreenShader2() {
       />
     </mesh>
   );
+}
+
 function FullscreenShader3() {
   const mesh = useRef<THREE.Mesh>(null!);
 
