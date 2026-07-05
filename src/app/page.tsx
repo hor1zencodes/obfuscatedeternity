@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
-function FullscreenShader() {
+function FullscreenShader1() {
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
   const { size } = useThree();
 
@@ -91,9 +91,94 @@ function FullscreenShader() {
   );
 }
 
+function FullscreenShader2() {
+  const materialRef = useRef<THREE.ShaderMaterial>(null!);
+  const { size } = useThree();
+
+  const uniforms = useMemo(
+    () => ({
+      time: { value: 0 },
+      resolution: { value: new THREE.Vector2(size.width, size.height) },
+    }),
+    [size.width, size.height]
+  );
+
+  useFrame(({ clock }) => {
+    if (!materialRef.current) return;
+    materialRef.current.uniforms.time.value = clock.getElapsedTime();
+    materialRef.current.uniforms.resolution.value.set(size.width, size.height);
+  });
+
+  return (
+    <mesh>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial
+        ref={materialRef}
+        depthWrite={false}
+        depthTest={false}
+        transparent={false}
+        uniforms={uniforms}
+        vertexShader={`
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = vec4(position, 1.0);
+          }
+        `}
+        fragmentShader={`
+          #define TWO_PI 6.2831853072
+          #define PI 3.14159265359
+
+          precision highp float;
+          uniform vec2 resolution;
+          uniform float time;
+            
+          float random (in float x) {
+              return fract(sin(x)*1e4);
+          }
+          float random (vec2 st) {
+              return fract(sin(dot(st.xy,
+                                   vec2(12.9898,78.233)))*
+                  43758.5453123);
+          }
+          
+          varying vec2 vUv;
+
+          void main(void) {
+            vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+            
+            vec2 fMosaicScal = vec2(4.0, 2.0);
+            vec2 vScreenSize = vec2(256.0, 256.0);
+            uv.x = floor(uv.x * vScreenSize.x / fMosaicScal.x) / (vScreenSize.x / fMosaicScal.x);
+            uv.y = floor(uv.y * vScreenSize.y / fMosaicScal.y) / (vScreenSize.y / fMosaicScal.y);       
+              
+            float t = time*0.06+random(uv.x)*0.4;
+            float lineWidth = 0.0008;
+
+            vec3 color = vec3(0.0);
+            for(int j = 0; j < 3; j++){
+              for(int i=0; i < 5; i++){
+                color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*1.0 - length(uv));        
+              }
+            }
+
+            gl_FragColor = vec4(color[2],color[1],color[0],1.0);
+          }
+        `}
+      />
+    </mesh>
+  );
+}
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
+  const [bgIndex, setBgIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Randomly pick a background (0 or 1)
+    setBgIndex(Math.floor(Math.random() * 2));
+  }, []);
   
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
   const DISCORD_NAME = "hor1zen.";
@@ -153,7 +238,8 @@ export default function Home() {
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden' }}>
         <Canvas orthographic camera={{ position: [0, 0, 1], zoom: 1 }} dpr={[1, 2]}>
           <color attach="background" args={["#000000"]} />
-          <FullscreenShader />
+          {bgIndex === 0 && <FullscreenShader1 />}
+          {bgIndex === 1 && <FullscreenShader2 />}
         </Canvas>
       </div>
 
