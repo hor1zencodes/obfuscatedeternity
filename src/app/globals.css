@@ -295,9 +295,85 @@ body {
 .theme-red-orange .discord-label {
   color: #ff5722;
 }
+/* THEME SWITCHER */
+.theme-switcher {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(10, 10, 10, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 235, 166, 0.2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+.theme-white .theme-switcher {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-switcher:hover {
+  background: rgba(20, 20, 20, 0.6);
+  border-color: rgba(255, 235, 166, 0.4);
+}
+.theme-white .theme-switcher:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-switcher-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  color: #ffeba6;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+.theme-white .theme-switcher-label {
+  color: #ffffff;
+}
+
+.theme-select {
+  background: transparent;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  color: #fffaf0;
+  cursor: pointer;
+  outline: none;
+  padding: 4px;
+  text-shadow: 0 0 8px rgba(255, 235, 166, 0.5);
+  transition: all 0.3s ease;
+}
+.theme-white .theme-select {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.theme-select option {
+  background: #111;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  padding: 8px;
+}
 
 /* MOBILE RESPONSIVENESS */
 @media (max-width: 600px) {
+  .theme-switcher {
+    top: 16px;
+    right: 50%;
+    transform: translateX(50%);
+    width: max-content;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  
+  .theme-switcher-label, .theme-select {
+    font-size: 12px;
+  }
+
   .layout-wrapper {
     margin-top: -5vh; /* Less aggressive upward shift on mobile */
     gap: 16px;
