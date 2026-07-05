@@ -693,8 +693,11 @@ export default function Home() {
       // Randomly pick a background on initial visit
       nextBg = Math.floor(Math.random() * 5);
     } else {
-      // Guarantee a change on refresh by cycling to the next one
-      nextBg = (parseInt(lastBg, 10) + 1) % 5;
+      // Guarantee a random change on refresh by picking until it's different
+      const prevBg = parseInt(lastBg, 10);
+      do {
+        nextBg = Math.floor(Math.random() * 5);
+      } while (nextBg === prevBg);
     }
     
     sessionStorage.setItem('lastBgIndex', nextBg.toString());
