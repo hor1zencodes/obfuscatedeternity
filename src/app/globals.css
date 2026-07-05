@@ -337,10 +337,16 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(10, 10, 10, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 235, 166, 0.2);
+  border: 1px solid transparent;
+  background-image: 
+    linear-gradient(rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.4)),
+    linear-gradient(90deg, rgba(255, 235, 166, 0.05) 0%, rgba(255, 235, 166, 0.8) 50%, rgba(255, 235, 166, 0.05) 100%);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  background-size: 100% 100%, 200% 100%;
+  animation: strokeFlow 3s linear infinite;
   border-radius: 28px;
   padding: 6px 16px 6px 6px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
@@ -349,7 +355,9 @@ body {
 }
 
 .theme-white .music-player-advanced {
-  border-color: rgba(255, 255, 255, 0.2);
+  background-image: 
+    linear-gradient(rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.4)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.05) 100%);
 }
 
 .music-controls {
@@ -466,10 +474,16 @@ body {
 }
 
 .theme-switcher-header {
-  background: rgba(10, 10, 10, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 235, 166, 0.2);
+  border: 1px solid transparent;
+  background-image: 
+    linear-gradient(rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.4)),
+    linear-gradient(90deg, rgba(255, 235, 166, 0.05) 0%, rgba(255, 235, 166, 0.8) 50%, rgba(255, 235, 166, 0.05) 100%);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  background-size: 100% 100%, 200% 100%;
+  animation: strokeFlow 3s linear infinite;
   border-radius: 20px;
   padding: 8px 16px;
   display: flex;
@@ -481,16 +495,26 @@ body {
 }
 
 .theme-white .theme-switcher-header {
-  border-color: rgba(255, 255, 255, 0.2);
+  background-image: 
+    linear-gradient(rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.4)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+@keyframes strokeFlow {
+  0% { background-position: 0 0, 200% 0; }
+  100% { background-position: 0 0, 0 0; }
 }
 
 .theme-switcher-header:hover {
-  background: rgba(20, 20, 20, 0.6);
-  border-color: rgba(255, 235, 166, 0.4);
+  background-image: 
+    linear-gradient(rgba(20, 20, 20, 0.6), rgba(20, 20, 20, 0.6)),
+    linear-gradient(90deg, rgba(255, 235, 166, 0.2) 0%, rgba(255, 235, 166, 1) 50%, rgba(255, 235, 166, 0.2) 100%);
 }
 
 .theme-white .theme-switcher-header:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  background-image: 
+    linear-gradient(rgba(20, 20, 20, 0.6), rgba(20, 20, 20, 0.6)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 0.2) 100%);
 }
 
 .theme-switcher-label {
