@@ -185,7 +185,7 @@ function FullscreenShader3() {
 
   useFrame(({ clock }) => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.time.value = clock.getElapsedTime();
+    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 8.0;
     materialRef.current.uniforms.resolution.value.set(size.width, size.height);
   });
 
@@ -239,8 +239,19 @@ export default function Home() {
   const [bgIndex, setBgIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    // Randomly pick a background (0, 1, or 2)
-    setBgIndex(Math.floor(Math.random() * 3));
+    const lastBg = sessionStorage.getItem('lastBgIndex');
+    let nextBg;
+    
+    if (lastBg === null) {
+      // Randomly pick a background on initial visit
+      nextBg = Math.floor(Math.random() * 3);
+    } else {
+      // Guarantee a change on refresh by cycling to the next one
+      nextBg = (parseInt(lastBg, 10) + 1) % 3;
+    }
+    
+    sessionStorage.setItem('lastBgIndex', nextBg.toString());
+    setBgIndex(nextBg);
   }, []);
   
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
