@@ -675,8 +675,15 @@ export default function Home() {
   const [discordCopied, setDiscordCopied] = useState(false);
   const [bgIndex, setBgIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.15); // Start at 15% volume
   
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   useEffect(() => {
     const lastBg = sessionStorage.getItem('lastBgIndex');
@@ -749,7 +756,7 @@ export default function Home() {
   useEffect(() => {
     // Attempt to autoplay music (browsers often block this until user interacts)
     if (audioRef.current) {
-      audioRef.current.volume = 0.5;
+      audioRef.current.volume = volume;
       audioRef.current.play()
         .then(() => setIsPlaying(true))
         .catch(() => {
@@ -757,7 +764,11 @@ export default function Home() {
           setIsPlaying(false);
         });
     }
-  }, []);
+  }, []); // Intentionally leaving out volume from dependency array so it only triggers on mount
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVolume(parseFloat(e.target.value));
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -809,6 +820,16 @@ export default function Home() {
               </svg>
             )}
           </button>
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
+            value={volume} 
+            onChange={handleVolumeChange} 
+            className="volume-slider" 
+            title="Volume"
+          />
         </div>
         <audio ref={audioRef} src="/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" loop />
 

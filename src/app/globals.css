@@ -301,38 +301,79 @@ body {
   top: 24px;
   left: 24px;
   z-index: 100;
-}
-
-.music-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   background: rgba(10, 10, 10, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 235, 166, 0.2);
+  border-radius: 28px;
+  padding: 4px 16px 4px 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.theme-white .music-player {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.music-btn {
+  background: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffeba6;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .theme-white .music-btn {
-  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
 
 .music-btn:hover {
-  background: rgba(20, 20, 20, 0.6);
-  border-color: rgba(255, 235, 166, 0.4);
+  background: rgba(255, 235, 166, 0.1);
   transform: scale(1.05);
 }
 
 .theme-white .music-btn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Volume Slider */
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffeba6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-white .volume-slider::-webkit-slider-thumb {
+  background: #ffffff;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 /* THEME SWITCHER */
@@ -406,12 +447,15 @@ body {
     left: 16px;
   }
   .music-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
   .music-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+  }
+  .volume-slider {
+    width: 60px;
   }
 
   .theme-switcher {
