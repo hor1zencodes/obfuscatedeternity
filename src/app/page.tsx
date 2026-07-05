@@ -724,6 +724,7 @@ function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (
 }
 
 const SONGS = [
+  { title: "Blessing", url: "/Blessing.mp3" },
   { title: "Main Atraction", url: "/Main%20Atraction.mp3" },
   { title: "Too Many Nights", url: "/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" },
   { title: "Right On", url: "/Right%20On.mp3" },
@@ -760,8 +761,8 @@ export default function Home() {
     sessionStorage.setItem('lastBgIndex', nextBg.toString());
     setBgIndex(nextBg);
 
-    // Pick a random song on initial load
-    setSongIndex(Math.floor(Math.random() * SONGS.length));
+    // Pick Blessing as the default song on initial load
+    setSongIndex(0);
   }, []);
 
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
