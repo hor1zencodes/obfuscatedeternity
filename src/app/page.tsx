@@ -736,20 +736,10 @@ export default function Home() {
   const [bgIndex, setBgIndex] = useState<number | null>(null);
   const [songIndex, setSongIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0.5); // Slider is visually at 50%
+  const [volume, setVolume] = useState(0.15); // Default to 15% volume
   const [hasEntered, setHasEntered] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  // Helper to map 50% visual slider to 2% actual volume, and scale up smoothly
-  const getActualVolume = (val: number) => {
-    if (val <= 0.5) {
-      return val * 0.04; // maps 0..0.5 to 0..0.02
-    } else {
-      const normalized = (val - 0.5) / 0.5; // 0 to 1
-      return 0.02 + Math.pow(normalized, 2) * 0.98; // scales smoothly up to 1.0 (100%)
-    }
-  };
 
   useEffect(() => {
     const lastBg = sessionStorage.getItem('lastBgIndex');
@@ -829,7 +819,7 @@ export default function Home() {
   // Removed autoplay useEffect as browsers block it; using Click-to-Enter overlay instead
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSliderValue(parseFloat(e.target.value));
+    setVolume(parseFloat(e.target.value));
   };
 
   const nextSong = () => {
@@ -842,12 +832,12 @@ export default function Home() {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = getActualVolume(sliderValue);
+      audioRef.current.volume = volume;
     }
     if (audioRef.current && isPlaying && songIndex !== null) {
       audioRef.current.play().catch(() => {});
     }
-  }, [songIndex, sliderValue]);
+  }, [songIndex, volume]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -872,7 +862,7 @@ export default function Home() {
           onClick={() => {
             setHasEntered(true);
             if (audioRef.current) {
-               audioRef.current.volume = getActualVolume(sliderValue);
+               audioRef.current.volume = volume;
                audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
             }
           }}
@@ -940,7 +930,7 @@ export default function Home() {
               min="0" 
               max="1" 
               step="0.01" 
-              value={sliderValue} 
+              value={volume} 
               onChange={handleVolumeChange} 
               className="volume-slider" 
               title="Volume"
