@@ -171,14 +171,76 @@ function FullscreenShader2() {
   );
 }
 
+function FullscreenShader3() {
+  const materialRef = useRef<THREE.ShaderMaterial>(null!);
+  const { size } = useThree();
+
+  const uniforms = useMemo(
+    () => ({
+      time: { value: 0 },
+      resolution: { value: new THREE.Vector2(size.width, size.height) },
+    }),
+    [size.width, size.height]
+  );
+
+  useFrame(({ clock }) => {
+    if (!materialRef.current) return;
+    materialRef.current.uniforms.time.value = clock.getElapsedTime();
+    materialRef.current.uniforms.resolution.value.set(size.width, size.height);
+  });
+
+  return (
+    <mesh>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial
+        ref={materialRef}
+        depthWrite={false}
+        depthTest={false}
+        transparent={false}
+        uniforms={uniforms}
+        vertexShader={`
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = vec4(position, 1.0);
+          }
+        `}
+        fragmentShader={`
+          #define TWO_PI 6.2831853072
+          #define PI 3.14159265359
+
+          precision highp float;
+          uniform vec2 resolution;
+          uniform float time;
+
+          void main(void) {
+            vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+            float t = time*0.05;
+            float lineWidth = 0.002;
+
+            vec3 color = vec3(0.0);
+            for(int j = 0; j < 3; j++){
+              for(int i=0; i < 5; i++){
+                color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
+              }
+            }
+            
+            gl_FragColor = vec4(color[0],color[1],color[2],1.0);
+          }
+        `}
+      />
+    </mesh>
+  );
+}
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
   const [bgIndex, setBgIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    // Randomly pick a background (0 or 1)
-    setBgIndex(Math.floor(Math.random() * 2));
+    // Randomly pick a background (0, 1, or 2)
+    setBgIndex(Math.floor(Math.random() * 3));
   }, []);
   
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
@@ -241,6 +303,7 @@ export default function Home() {
           <color attach="background" args={["#000000"]} />
           {bgIndex === 0 && <FullscreenShader1 />}
           {bgIndex === 1 && <FullscreenShader2 />}
+          {bgIndex === 2 && <FullscreenShader3 />}
         </Canvas>
       </div>
 
