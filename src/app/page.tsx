@@ -728,7 +728,8 @@ export default function Home() {
   const [discordCopied, setDiscordCopied] = useState(false);
   const [bgIndex, setBgIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.15); // Start at 15% volume
+  const [volume, setVolume] = useState(0.05); // Start at 5% volume
+  const [hasEntered, setHasEntered] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -809,18 +810,7 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    // Attempt to autoplay music (browsers often block this until user interacts)
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {
-          // Autoplay was blocked
-          setIsPlaying(false);
-        });
-    }
-  }, []); // Intentionally leaving out volume from dependency array so it only triggers on mount
+  // Removed autoplay useEffect as browsers block it; using Click-to-Enter overlay instead
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVolume(parseFloat(e.target.value));
@@ -842,6 +832,22 @@ export default function Home() {
 
   return (
     <>
+      {/* Enter Overlay */}
+      {!hasEntered && (
+        <div 
+          className="enter-overlay"
+          onClick={() => {
+            setHasEntered(true);
+            if (audioRef.current) {
+               audioRef.current.volume = volume;
+               audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+            }
+          }}
+        >
+          <span className="enter-text">Click to Enter</span>
+        </div>
+      )}
+
       {/* Three.js Background Layer */}
       {bgIndex !== 3 && bgIndex !== 4 && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden' }}>
