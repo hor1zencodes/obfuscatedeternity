@@ -171,107 +171,129 @@ function FullscreenShader2() {
   );
 }
 
-function FullscreenShader3() {
-  const mesh = useRef<THREE.Mesh>(null!);
+const vertexShader = `
+  uniform float time;
+  uniform float intensity;
+  varying vec2 vUv;
+  varying vec3 vPosition;
+  
+  void main() {
+    vUv = uv;
+    vPosition = position;
+    
+    vec3 pos = position;
+    pos.y += sin(pos.x * 10.0 + time) * 0.1 * intensity;
+    pos.x += cos(pos.y * 8.0 + time * 1.5) * 0.05 * intensity;
+    
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  uniform float time;
+  uniform float intensity;
+  uniform vec3 color1;
+  uniform vec3 color2;
+  varying vec2 vUv;
+  varying vec3 vPosition;
+  
+  void main() {
+    vec2 uv = vUv;
+    
+    // Create animated noise pattern
+    float noise = sin(uv.x * 20.0 + time) * cos(uv.y * 15.0 + time * 0.8);
+    noise += sin(uv.x * 35.0 - time * 2.0) * cos(uv.y * 25.0 + time * 1.2) * 0.5;
+    
+    // Mix colors based on noise and position
+    vec3 color = mix(color1, color2, noise * 0.5 + 0.5);
+    color = mix(color, vec3(1.0), pow(abs(noise), 2.0) * intensity);
+    
+    // Add glow effect
+    float glow = 1.0 - length(uv - 0.5) * 2.0;
+    glow = pow(glow, 2.0);
+    
+    gl_FragColor = vec4(color * glow, glow * 0.8);
+  }
+`;
+
+export function ShaderPlane({
+  position,
+  color1 = "#ff5722",
+  color2 = "#ffffff",
+}: {
+  position: [number, number, number]
+  color1?: string
+  color2?: string
+}) {
+  const mesh = useRef<THREE.Mesh>(null!)
 
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
       intensity: { value: 1.0 },
-      color1: { value: new THREE.Color("#ff5722") },
-      color2: { value: new THREE.Color("#ffffff") },
+      color1: { value: new THREE.Color(color1) },
+      color2: { value: new THREE.Color(color2) },
     }),
-    []
-  );
+    [color1, color2],
+  )
 
   useFrame((state) => {
     if (mesh.current) {
       // @ts-ignore
-      mesh.current.material.uniforms.time.value = state.clock.elapsedTime;
+      mesh.current.material.uniforms.time.value = state.clock.elapsedTime
       // @ts-ignore
-      mesh.current.material.uniforms.intensity.value = 1.0 + Math.sin(state.clock.elapsedTime * 2) * 0.3;
+      mesh.current.material.uniforms.intensity.value = 1.0 + Math.sin(state.clock.elapsedTime * 2) * 0.3
     }
-  });
+  })
 
   return (
-    <mesh ref={mesh}>
+    <mesh ref={mesh} position={position}>
       <planeGeometry args={[2, 2, 32, 32]} />
       <shaderMaterial
         uniforms={uniforms}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
         transparent
         side={THREE.DoubleSide}
-        vertexShader={`
-          uniform float time;
-          uniform float intensity;
-          varying vec2 vUv;
-          
-          void main() {
-            vUv = uv;
-            vec3 pos = position;
-            pos.y += sin(pos.x * 10.0 + time) * 0.1 * intensity;
-            pos.x += cos(pos.y * 8.0 + time * 1.5) * 0.05 * intensity;
-            // Bypass projection matrices to fill the screen
-            gl_Position = vec4(pos, 1.0);
-          }
-        `}
-        fragmentShader={`
-          uniform float time;
-          uniform float intensity;
-          uniform vec3 color1;
-          uniform vec3 color2;
-          varying vec2 vUv;
-          
-          void main() {
-            vec2 uv = vUv;
-            
-            // Create animated noise pattern
-            float noise = sin(uv.x * 20.0 + time) * cos(uv.y * 15.0 + time * 0.8);
-            noise += sin(uv.x * 35.0 - time * 2.0) * cos(uv.y * 25.0 + time * 1.2) * 0.5;
-            
-            // Mix colors based on noise and position
-            vec3 color = mix(color1, color2, noise * 0.5 + 0.5);
-            color = mix(color, vec3(1.0), pow(abs(noise), 2.0) * intensity);
-            
-            // Add glow effect
-            float glow = 1.0 - length(uv - 0.5) * 2.0;
-            glow = pow(glow, 2.0);
-            
-            gl_FragColor = vec4(color * glow, glow * 0.8);
-          }
-        `}
       />
     </mesh>
-  );
+  )
 }
 
-function EnergyRing({ radius = 1 }) {
-  const mesh = useRef<THREE.Mesh>(null!);
-  const { size } = useThree();
-  
-  // Since our camera is orthographic and zoomed at 1, the radius needs to be scaled up by screen pixels.
-  const actualRadius = Math.min(size.width, size.height) * 0.4 * radius;
+export function EnergyRing({
+  radius = 1,
+  position = [0, 0, 0],
+}: {
+  radius?: number
+  position?: [number, number, number]
+}) {
+  const mesh = useRef<THREE.Mesh>(null!)
 
   useFrame((state) => {
     if (mesh.current) {
-      mesh.current.rotation.z = state.clock.elapsedTime;
+      mesh.current.rotation.z = state.clock.elapsedTime
       // @ts-ignore
-      mesh.current.material.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.3;
+      mesh.current.material.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.3
     }
-  });
+  })
 
   return (
-    <mesh ref={mesh}>
-      <ringGeometry args={[actualRadius * 0.8, actualRadius, 64]} />
+    <mesh ref={mesh} position={position}>
+      <ringGeometry args={[radius * 0.8, radius, 32]} />
       <meshBasicMaterial color="#ff5722" transparent opacity={0.6} side={THREE.DoubleSide} />
     </mesh>
-  );
+  )
 }
 
 function Shader3Container() {
+  const { size } = useThree();
+  // We scale the group up so the 2x2 plane covers the screen on a perspective camera, 
+  // since the user's code relies on the camera projection instead of bypassing it.
+  const scale = Math.max(size.width, size.height) / 100;
   return (
-    <group>
-      <FullscreenShader3 />
-      <EnergyRing />
+    <group scale={[scale, scale, 1]}>
+      <ShaderPlane position={[0, 0, 0]} />
+      <EnergyRing position={[0, 0, 0.1]} />
     </group>
   );
 }
@@ -353,7 +375,7 @@ export default function Home() {
     <>
       {/* Three.js Background Layer */}
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden' }}>
-        <Canvas orthographic camera={{ position: [0, 0, 1], zoom: 1 }} dpr={[1, 2]}>
+        <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 2]}>
           <color attach="background" args={["#000000"]} />
           {bgIndex === 0 && <FullscreenShader1 />}
           {bgIndex === 1 && <FullscreenShader2 />}
