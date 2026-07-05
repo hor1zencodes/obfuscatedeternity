@@ -280,7 +280,7 @@ export function EnergyRing({
   return (
     <mesh ref={mesh} position={position}>
       <ringGeometry args={[radius * 0.8, radius, 32]} />
-      <meshBasicMaterial color="#ff5722" transparent opacity={0.6} side={THREE.DoubleSide} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0.6} side={THREE.DoubleSide} />
     </mesh>
   )
 }
@@ -292,7 +292,7 @@ function Shader3Container() {
   const scale = Math.max(size.width, size.height) / 100;
   return (
     <group scale={[scale, scale, 1]}>
-      <ShaderPlane position={[0, 0, 0]} />
+      <ShaderPlane position={[0, 0, 0]} color1="#000000" color2="#ffffff" />
       <EnergyRing position={[0, 0, 0.1]} />
     </group>
   );
@@ -384,7 +384,7 @@ export default function Home() {
       </div>
 
       {/* Foreground UI Layer */}
-      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : bgIndex === 2 ? 'theme-red-orange' : ''}`}>
+      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : bgIndex === 2 ? 'theme-white' : ''}`}>
 
 
         {/* Loadstring Card */}
