@@ -207,3 +207,56 @@ body {
   width: 18px;
   height: 18px;
 }
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 600px) {
+  .layout-wrapper {
+    margin-top: -5vh; /* Less aggressive upward shift on mobile */
+    gap: 16px;
+  }
+
+  .script-box {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .script-text {
+    width: 100%;
+    overflow-x: auto; /* Allow horizontal scrolling for the code on small screens */
+    padding-bottom: 4px;
+  }
+
+  .script-code {
+    font-size: 16px; /* Smaller font on mobile */
+  }
+  
+  .discord-box {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .discord-text {
+    flex-direction: column;
+    white-space: normal; /* Allow wrapping */
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .discord-label {
+    white-space: normal;
+  }
+
+  .main-logo {
+    max-width: 220px; /* Smaller logo on mobile */
+  }
+  
+  .copy-btn {
+    width: 100%; /* Full width buttons on mobile */
+    justify-content: center;
+  }
+  
+  .discord-copy {
+    width: 100%;
+  }
+}
