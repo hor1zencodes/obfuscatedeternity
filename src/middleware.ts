@@ -14,8 +14,11 @@ export function middleware(request: NextRequest) {
     userAgent.includes('wave') ||
     userAgent.includes('macsploit')
   ) {
-    // Invisibly proxy the request to the raw GitHub repo
-    return NextResponse.rewrite(new URL('https://raw.githubusercontent.com/hor1zencodes/patanahi/main/yearnerzen.lua'));
+    // 3. USE REDIRECT INSTEAD OF REWRITE: 
+    // This forces the executor to directly hit GitHub's ultra-fast global CDN
+    // instead of making Vercel download it first and act as a middleman.
+    // game:HttpGet() automatically follows redirects instantly.
+    return NextResponse.redirect(new URL('https://raw.githubusercontent.com/hor1zencodes/patanahi/main/yearnerzen.lua'), 307);
   }
 
   // 3. If it's a normal web browser, proceed to render the React page
