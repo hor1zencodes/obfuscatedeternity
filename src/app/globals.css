@@ -251,49 +251,49 @@ body {
   color: #ffffff;
 }
 
-/* Specific class to make only the logo black/white for Theme 3 but keep the gold glow */
+/* Specific class to make only the logo black/white for Theme 3 but keep the theme's glow */
 .grayscale-logo {
-  filter: drop-shadow(0 0 25px rgba(255, 235, 166, 0.3)) grayscale(100%) brightness(1.2);
+  filter: drop-shadow(0 0 25px rgba(255, 87, 34, 0.3)) grayscale(100%) brightness(1.2);
 }
 
-/* LIGHT GOLD THEME OVERRIDES (Shader 3) */
-.theme-light-gold .animated-border-box {
-  box-shadow: 0 0 30px rgba(255, 235, 166, 0.2);
+/* RED ORANGE THEME OVERRIDES (Shader 3) */
+.theme-red-orange .animated-border-box {
+  box-shadow: 0 0 30px rgba(255, 87, 34, 0.2);
 }
-.theme-light-gold .animated-border-box::before {
+.theme-red-orange .animated-border-box::before {
   background: conic-gradient(
     from 0deg at 50% 50%,
     transparent 0%,
     transparent 40%,
-    #ffeba6 50%,
+    #ff5722 50%,
     transparent 50%,
     transparent 90%,
-    #ffeba6 100%
+    #ff5722 100%
   );
 }
-.theme-light-gold .prompt-icon {
-  color: #ffeba6;
-  text-shadow: 0 0 8px rgba(255, 235, 166, 0.5);
+.theme-red-orange .prompt-icon {
+  color: #ff5722;
+  text-shadow: 0 0 8px rgba(255, 87, 34, 0.5);
 }
-.theme-light-gold .script-code {
-  color: #fffaf0;
+.theme-red-orange .script-code {
+  color: #ffffff;
 }
-.theme-light-gold .script-url {
-  color: #ffeba6;
-  text-shadow: 0 0 8px rgba(255, 235, 166, 0.3);
+.theme-red-orange .script-url {
+  color: #ff5722;
+  text-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
 }
-.theme-light-gold .copy-btn {
-  background: rgba(255, 235, 166, 0.05);
-  border-color: rgba(255, 235, 166, 0.4);
-  color: #ffeba6;
+.theme-red-orange .copy-btn {
+  background: rgba(255, 87, 34, 0.05);
+  border-color: rgba(255, 87, 34, 0.4);
+  color: #ff5722;
 }
-.theme-light-gold .copy-btn:hover {
-  background: rgba(255, 235, 166, 0.15);
-  border-color: rgba(255, 235, 166, 0.8);
-  box-shadow: 0 0 15px rgba(255, 235, 166, 0.2);
+.theme-red-orange .copy-btn:hover {
+  background: rgba(255, 87, 34, 0.15);
+  border-color: rgba(255, 87, 34, 0.8);
+  box-shadow: 0 0 15px rgba(255, 87, 34, 0.2);
 }
-.theme-light-gold .discord-label {
-  color: #ffeba6;
+.theme-red-orange .discord-label {
+  color: #ff5722;
 }
 
 /* MOBILE RESPONSIVENESS */

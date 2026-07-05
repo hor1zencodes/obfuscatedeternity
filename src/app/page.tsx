@@ -169,67 +169,108 @@ function FullscreenShader2() {
       />
     </mesh>
   );
-}
-
 function FullscreenShader3() {
-  const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size } = useThree();
+  const mesh = useRef<THREE.Mesh>(null!);
 
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
-      resolution: { value: new THREE.Vector2(size.width, size.height) },
+      intensity: { value: 1.0 },
+      color1: { value: new THREE.Color("#ff5722") },
+      color2: { value: new THREE.Color("#ffffff") },
     }),
-    [size.width, size.height]
+    []
   );
 
-  useFrame(({ clock }) => {
-    if (!materialRef.current) return;
-    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 16.0;
-    materialRef.current.uniforms.resolution.value.set(size.width, size.height);
+  useFrame((state) => {
+    if (mesh.current) {
+      // @ts-ignore
+      mesh.current.material.uniforms.time.value = state.clock.elapsedTime;
+      // @ts-ignore
+      mesh.current.material.uniforms.intensity.value = 1.0 + Math.sin(state.clock.elapsedTime * 2) * 0.3;
+    }
   });
 
   return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
+    <mesh ref={mesh}>
+      <planeGeometry args={[2, 2, 32, 32]} />
       <shaderMaterial
-        ref={materialRef}
-        depthWrite={false}
-        depthTest={false}
-        transparent={false}
         uniforms={uniforms}
+        transparent
+        side={THREE.DoubleSide}
         vertexShader={`
+          uniform float time;
+          uniform float intensity;
           varying vec2 vUv;
+          
           void main() {
             vUv = uv;
-            gl_Position = vec4(position, 1.0);
+            vec3 pos = position;
+            pos.y += sin(pos.x * 10.0 + time) * 0.1 * intensity;
+            pos.x += cos(pos.y * 8.0 + time * 1.5) * 0.05 * intensity;
+            // Bypass projection matrices to fill the screen
+            gl_Position = vec4(pos, 1.0);
           }
         `}
         fragmentShader={`
-          #define TWO_PI 6.2831853072
-          #define PI 3.14159265359
-
-          precision highp float;
-          uniform vec2 resolution;
           uniform float time;
-
-          void main(void) {
-            vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
-            float t = time*0.05;
-            float lineWidth = 0.002;
-
-            vec3 color = vec3(0.0);
-            for(int j = 0; j < 3; j++){
-              for(int i=0; i < 5; i++){
-                color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*5.0 - length(uv) + mod(uv.x+uv.y, 0.2));
-              }
-            }
+          uniform float intensity;
+          uniform vec3 color1;
+          uniform vec3 color2;
+          varying vec2 vUv;
+          
+          void main() {
+            vec2 uv = vUv;
             
-            gl_FragColor = vec4(color[0],color[1],color[2],1.0);
+            // Create animated noise pattern
+            float noise = sin(uv.x * 20.0 + time) * cos(uv.y * 15.0 + time * 0.8);
+            noise += sin(uv.x * 35.0 - time * 2.0) * cos(uv.y * 25.0 + time * 1.2) * 0.5;
+            
+            // Mix colors based on noise and position
+            vec3 color = mix(color1, color2, noise * 0.5 + 0.5);
+            color = mix(color, vec3(1.0), pow(abs(noise), 2.0) * intensity);
+            
+            // Add glow effect
+            float glow = 1.0 - length(uv - 0.5) * 2.0;
+            glow = pow(glow, 2.0);
+            
+            gl_FragColor = vec4(color * glow, glow * 0.8);
           }
         `}
       />
     </mesh>
+  );
+}
+
+function EnergyRing({ radius = 1 }) {
+  const mesh = useRef<THREE.Mesh>(null!);
+  const { size } = useThree();
+  
+  // Since our camera is orthographic and zoomed at 1, the radius needs to be scaled up by screen pixels.
+  const actualRadius = Math.min(size.width, size.height) * 0.4 * radius;
+
+  useFrame((state) => {
+    if (mesh.current) {
+      mesh.current.rotation.z = state.clock.elapsedTime;
+      // @ts-ignore
+      mesh.current.material.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.3;
+    }
+  });
+
+  return (
+    <mesh ref={mesh}>
+      <ringGeometry args={[actualRadius * 0.8, actualRadius, 64]} />
+      <meshBasicMaterial color="#ff5722" transparent opacity={0.6} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+function Shader3Container() {
+  return (
+    <group>
+      <FullscreenShader3 />
+      <EnergyRing />
+    </group>
   );
 }
 
@@ -314,12 +355,12 @@ export default function Home() {
           <color attach="background" args={["#000000"]} />
           {bgIndex === 0 && <FullscreenShader1 />}
           {bgIndex === 1 && <FullscreenShader2 />}
-          {bgIndex === 2 && <FullscreenShader3 />}
+          {bgIndex === 2 && <Shader3Container />}
         </Canvas>
       </div>
 
       {/* Foreground UI Layer */}
-      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : bgIndex === 2 ? 'theme-light-gold' : ''}`}>
+      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : bgIndex === 2 ? 'theme-red-orange' : ''}`}>
 
 
         {/* Loadstring Card */}
