@@ -736,7 +736,7 @@ export default function Home() {
   const [bgIndex, setBgIndex] = useState<number | null>(null);
   const [songIndex, setSongIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.05); // Start at 5% volume
+  const [volume, setVolume] = useState(0.02); // Start at 2% volume
   const [hasEntered, setHasEntered] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
