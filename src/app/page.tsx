@@ -741,16 +741,17 @@ export default function Home() {
 
   useEffect(() => {
     const lastBg = sessionStorage.getItem('lastBgIndex');
+    const allowedBgs = [0, 1, 4]; // Only Theme 1, Theme 2, and Theme 5 are allowed on landing
     let nextBg;
     
     if (lastBg === null) {
-      // Randomly pick a background on initial visit
-      nextBg = Math.floor(Math.random() * 5);
+      // Randomly pick an allowed background on initial visit
+      nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
     } else {
       // Guarantee a random change on refresh by picking until it's different
       const prevBg = parseInt(lastBg, 10);
       do {
-        nextBg = Math.floor(Math.random() * 5);
+        nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
       } while (nextBg === prevBg);
     }
     
