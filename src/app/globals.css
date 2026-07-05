@@ -251,6 +251,11 @@ body {
   color: #ffffff;
 }
 
+/* Specific class to make only the logo black/white for Theme 3 but keep the gold glow */
+.grayscale-logo {
+  filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.3)) grayscale(100%) brightness(1.2);
+}
+
 /* MOBILE RESPONSIVENESS */
 @media (max-width: 600px) {
   .layout-wrapper {

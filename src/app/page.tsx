@@ -361,9 +361,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Main Logo (Moved below Discord card) */}
+        {/* Main Logo */}
         <div className="logo-container">
-          <img src="/eternitylogo.png" alt="Eternity" className="main-logo" />
+          <img src="/eternitylogo.png" alt="Eternity" className={`main-logo ${bgIndex === 2 ? 'grayscale-logo' : ''}`} />
         </div>
 
       </div>
