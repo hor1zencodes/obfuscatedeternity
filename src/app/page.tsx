@@ -185,7 +185,7 @@ function FullscreenShader3() {
 
   useFrame(({ clock }) => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 8.0;
+    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 16.0;
     materialRef.current.uniforms.resolution.value.set(size.width, size.height);
   });
 
@@ -319,7 +319,7 @@ export default function Home() {
       </div>
 
       {/* Foreground UI Layer */}
-      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : ''}`}>
+      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : bgIndex === 2 ? 'theme-light-gold' : ''}`}>
 
 
         {/* Loadstring Card */}
