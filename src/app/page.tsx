@@ -244,7 +244,7 @@ export default function Home() {
       </div>
 
       {/* Foreground UI Layer */}
-      <div className="container layout-wrapper">
+      <div className={`container layout-wrapper ${bgIndex === 1 ? 'theme-white' : ''}`}>
 
 
         {/* Loadstring Card */}
