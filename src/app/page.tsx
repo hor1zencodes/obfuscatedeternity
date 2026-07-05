@@ -105,7 +105,8 @@ function FullscreenShader2() {
 
   useFrame(({ clock }) => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.time.value = clock.getElapsedTime();
+    // Multiplied the time by 8 to make the animation run a lot faster!
+    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 8.0;
     materialRef.current.uniforms.resolution.value.set(size.width, size.height);
   });
 
