@@ -670,6 +670,59 @@ const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize
   );
 };
 
+function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (val: number) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const themes = [
+    { value: 0, label: 'Theme 1: Gold Waves' },
+    { value: 1, label: 'Theme 2: White Noise' },
+    { value: 2, label: 'Theme 3: Shader Plane' },
+    { value: 3, label: 'Theme 4: Dotted Surface' },
+    { value: 4, label: 'Theme 5: GLSL Hills' },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="theme-switcher-custom" ref={ref}>
+      <div className="theme-switcher-header" onClick={() => setIsOpen(!isOpen)}>
+        <span className="theme-switcher-label">Background:</span>
+        <span className="theme-switcher-value">{themes.find(t => t.value === currentBg)?.label}</span>
+        <svg className={`theme-switcher-arrow ${isOpen ? 'open' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      
+      {isOpen && (
+        <div className="theme-switcher-dropdown">
+          {themes.map(t => (
+            <div 
+              key={t.value}
+              className={`theme-switcher-option ${currentBg === t.value ? 'selected' : ''}`}
+              onClick={() => {
+                setBg(t.value);
+                sessionStorage.setItem('lastBgIndex', t.value.toString());
+                setIsOpen(false);
+              }}
+            >
+              {t.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
@@ -837,25 +890,7 @@ export default function Home() {
         <audio ref={audioRef} src="/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" loop />
 
         {/* Theme Switcher */}
-        <div className="theme-switcher">
-          <span className="theme-switcher-label">Background:</span>
-          <select 
-            className="theme-select"
-            value={bgIndex ?? 0}
-            onChange={(e) => {
-              const val = parseInt(e.target.value, 10);
-              setBgIndex(val);
-              sessionStorage.setItem('lastBgIndex', val.toString());
-            }}
-          >
-            <option value={0}>Theme 1: Gold Waves</option>
-            <option value={1}>Theme 2: White Noise</option>
-            <option value={2}>Theme 3: Shader Plane</option>
-            <option value={3}>Theme 4: Dotted Surface</option>
-            <option value={4}>Theme 5: GLSL Hills</option>
-          </select>
-        </div>
-
+        <CustomThemeSwitcher currentBg={bgIndex} setBg={setBgIndex} />
 
         {/* Loadstring Card */}
         <div className="animated-border-box">
