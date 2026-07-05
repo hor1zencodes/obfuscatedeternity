@@ -6,10 +6,10 @@ const vt323 = VT323({ weight: '400', subsets: ['latin'], variable: '--font-vt323
 
 export const metadata: Metadata = {
   title: 'Eternity',
-  description: 'Optimized for low-end PCs with fast, stable, and lightweight performance.',
+  description: 'Eternity — Redefining execution. Lightning fast, undetectable, and built for absolute dominance.',
   openGraph: {
     title: 'Eternity',
-    description: 'Optimized for low-end PCs with fast, stable, and lightweight performance.',
+    description: 'Eternity — Redefining execution. Lightning fast, undetectable, and built for absolute dominance.',
     url: 'https://zeneternity.vercel.app',
     type: 'website',
     images: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Eternity',
-    description: 'Optimized for low-end PCs with fast, stable, and lightweight performance.',
+    description: 'Eternity — Redefining execution. Lightning fast, undetectable, and built for absolute dominance.',
     images: ['https://zeneternity.vercel.app/eternitylogo.png'],
   },
 }
