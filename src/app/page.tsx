@@ -674,6 +674,9 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
   const [bgIndex, setBgIndex] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const lastBg = sessionStorage.getItem('lastBgIndex');
@@ -743,6 +746,33 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    // Attempt to autoplay music (browsers often block this until user interacts)
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          // Autoplay was blocked
+          setIsPlaying(false);
+        });
+    }
+  }, []);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  // Prevent hydration mismatch
+  if (bgIndex === null) return null;
+
   return (
     <>
       {/* Three.js Background Layer */}
@@ -765,6 +795,22 @@ export default function Home() {
 
       {/* Foreground UI Layer */}
       <div className={`container layout-wrapper ${bgIndex === 1 || bgIndex === 2 || bgIndex === 3 || bgIndex === 4 ? 'theme-white' : ''}`}>
+
+        {/* Music Player */}
+        <div className="music-player">
+          <button onClick={togglePlay} className="music-btn" title="Play/Pause Music">
+            {isPlaying ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
+          </button>
+        </div>
+        <audio ref={audioRef} src="/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" loop />
 
         {/* Theme Switcher */}
         <div className="theme-switcher">
