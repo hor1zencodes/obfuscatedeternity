@@ -870,7 +870,10 @@ export default function Home() {
             }
           }}
         >
-          <span className="enter-text">Click to Enter</span>
+          <div className="enter-content">
+            <span className="enter-text">Click to Enter</span>
+            <span className="enter-subtext">( contains music after enter you can pause / change music from the music bar )</span>
+          </div>
         </div>
       )}
 
