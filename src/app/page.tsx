@@ -299,151 +299,151 @@ function Shader3Container() {
 }
 
 export function DottedSurface({ className, ...props }: React.ComponentProps<'div'>) {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const sceneRef = useRef<{
-		scene: THREE.Scene;
-		camera: THREE.PerspectiveCamera;
-		renderer: THREE.WebGLRenderer;
-		particles: THREE.Points[];
-		animationId: number;
-		count: number;
-	} | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<{
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    particles: THREE.Points[];
+    animationId: number;
+    count: number;
+  } | null>(null);
 
-	useEffect(() => {
-		if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-		const SEPARATION = 150;
-		const AMOUNTX = 40;
-		const AMOUNTY = 60;
+    const SEPARATION = 150;
+    const AMOUNTX = 40;
+    const AMOUNTY = 60;
 
-		const scene = new THREE.Scene();
-		scene.fog = new THREE.Fog(0x000000, 2000, 10000);
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x000000, 2000, 10000);
 
-		const camera = new THREE.PerspectiveCamera(
-			60,
-			window.innerWidth / window.innerHeight,
-			1,
-			10000,
-		);
-		camera.position.set(0, 355, 1220);
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      1,
+      10000,
+    );
+    camera.position.set(0, 355, 1220);
 
-		const renderer = new THREE.WebGLRenderer({
-			alpha: true,
-			antialias: true,
-		});
-		renderer.setPixelRatio(window.devicePixelRatio);
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.setClearColor(0x000000, 1);
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
 
-		containerRef.current.appendChild(renderer.domElement);
+    containerRef.current.appendChild(renderer.domElement);
 
-		const particles: THREE.Points[] = [];
-		const positions: number[] = [];
-		const colors: number[] = [];
+    const particles: THREE.Points[] = [];
+    const positions: number[] = [];
+    const colors: number[] = [];
 
-		const geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
 
-		for (let ix = 0; ix < AMOUNTX; ix++) {
-			for (let iy = 0; iy < AMOUNTY; iy++) {
-				const x = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
-				const y = 0; 
-				const z = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
+    for (let ix = 0; ix < AMOUNTX; ix++) {
+      for (let iy = 0; iy < AMOUNTY; iy++) {
+        const x = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
+        const y = 0;
+        const z = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
 
-				positions.push(x, y, z);
-				colors.push(200 / 255, 200 / 255, 200 / 255); // Three.js Float32 colors are 0-1
-			}
-		}
+        positions.push(x, y, z);
+        colors.push(200 / 255, 200 / 255, 200 / 255); // Three.js Float32 colors are 0-1
+      }
+    }
 
-		geometry.setAttribute(
-			'position',
-			new THREE.Float32BufferAttribute(positions, 3),
-		);
-		geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(positions, 3),
+    );
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-		const material = new THREE.PointsMaterial({
-			size: 8,
-			vertexColors: true,
-			transparent: true,
-			opacity: 0.8,
-			sizeAttenuation: true,
-		});
+    const material = new THREE.PointsMaterial({
+      size: 8,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true,
+    });
 
-		const points = new THREE.Points(geometry, material);
-		scene.add(points);
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
 
-		let count = 0;
-		let animationId = 0;
+    let count = 0;
+    let animationId = 0;
 
-		const animate = () => {
-			animationId = requestAnimationFrame(animate);
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
 
-			const positionAttribute = geometry.attributes.position;
-			const positions = positionAttribute.array as Float32Array;
+      const positionAttribute = geometry.attributes.position;
+      const positions = positionAttribute.array as Float32Array;
 
-			let i = 0;
-			for (let ix = 0; ix < AMOUNTX; ix++) {
-				for (let iy = 0; iy < AMOUNTY; iy++) {
-					const index = i * 3;
-					positions[index + 1] =
-						Math.sin((ix + count) * 0.3) * 50 +
-						Math.sin((iy + count) * 0.5) * 50;
-					i++;
-				}
-			}
+      let i = 0;
+      for (let ix = 0; ix < AMOUNTX; ix++) {
+        for (let iy = 0; iy < AMOUNTY; iy++) {
+          const index = i * 3;
+          positions[index + 1] =
+            Math.sin((ix + count) * 0.3) * 50 +
+            Math.sin((iy + count) * 0.5) * 50;
+          i++;
+        }
+      }
 
-			positionAttribute.needsUpdate = true;
-			renderer.render(scene, camera);
-			count += 0.1;
-		};
+      positionAttribute.needsUpdate = true;
+      renderer.render(scene, camera);
+      count += 0.1;
+    };
 
-		const handleResize = () => {
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-			renderer.setSize(window.innerWidth, window.innerHeight);
-		};
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
 
-		window.addEventListener('resize', handleResize);
-		animate();
+    window.addEventListener('resize', handleResize);
+    animate();
 
-		sceneRef.current = {
-			scene,
-			camera,
-			renderer,
-			particles: [points],
-			animationId,
-			count,
-		};
+    sceneRef.current = {
+      scene,
+      camera,
+      renderer,
+      particles: [points],
+      animationId,
+      count,
+    };
 
-		return () => {
-			window.removeEventListener('resize', handleResize);
-			if (sceneRef.current) {
-				cancelAnimationFrame(sceneRef.current.animationId);
-				sceneRef.current.scene.traverse((object) => {
-					if (object instanceof THREE.Points) {
-						object.geometry.dispose();
-						if (Array.isArray(object.material)) {
-							object.material.forEach((material) => material.dispose());
-						} else {
-							object.material.dispose();
-						}
-					}
-				});
-				sceneRef.current.renderer.dispose();
-				if (containerRef.current && sceneRef.current.renderer.domElement) {
-					containerRef.current.removeChild(sceneRef.current.renderer.domElement);
-				}
-			}
-		};
-	}, []);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (sceneRef.current) {
+        cancelAnimationFrame(sceneRef.current.animationId);
+        sceneRef.current.scene.traverse((object) => {
+          if (object instanceof THREE.Points) {
+            object.geometry.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach((material) => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
+        sceneRef.current.renderer.dispose();
+        if (containerRef.current && sceneRef.current.renderer.domElement) {
+          containerRef.current.removeChild(sceneRef.current.renderer.domElement);
+        }
+      }
+    };
+  }, []);
 
-	return (
-		<div
-			ref={containerRef}
-			style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}
-			className={className}
-			{...props}
-		/>
-	);
+  return (
+    <div
+      ref={containerRef}
+      style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}
+      className={className}
+      {...props}
+    />
+  );
 }
 
 const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize = 256, speed = 0.5 }) => {
@@ -458,7 +458,7 @@ const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize
       uniforms: { time: { type: string, value: number } };
       mesh: THREE.Mesh;
       time: number;
-      
+
       constructor() {
         this.uniforms = {
           time: { type: 'f', value: 0 },
@@ -654,7 +654,7 @@ const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize
   }, [cameraZ, planeSize, speed]);
 
   return (
-    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}> 
+    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}>
       <canvas
         ref={canvasRef}
         style={{
@@ -701,11 +701,11 @@ function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
       </div>
-      
+
       {isOpen && (
         <div className="theme-switcher-dropdown">
           {themes.map(t => (
-            <div 
+            <div
               key={t.value}
               className={`theme-switcher-option ${currentBg === t.value ? 'selected' : ''}`}
               onClick={() => {
@@ -736,16 +736,16 @@ export default function Home() {
   const [bgIndex, setBgIndex] = useState<number | null>(null);
   const [songIndex, setSongIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.15); // Default to 15% volume
+  const [volume, setVolume] = useState(0.05); // Default to 15% volume
   const [hasEntered, setHasEntered] = useState(false);
-  
+
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const lastBg = sessionStorage.getItem('lastBgIndex');
     const allowedBgs = [0, 1, 4]; // Only Theme 1, Theme 2, and Theme 5 are allowed on landing
     let nextBg;
-    
+
     if (lastBg === null) {
       // Randomly pick an allowed background on initial visit
       nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
@@ -756,14 +756,14 @@ export default function Home() {
         nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
       } while (nextBg === prevBg);
     }
-    
+
     sessionStorage.setItem('lastBgIndex', nextBg.toString());
     setBgIndex(nextBg);
 
     // Pick a random song on initial load
     setSongIndex(Math.floor(Math.random() * SONGS.length));
   }, []);
-  
+
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
   const DISCORD_NAME = "hor1zen.";
 
@@ -777,7 +777,7 @@ export default function Home() {
     ta.select();
     try {
       document.execCommand('copy');
-    } catch (e) {}
+    } catch (e) { }
     document.body.removeChild(ta);
     callback();
   };
@@ -835,7 +835,7 @@ export default function Home() {
       audioRef.current.volume = volume;
     }
     if (audioRef.current && isPlaying && songIndex !== null) {
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
     }
   }, [songIndex, volume]);
 
@@ -857,13 +857,13 @@ export default function Home() {
     <>
       {/* Enter Overlay */}
       {!hasEntered && (
-        <div 
+        <div
           className="enter-overlay"
           onClick={() => {
             setHasEntered(true);
             if (audioRef.current) {
-               audioRef.current.volume = volume;
-               audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+              audioRef.current.volume = volume;
+              audioRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
             }
           }}
         >
@@ -885,7 +885,7 @@ export default function Home() {
           </Canvas>
         </div>
       )}
-      
+
       {/* 4th Background (Dotted Surface) */}
       {bgIndex === 3 && <DottedSurface />}
 
@@ -900,50 +900,50 @@ export default function Home() {
           <div className="music-controls">
             <button onClick={prevSong} className="music-btn-small" title="Previous Song">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
               </svg>
             </button>
             <button onClick={togglePlay} className="music-btn" title="Play/Pause Music">
               {isPlaying ? (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
               ) : (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               )}
             </button>
             <button onClick={nextSong} className="music-btn-small" title="Next Song">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
               </svg>
             </button>
           </div>
-          
+
           <div className="music-info">
             <div className="music-title">
               {songIndex !== null ? SONGS[songIndex].title : ''}
             </div>
-            <input 
-              type="range" 
-              min="0" 
-              max="1" 
-              step="0.01" 
-              value={volume} 
-              onChange={handleVolumeChange} 
-              className="volume-slider" 
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="volume-slider"
               title="Volume"
             />
           </div>
         </div>
-        
+
         {songIndex !== null && (
-           <audio 
-             ref={audioRef} 
-             src={SONGS[songIndex].url} 
-             onEnded={nextSong} 
-           />
+          <audio
+            ref={audioRef}
+            src={SONGS[songIndex].url}
+            onEnded={nextSong}
+          />
         )}
 
         {/* Theme Switcher */}
