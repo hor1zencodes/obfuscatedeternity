@@ -717,8 +717,8 @@ body {
 
   .script-box {
     flex-direction: column;
-    padding: 12px;
-    gap: 12px;
+    padding: 10px;
+    gap: 10px;
   }
   
   .script-text {
@@ -726,46 +726,51 @@ body {
     padding-bottom: 0px;
   }
 
-  .script-code {
+  .prompt-icon {
     font-size: 14px;
+  }
+
+  .script-code {
+    font-size: 11px;
   }
   
   .discord-box {
     flex-direction: column;
-    padding: 12px;
-    gap: 10px;
+    padding: 10px;
+    gap: 8px;
   }
   
   .discord-text {
     flex-wrap: wrap;
     justify-content: center;
     text-align: center;
-    gap: 8px;
+    gap: 6px;
   }
   
   .discord-label {
     white-space: normal;
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .discord-username {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .discord-icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 
   .main-logo {
-    max-width: 140px;
+    max-width: 120px;
+    margin-top: -30px;
   }
   
   .copy-btn {
     width: 100%;
     justify-content: center;
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
   }
   
   .discord-copy {

@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 function FullscreenShader1() {
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size } = useThree();
+  const { size, gl } = useThree();
 
   const noiseTexture = useMemo(() => {
     const w = 256;
@@ -23,7 +23,7 @@ function FullscreenShader1() {
   const uniforms = useMemo(
     () => ({
       iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector2(size.width, size.height) },
+      iResolution: { value: new THREE.Vector2(gl.domElement.width, gl.domElement.height) },
       iChannel0: { value: noiseTexture },
     }),
     [noiseTexture, size.width, size.height]
@@ -32,7 +32,7 @@ function FullscreenShader1() {
   useFrame(({ clock }) => {
     if (!materialRef.current) return;
     materialRef.current.uniforms.iTime.value = clock.getElapsedTime();
-    materialRef.current.uniforms.iResolution.value.set(size.width, size.height);
+    materialRef.current.uniforms.iResolution.value.set(gl.domElement.width, gl.domElement.height);
   });
 
   return (
@@ -93,12 +93,12 @@ function FullscreenShader1() {
 
 function FullscreenShader2() {
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size } = useThree();
+  const { size, gl } = useThree();
 
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
-      resolution: { value: new THREE.Vector2(size.width, size.height) },
+      resolution: { value: new THREE.Vector2(gl.domElement.width, gl.domElement.height) },
     }),
     [size.width, size.height]
   );
@@ -107,7 +107,7 @@ function FullscreenShader2() {
     if (!materialRef.current) return;
     // Multiplied the time by 8 to make the animation run a lot faster!
     materialRef.current.uniforms.time.value = clock.getElapsedTime() * 8.0;
-    materialRef.current.uniforms.resolution.value.set(size.width, size.height);
+    materialRef.current.uniforms.resolution.value.set(gl.domElement.width, gl.domElement.height);
   });
 
   return (
