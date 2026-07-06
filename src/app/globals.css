@@ -136,6 +136,22 @@ body {
   box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
 }
 
+.script-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.pc-only-text {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(255, 235, 166, 0.6);
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
 /* NEW ASSETS & LAYOUT */
 .layout-wrapper {
   display: flex;
@@ -257,6 +273,9 @@ body {
 }
 .theme-white .discord-label {
   color: #ffffff;
+}
+.theme-white .pc-only-text {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Specific class to make only the logo black/white for Theme 3 but keep the theme's glow */
@@ -759,6 +778,10 @@ body {
   .discord-icon {
     width: 20px;
     height: 20px;
+  }
+
+  .pc-only-text {
+    font-size: 10px;
   }
 
   .main-logo {

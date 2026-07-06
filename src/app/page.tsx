@@ -950,25 +950,28 @@ export default function Home() {
         {/* Theme Switcher */}
         <CustomThemeSwitcher currentBg={bgIndex} setBg={setBgIndex} />
 
-        {/* Loadstring Card */}
-        <div className="animated-border-box">
-          <div className="script-box">
-            <div className="script-text">
-              <span className="prompt-icon">&gt;_</span>
-              <span className="script-code">
-                loadstring(game:HttpGet(
-                <span className="script-url">"https://zeneternity.vercel.app"</span>, true))()
-              </span>
+        {/* Loadstring Container */}
+        <div className="script-container">
+          <div className="animated-border-box">
+            <div className="script-box">
+              <div className="script-text">
+                <span className="prompt-icon">&gt;_</span>
+                <span className="script-code">
+                  loadstring(game:HttpGet(
+                  <span className="script-url">"https://zeneternity.vercel.app"</span>, true))()
+                </span>
+              </div>
+              <button
+                className={`copy-btn ${copied ? 'copied' : ''}`}
+                id="copy-btn"
+                onClick={copyScript}
+              >
+                <img src="/copy.png" alt="copy" className="btn-icon" />
+                {copied ? 'COPIED' : 'COPY'}
+              </button>
             </div>
-            <button
-              className={`copy-btn ${copied ? 'copied' : ''}`}
-              id="copy-btn"
-              onClick={copyScript}
-            >
-              <img src="/copy.png" alt="copy" className="btn-icon" />
-              {copied ? 'COPIED' : 'COPY'}
-            </button>
           </div>
+          <span className="pc-only-text">This script is only supported on PC right now.</span>
         </div>
 
         {/* Discord Card */}
