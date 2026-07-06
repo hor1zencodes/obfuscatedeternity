@@ -42,10 +42,12 @@ body {
 .animated-border-box::before {
   content: '';
   position: absolute;
-  top: -100%;
-  left: -100%;
-  width: 300%;
-  height: 300%;
+  top: 50%;
+  left: 50%;
+  width: 2000px;
+  height: 2000px;
+  margin-top: -1000px;
+  margin-left: -1000px;
   background: conic-gradient(
     from 0deg at 50% 50%,
     transparent 0%,
@@ -646,12 +648,13 @@ body {
 /* MOBILE RESPONSIVENESS */
 @media (max-width: 600px) {
   body {
-    padding-bottom: 100px; /* Leave space for bottom music player */
+    padding-bottom: 80px; /* Leave space for bottom elements */
+    padding-top: 80px; /* Space for top elements */
   }
 
   .music-player-advanced {
-    top: auto;
-    bottom: 24px;
+    top: 16px;
+    bottom: auto;
     left: 50%;
     transform: translateX(-50%);
     padding: 4px 12px 4px 4px;
@@ -681,7 +684,8 @@ body {
   }
 
   .theme-switcher-custom {
-    top: 16px;
+    top: auto;
+    bottom: 24px;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
@@ -698,34 +702,38 @@ body {
   }
 
   .theme-switcher-dropdown {
+    bottom: calc(100% + 12px);
+    top: auto;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
+    animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .layout-wrapper {
     margin-top: 0; 
-    gap: 16px;
+    gap: 12px;
   }
 
   .script-box {
     flex-direction: column;
-    padding: 16px;
-    gap: 16px;
+    padding: 12px;
+    gap: 12px;
   }
   
   .script-text {
     width: 100%;
-    padding-bottom: 4px;
+    padding-bottom: 0px;
   }
 
   .script-code {
-    font-size: 16px;
+    font-size: 14px;
   }
   
   .discord-box {
     flex-direction: column;
-    gap: 12px;
+    padding: 12px;
+    gap: 10px;
   }
   
   .discord-text {
@@ -737,20 +745,37 @@ body {
   
   .discord-label {
     white-space: normal;
+    font-size: 13px;
+  }
+
+  .discord-username {
+    font-size: 14px;
+  }
+
+  .discord-icon {
+    width: 24px;
+    height: 24px;
   }
 
   .main-logo {
-    max-width: 200px;
+    max-width: 140px;
   }
   
   .copy-btn {
     width: 100%;
     justify-content: center;
+    padding: 8px 16px;
+    font-size: 12px;
   }
   
   .discord-copy {
     width: 100%;
   }
+}
+
+@keyframes slideUpMobile {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* SHORT/LANDSCAPE RESPONSIVENESS */

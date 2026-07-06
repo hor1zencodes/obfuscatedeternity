@@ -4,6 +4,13 @@ import './globals.css'
 
 const vt323 = VT323({ weight: '400', subsets: ['latin'], variable: '--font-vt323' })
 
+export const viewport: import('next').Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
   title: 'Eternity',
   description: 'Eternity — Redefining execution. Lightning fast, undetectable, and built for absolute dominance.',
