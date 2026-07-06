@@ -761,8 +761,8 @@ export default function Home() {
     sessionStorage.setItem('lastBgIndex', nextBg.toString());
     setBgIndex(nextBg);
 
-    // Pick Blessing as the default song on initial load
-    setSongIndex(0);
+    // Pick a random song on initial load
+    setSongIndex(Math.floor(Math.random() * SONGS.length));
   }, []);
 
   const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
