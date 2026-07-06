@@ -723,6 +723,96 @@ function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (
   );
 }
 
+function CursorTrail({ color = '#ffffff' }: { color?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    let points: { x: number; y: number; age: number }[] = [];
+    const maxAge = 40; 
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    const addPoint = (x: number, y: number) => {
+      points.push({ x, y, age: 0 });
+    };
+
+    const handleMouseMove = (e: MouseEvent) => addPoint(e.clientX, e.clientY);
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        addPoint(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    let animationId: number;
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      points.forEach(p => p.age++);
+      points = points.filter(p => p.age < maxAge);
+
+      if (points.length > 1) {
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          
+          const progress = 1 - (p1.age / maxAge);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          
+          ctx.globalAlpha = progress * 0.8;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(progress * 4, 1);
+          ctx.stroke();
+        }
+      }
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+      cancelAnimationFrame(animationId);
+    };
+  }, [color]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        zIndex: 9998,
+      }}
+    />
+  );
+}
+
 const SONGS = [
   { title: "Blessing", url: "/Blessing.mp3" },
   { title: "Main Atraction", url: "/Main%20Atraction.mp3" },
@@ -892,6 +982,9 @@ export default function Home() {
 
       {/* 5th Background (GLSL Hills) */}
       {bgIndex === 4 && <GLSLHills />}
+
+      {/* Cursor Trail Effect */}
+      <CursorTrail color={bgIndex === 0 ? '#ffaa00' : '#ffffff'} />
 
       {/* Foreground UI Layer */}
       <div className={`container layout-wrapper ${bgIndex === 1 || bgIndex === 2 || bgIndex === 3 || bgIndex === 4 ? 'theme-white' : ''}`}>
