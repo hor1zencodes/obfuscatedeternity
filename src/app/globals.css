@@ -169,11 +169,13 @@ body {
   filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.3));
   animation: float 6s ease-in-out infinite;
   margin-top: -20px; /* Slight tuck under the discord card */
-  transition: filter 0.5s ease-in-out;
+  transition: filter 0.5s ease-in-out, scale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  scale: 1;
 }
 
 .main-logo:hover {
   filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)) grayscale(100%) brightness(1.2);
+  scale: 1.08;
 }
 
 @keyframes float {
@@ -279,6 +281,7 @@ body {
 
 .theme-white .main-logo:hover {
   filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.6)) grayscale(0%) brightness(1);
+  scale: 1.08;
 }
 .theme-white .discord-label {
   color: #ffffff;
@@ -294,6 +297,7 @@ body {
 
 .grayscale-logo:hover {
   filter: drop-shadow(0 0 25px rgba(255, 87, 34, 0.6)) grayscale(0%) brightness(1);
+  scale: 1.08;
 }
 
 /* RED ORANGE THEME OVERRIDES (Shader 3) */
@@ -661,6 +665,26 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* FOOTER TEXT */
+.footer-text {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(255, 235, 166, 0.6);
+  letter-spacing: 0.5px;
+  text-align: center;
+  z-index: 100;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.theme-white .footer-text {
+  color: rgba(255, 255, 255, 0.6);
+}
+
 /* TABLET RESPONSIVENESS */
 @media (max-width: 768px) {
   body {
@@ -811,6 +835,13 @@ body {
   
   .discord-copy {
     width: 100%;
+  }
+
+  .footer-text {
+    bottom: 84px;
+    font-size: 10px;
+    white-space: normal;
+    width: 90%;
   }
 }
 

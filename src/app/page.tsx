@@ -1091,6 +1091,11 @@ export default function Home() {
         </div>
 
       </div>
+      
+      {/* Footer Text */}
+      <div className="footer-text">
+        Interact with the canvas & enjoy the music
+      </div>
     </>
   );
 }
