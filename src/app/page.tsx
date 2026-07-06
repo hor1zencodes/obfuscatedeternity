@@ -1045,6 +1045,7 @@ export default function Home() {
 
         {/* Loadstring Container */}
         <div className="script-container">
+          <span className="pc-only-text">This script is only supported on PC right now.</span>
           <div className="animated-border-box">
             <div className="script-box">
               <div className="script-text">
@@ -1064,7 +1065,6 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <span className="pc-only-text">This script is only supported on PC right now.</span>
         </div>
 
         {/* Discord Card */}
