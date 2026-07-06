@@ -159,7 +159,7 @@ body {
   align-items: center;
   gap: 24px; /* Restored healthy gap since logo is at bottom now */
   width: 100%;
-  margin-top: -12vh;
+  margin-top: 10vh;
 }
 
 .main-logo {
