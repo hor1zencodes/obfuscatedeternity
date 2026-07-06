@@ -169,6 +169,11 @@ body {
   filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.3));
   animation: float 6s ease-in-out infinite;
   margin-top: -20px; /* Slight tuck under the discord card */
+  transition: filter 0.5s ease-in-out;
+}
+
+.main-logo:hover {
+  filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)) grayscale(100%) brightness(1.2);
 }
 
 @keyframes float {
@@ -271,6 +276,10 @@ body {
 .theme-white .main-logo {
   filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.3)) grayscale(100%) brightness(1.2);
 }
+
+.theme-white .main-logo:hover {
+  filter: drop-shadow(0 0 25px rgba(255, 160, 0, 0.6)) grayscale(0%) brightness(1);
+}
 .theme-white .discord-label {
   color: #ffffff;
 }
@@ -281,6 +290,10 @@ body {
 /* Specific class to make only the logo black/white for Theme 3 but keep the theme's glow */
 .grayscale-logo {
   filter: drop-shadow(0 0 25px rgba(255, 87, 34, 0.3)) grayscale(100%) brightness(1.2);
+}
+
+.grayscale-logo:hover {
+  filter: drop-shadow(0 0 25px rgba(255, 87, 34, 0.6)) grayscale(0%) brightness(1);
 }
 
 /* RED ORANGE THEME OVERRIDES (Shader 3) */
