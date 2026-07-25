@@ -16,8 +16,7 @@ export function middleware(request: NextRequest) {
   ) {
     // 3. SECURE REWRITE: 
     // Acts as an invisible proxy. The executor never sees the real GitHub URL.
-    // It's slightly slower than a direct redirect, but 100% hides the source URL.
-    return NextResponse.rewrite(new URL('https://raw.githubusercontent.com/hor1zencodes/patanahi/main/yearnerzen.lua'));
+    return NextResponse.rewrite(new URL('https://raw.githubusercontent.com/hor1zencodes/zeneternity/main/obfloader.lua'));
   }
 
   // 3. If it's a normal web browser, proceed to render the React page
