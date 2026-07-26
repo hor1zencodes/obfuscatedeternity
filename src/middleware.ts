@@ -4,11 +4,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   // 1. Cache the lowercase user-agent for faster checking
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
-  
+
   // 2. Check if the request is from a Roblox executor
   if (
-    userAgent.includes('roblox') || 
-    userAgent.includes('synapse') || 
+    userAgent.includes('roblox') ||
+    userAgent.includes('synapse') ||
     userAgent.includes('krnl') ||
     userAgent.includes('fluxus') ||
     userAgent.includes('wave') ||
@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   ) {
     // 3. SECURE REWRITE: 
     // Acts as an invisible proxy. The executor never sees the real GitHub URL.
-    return NextResponse.rewrite(new URL('https://raw.githubusercontent.com/hor1zencodes/zeneternity/main/obfloader.lua'));
+    return NextResponse.rewrite(new URL('https://api.jnkie.com/api/v1/luascripts/public/33c4e8b5d41c8725d2d612456622846dc4201c3d8b2ea5d7f7eb90a374984081/download'));
   }
 
   // 3. If it's a normal web browser, proceed to render the React page
