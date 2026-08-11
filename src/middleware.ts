@@ -15,16 +15,16 @@ export function middleware(request: NextRequest) {
     userAgent.includes('macsploit')
   ) {
     // 3. SECURE REWRITE: 
-    // Acts as an invisible proxy. The executor never sees the real GitHub URL.
+    // Acts as an invisible proxy. The executor never sees the real URL.
     const targetUrl = new URL('https://api.jnkie.com/api/v1/luascripts/public/33c4e8b5d41c8725d2d612456622846dc4201c3d8b2ea5d7f7eb90a374984081/download');
     
-    // Add a timestamp to bust Vercel's Edge cache so it always fetches the newest version
-    targetUrl.searchParams.set('t', Date.now().toString());
-
+    // REMOVED cache busting timestamp. We WANT the edge network to cache this.
     const response = NextResponse.rewrite(targetUrl);
     
-    // Force headers to prevent caching
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    // Enable Edge Caching for blazingly fast execution. 
+    // Caches the script at the edge for 30 seconds. 
+    // Stale-while-revalidate serves the cached version instantly while silently updating in the background.
+    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
     
     return response;
   }

@@ -1,176 +1,18 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import * as THREE from "three";
+import { useState, useEffect, useRef, useMemo } from 'react';
+import * as THREE from 'three';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { RandomLetterSwap } from '@/components/ui/random-letter-swap';
+import { AmbientSound } from '@/components/AmbientSound';
+import { Zap, ShieldCheck, RefreshCw, Crown, Wrench } from 'lucide-react';
+import { motion, useScroll, useSpring, AnimatePresence } from 'motion/react';
 
-function FullscreenShader1() {
-  const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size, gl } = useThree();
+/* =====================================
+   SHADERS (ORIGINAL VERSIONS)
+======================================== */
 
-  const noiseTexture = useMemo(() => {
-    const w = 256;
-    const h = 256;
-    const data = new Uint8Array(w * h * 4);
-    for (let i = 0; i < w * h * 4; i++) data[i] = Math.floor(Math.random() * 256);
-    const tex = new THREE.DataTexture(data, w, h, THREE.RGBAFormat);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.needsUpdate = true;
-    return tex;
-  }, []);
-
-  const uniforms = useMemo(
-    () => ({
-      iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector2(gl.domElement.width, gl.domElement.height) },
-      iChannel0: { value: noiseTexture },
-    }),
-    [noiseTexture, size.width, size.height]
-  );
-
-  useFrame(({ clock }) => {
-    if (!materialRef.current) return;
-    materialRef.current.uniforms.iTime.value = clock.getElapsedTime();
-    materialRef.current.uniforms.iResolution.value.set(gl.domElement.width, gl.domElement.height);
-  });
-
-  return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-      <shaderMaterial
-        ref={materialRef}
-        depthWrite={false}
-        depthTest={false}
-        transparent={false}
-        uniforms={uniforms}
-        vertexShader={`
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = vec4(position, 1.0);
-          }
-        `}
-        fragmentShader={`
-          precision highp float;
-
-          uniform float iTime;
-          uniform vec2 iResolution;
-          uniform sampler2D iChannel0;
-
-          void mainImage(out vec4 O, vec2 I)
-          {
-              vec2 r = iResolution.xy,
-                   p = (I+I-r) / r.y * mat2(3.,4.,4.,-3.) / 1e2;
-
-              vec4 S = vec4(0.0);
-              vec4 C = vec4(1.,2.,3.,0.);
-              vec4 W;
-
-              for(float t=iTime, T=.1*t+p.y, i=0.; i<50.; i+=1.){
-                  S += (cos(W=sin(i)*C)+1.)
-                       * exp(sin(i+i*T))
-                       / length(max(p,
-                         p / vec2(2.0, texture(iChannel0, p/exp(W.x)+vec2(i,t)/8.).r*40.0)
-                       )) / 1e4;
-
-                  p += .02 * cos(i*(C.xz+8.0+i) + T + T);
-              }
-              O = vec4(tanh((S*S).rgb), 1.0);
-          }
-
-          void main() {
-            vec2 fragCoord = gl_FragCoord.xy;
-            vec4 O;
-            mainImage(O, fragCoord);
-            gl_FragColor = O;
-          }
-        `}
-      />
-    </mesh>
-  );
-}
-
-function FullscreenShader2() {
-  const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size, gl } = useThree();
-
-  const uniforms = useMemo(
-    () => ({
-      time: { value: 0 },
-      resolution: { value: new THREE.Vector2(gl.domElement.width, gl.domElement.height) },
-    }),
-    [size.width, size.height]
-  );
-
-  useFrame(({ clock }) => {
-    if (!materialRef.current) return;
-    // Multiplied the time by 8 to make the animation run a lot faster!
-    materialRef.current.uniforms.time.value = clock.getElapsedTime() * 8.0;
-    materialRef.current.uniforms.resolution.value.set(gl.domElement.width, gl.domElement.height);
-  });
-
-  return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-      <shaderMaterial
-        ref={materialRef}
-        depthWrite={false}
-        depthTest={false}
-        transparent={false}
-        uniforms={uniforms}
-        vertexShader={`
-          varying vec2 vUv;
-          void main() {
-            vUv = uv;
-            gl_Position = vec4(position, 1.0);
-          }
-        `}
-        fragmentShader={`
-          #define TWO_PI 6.2831853072
-          #define PI 3.14159265359
-
-          precision highp float;
-          uniform vec2 resolution;
-          uniform float time;
-            
-          float random (in float x) {
-              return fract(sin(x)*1e4);
-          }
-          float random (vec2 st) {
-              return fract(sin(dot(st.xy,
-                                   vec2(12.9898,78.233)))*
-                  43758.5453123);
-          }
-          
-          varying vec2 vUv;
-
-          void main(void) {
-            vec2 uv = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
-            
-            vec2 fMosaicScal = vec2(4.0, 2.0);
-            vec2 vScreenSize = vec2(256.0, 256.0);
-            uv.x = floor(uv.x * vScreenSize.x / fMosaicScal.x) / (vScreenSize.x / fMosaicScal.x);
-            uv.y = floor(uv.y * vScreenSize.y / fMosaicScal.y) / (vScreenSize.y / fMosaicScal.y);       
-              
-            float t = time*0.06+random(uv.x)*0.4;
-            float lineWidth = 0.0008;
-
-            vec3 color = vec3(0.0);
-            for(int j = 0; j < 3; j++){
-              for(int i=0; i < 5; i++){
-                color[j] += lineWidth*float(i*i) / abs(fract(t - 0.01*float(j)+float(i)*0.01)*1.0 - length(uv));        
-              }
-            }
-
-            gl_FragColor = vec4(color[2],color[1],color[0],1.0);
-          }
-        `}
-      />
-    </mesh>
-  );
-}
-
+// --- Shader Plane & Energy Ring (Theme 3) ---
 const vertexShader = `
   uniform float time;
   uniform float intensity;
@@ -216,7 +58,7 @@ const fragmentShader = `
   }
 `;
 
-export function ShaderPlane({
+function ShaderPlane({
   position,
   color1 = "#ff5722",
   color2 = "#ffffff",
@@ -260,7 +102,7 @@ export function ShaderPlane({
   )
 }
 
-export function EnergyRing({
+function EnergyRing({
   radius = 1,
   position = [0, 0, 0],
 }: {
@@ -287,166 +129,18 @@ export function EnergyRing({
 
 function Shader3Container() {
   const { size } = useThree();
-  // We scale the group up so the 2x2 plane covers the screen on a perspective camera, 
-  // since the user's code relies on the camera projection instead of bypassing it.
   const scale = Math.max(size.width, size.height) / 100;
   return (
     <group scale={[scale, scale, 1]}>
+      {/* Passing black and white colors to keep it fully monochrome! */}
       <ShaderPlane position={[0, 0, 0]} color1="#000000" color2="#ffffff" />
       <EnergyRing position={[0, 0, 0.1]} />
     </group>
   );
 }
 
-export function DottedSurface({ className, ...props }: React.ComponentProps<'div'>) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<{
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    renderer: THREE.WebGLRenderer;
-    particles: THREE.Points[];
-    animationId: number;
-    count: number;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const SEPARATION = 150;
-    const AMOUNTX = 40;
-    const AMOUNTY = 60;
-
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 2000, 10000);
-
-    const camera = new THREE.PerspectiveCamera(
-      60,
-      window.innerWidth / window.innerHeight,
-      1,
-      10000,
-    );
-    camera.position.set(0, 355, 1220);
-
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-    });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 1);
-
-    containerRef.current.appendChild(renderer.domElement);
-
-    const particles: THREE.Points[] = [];
-    const positions: number[] = [];
-    const colors: number[] = [];
-
-    const geometry = new THREE.BufferGeometry();
-
-    for (let ix = 0; ix < AMOUNTX; ix++) {
-      for (let iy = 0; iy < AMOUNTY; iy++) {
-        const x = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
-        const y = 0;
-        const z = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
-
-        positions.push(x, y, z);
-        colors.push(200 / 255, 200 / 255, 200 / 255); // Three.js Float32 colors are 0-1
-      }
-    }
-
-    geometry.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(positions, 3),
-    );
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-    const material = new THREE.PointsMaterial({
-      size: 8,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.8,
-      sizeAttenuation: true,
-    });
-
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
-
-    let count = 0;
-    let animationId = 0;
-
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-
-      const positionAttribute = geometry.attributes.position;
-      const positions = positionAttribute.array as Float32Array;
-
-      let i = 0;
-      for (let ix = 0; ix < AMOUNTX; ix++) {
-        for (let iy = 0; iy < AMOUNTY; iy++) {
-          const index = i * 3;
-          positions[index + 1] =
-            Math.sin((ix + count) * 0.3) * 50 +
-            Math.sin((iy + count) * 0.5) * 50;
-          i++;
-        }
-      }
-
-      positionAttribute.needsUpdate = true;
-      renderer.render(scene, camera);
-      count += 0.1;
-    };
-
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-    animate();
-
-    sceneRef.current = {
-      scene,
-      camera,
-      renderer,
-      particles: [points],
-      animationId,
-      count,
-    };
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (sceneRef.current) {
-        cancelAnimationFrame(sceneRef.current.animationId);
-        sceneRef.current.scene.traverse((object) => {
-          if (object instanceof THREE.Points) {
-            object.geometry.dispose();
-            if (Array.isArray(object.material)) {
-              object.material.forEach((material) => material.dispose());
-            } else {
-              object.material.dispose();
-            }
-          }
-        });
-        sceneRef.current.renderer.dispose();
-        if (containerRef.current && sceneRef.current.renderer.domElement) {
-          containerRef.current.removeChild(sceneRef.current.renderer.domElement);
-        }
-      }
-    };
-  }, []);
-
-  return (
-    <div
-      ref={containerRef}
-      style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}
-      className={className}
-      {...props}
-    />
-  );
-}
-
-const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize = 256, speed = 0.5 }) => {
+// --- GLSL Hills (Theme 5) ---
+const GLSLHills = ({ cameraZ = 125, planeSize = 256, speed = 0.5 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -654,7 +348,7 @@ const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize
   }, [cameraZ, planeSize, speed]);
 
   return (
-    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}>
+    <div ref={containerRef} className="fixed inset-0 z-[-1] bg-black pointer-events-none w-screen h-screen">
       <canvas
         ref={canvasRef}
         style={{
@@ -670,432 +364,380 @@ const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, planeSize
   );
 };
 
-function CustomThemeSwitcher({ currentBg, setBg }: { currentBg: number, setBg: (val: number) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  const themes = [
-    { value: 0, label: 'Theme 1: Gold Waves' },
-    { value: 1, label: 'Theme 2: White Noise' },
-    { value: 2, label: 'Theme 3: Shader Plane' },
-    { value: 3, label: 'Theme 4: Dotted Surface' },
-    { value: 4, label: 'Theme 5: GLSL Hills' },
-  ];
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div className="theme-switcher-custom" ref={ref}>
-      <div className="theme-switcher-header" onClick={() => setIsOpen(!isOpen)}>
-        <span className="theme-switcher-label">Background:</span>
-        <span className="theme-switcher-value">{themes.find(t => t.value === currentBg)?.label}</span>
-        <svg className={`theme-switcher-arrow ${isOpen ? 'open' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </div>
-
-      {isOpen && (
-        <div className="theme-switcher-dropdown">
-          {themes.map(t => (
-            <div
-              key={t.value}
-              className={`theme-switcher-option ${currentBg === t.value ? 'selected' : ''}`}
-              onClick={() => {
-                setBg(t.value);
-                sessionStorage.setItem('lastBgIndex', t.value.toString());
-                setIsOpen(false);
-              }}
-            >
-              {t.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CursorTrail({ color = '#ffffff' }: { color?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
-
-    let points: { x: number; y: number; age: number }[] = [];
-    const maxAge = 40; 
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    const addPoint = (x: number, y: number) => {
-      points.push({ x, y, age: 0 });
-    };
-
-    const handleMouseMove = (e: MouseEvent) => addPoint(e.clientX, e.clientY);
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        addPoint(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-
-    let animationId: number;
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      points.forEach(p => p.age++);
-      points = points.filter(p => p.age < maxAge);
-
-      if (points.length > 1) {
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = color;
-
-        for (let i = 0; i < points.length - 1; i++) {
-          const p1 = points[i];
-          const p2 = points[i + 1];
-          
-          const progress = 1 - (p1.age / maxAge);
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          
-          ctx.globalAlpha = progress * 0.8;
-          ctx.strokeStyle = color;
-          ctx.lineWidth = Math.max(progress * 4, 1);
-          ctx.stroke();
-        }
-      }
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
-      cancelAnimationFrame(animationId);
-    };
-  }, [color]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        pointerEvents: 'none',
-        zIndex: 9998,
-      }}
-    />
-  );
-}
-
-const SONGS = [
-  { title: "Blessing", url: "/Blessing.mp3" },
-  { title: "Main Atraction", url: "/Main%20Atraction.mp3" },
-  { title: "Too Many Nights", url: "/Metro%20Boomin%20%26%20Future%20-%20Too%20Many%20Nights%20(Feat.%20Don%20Toliver)%20%5BClean%5D.mp3" },
-  { title: "Right On", url: "/Right%20On.mp3" },
-  { title: "Timeless", url: "/The%20Weeknd%20%26%20Playboi%20Carti%20-%20Timeless%20(Clean%20Lyrics).mp3" }
-];
+/* =====================================
+   MAIN PAGE
+======================================== */
 
 export default function Home() {
-  const [copied, setCopied] = useState(false);
-  const [discordCopied, setDiscordCopied] = useState(false);
-  const [bgIndex, setBgIndex] = useState<number | null>(null);
-  const [songIndex, setSongIndex] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.05); // Default to 15% volume
-  const [hasEntered, setHasEntered] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  
+  const loadingTexts = useMemo(() => [
+    "Welcome to Eternity",
+    "Redefining Execution",
+    "Lightning Fast",
+    "Completely Undetected"
+  ], []);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [copied, setCopied] = useState(false);
+  const [typedChars, setTypedChars] = useState(0);
+  const [backgroundTheme, setBackgroundTheme] = useState<'plane' | 'hills' | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const fullScript = 'loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()';
+
+  const { scrollYProgress } = useScroll();
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
-    const lastBg = sessionStorage.getItem('lastBgIndex');
-    const allowedBgs = [0, 1, 4]; // Only Theme 1, Theme 2, and Theme 5 are allowed on landing
-    let nextBg;
+    if (!isLoading) return;
 
-    if (lastBg === null) {
-      // Randomly pick an allowed background on initial visit
-      nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
-    } else {
-      // Guarantee a random change on refresh by picking until it's different
-      const prevBg = parseInt(lastBg, 10);
-      do {
-        nextBg = allowedBgs[Math.floor(Math.random() * allowedBgs.length)];
-      } while (nextBg === prevBg);
-    }
+    const textDuration = 450;
+    let index = 0;
+    
+    const textInterval = setInterval(() => {
+      index++;
+      if (index < loadingTexts.length) {
+        setLoadingTextIndex(index);
+      }
+    }, textDuration);
 
-    sessionStorage.setItem('lastBgIndex', nextBg.toString());
-    setBgIndex(nextBg);
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 100) return 100;
+        return prev + (100 / 30);
+      });
+    }, 50);
 
-    // Pick a random song on initial load
-    setSongIndex(Math.floor(Math.random() * SONGS.length));
+    const finishTimeout = setTimeout(() => {
+      clearInterval(textInterval);
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setIsLoading(false);
+    }, textDuration * loadingTexts.length + 200);
+
+    return () => {
+      clearInterval(textInterval);
+      clearInterval(progressInterval);
+      clearTimeout(finishTimeout);
+    };
+  }, [isLoading, loadingTexts]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const SCRIPT = `loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()`;
-  const DISCORD_NAME = "hor1zen.";
+  useEffect(() => {
+    // Randomize Background
+    const themes: ('plane' | 'hills')[] = ['plane', 'hills'];
+    setBackgroundTheme(themes[Math.floor(Math.random() * themes.length)]);
 
-  const fallbackCopy = (text: string, callback: () => void) => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try {
-      document.execCommand('copy');
-    } catch (e) { }
-    document.body.removeChild(ta);
-    callback();
-  };
+    const timeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setTypedChars(prev => {
+          if (prev >= fullScript.length) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 30);
+      return () => clearInterval(interval);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const copyScript = () => {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(SCRIPT).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(() => fallbackCopy(SCRIPT, () => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }));
-    } else {
-      fallbackCopy(SCRIPT, () => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
-    }
+    navigator.clipboard.writeText(fullScript);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const copyDiscord = () => {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(DISCORD_NAME).then(() => {
-        setDiscordCopied(true);
-        setTimeout(() => setDiscordCopied(false), 2000);
-      }).catch(() => fallbackCopy(DISCORD_NAME, () => {
-        setDiscordCopied(true);
-        setTimeout(() => setDiscordCopied(false), 2000);
-      }));
-    } else {
-      fallbackCopy(DISCORD_NAME, () => {
-        setDiscordCopied(true);
-        setTimeout(() => setDiscordCopied(false), 2000);
-      });
-    }
-  };
-
-  // Removed autoplay useEffect as browsers block it; using Click-to-Enter overlay instead
-
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVolume(parseFloat(e.target.value));
-  };
-
-  const nextSong = () => {
-    if (songIndex !== null) setSongIndex((songIndex + 1) % SONGS.length);
-  };
-
-  const prevSong = () => {
-    if (songIndex !== null) setSongIndex((songIndex - 1 + SONGS.length) % SONGS.length);
-  };
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-    if (audioRef.current && isPlaying && songIndex !== null) {
-      audioRef.current.play().catch(() => { });
-    }
-  }, [songIndex, volume]);
-
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  // Prevent hydration mismatch
-  if (bgIndex === null) return null;
+  if (backgroundTheme === null) return null;
 
   return (
     <>
-      {/* Enter Overlay */}
-      {!hasEntered && (
-        <div
-          className="enter-overlay"
-          onClick={() => {
-            setHasEntered(true);
-            if (audioRef.current) {
-              audioRef.current.volume = volume;
-              audioRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
-            }
-          }}
-        >
-          <div className="enter-content">
-            <span className="enter-text">Click to Enter</span>
-            <span className="enter-subtext">( contains music after enter you can pause / change music from the music bar )</span>
-          </div>
-        </div>
-      )}
-
-      {/* Three.js Background Layer */}
-      {bgIndex !== 3 && bgIndex !== 4 && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden' }}>
-          <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 2]}>
-            <color attach="background" args={["#000000"]} />
-            {bgIndex === 0 && <FullscreenShader1 />}
-            {bgIndex === 1 && <FullscreenShader2 />}
-            {bgIndex === 2 && <Shader3Container />}
-          </Canvas>
-        </div>
-      )}
-
-      {/* 4th Background (Dotted Surface) */}
-      {bgIndex === 3 && <DottedSurface />}
-
-      {/* 5th Background (GLSL Hills) */}
-      {bgIndex === 4 && <GLSLHills />}
-
-      {/* Cursor Trail Effect */}
-      <CursorTrail color={bgIndex === 0 ? '#ffaa00' : '#ffffff'} />
-
-      {/* Foreground UI Layer */}
-      <div className={`container layout-wrapper ${bgIndex === 1 || bgIndex === 2 || bgIndex === 3 || bgIndex === 4 ? 'theme-white' : ''}`}>
-
-        {/* Advanced Music Player */}
-        <div className="music-player-advanced">
-          <div className="music-controls">
-            <button onClick={prevSong} className="music-btn-small" title="Previous Song">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-              </svg>
-            </button>
-            <button onClick={togglePlay} className="music-btn" title="Play/Pause Music">
-              {isPlaying ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              )}
-            </button>
-            <button onClick={nextSong} className="music-btn-small" title="Next Song">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="music-info">
-            <div className="music-title">
-              {songIndex !== null ? SONGS[songIndex].title : ''}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div 
+            initial={{ opacity: 1 }} 
+            exit={{ opacity: 0, filter: 'blur(10px)' }} 
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="loading-overlay"
+          >
+            <div className="loading-content">
+              <div className="loading-text-container">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={loadingTextIndex}
+                    initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
+                    transition={{ duration: 0.25 }}
+                    className="loading-text"
+                  >
+                    {loadingTexts[loadingTextIndex]}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+              
+              <div className="loading-bar-container">
+                <div 
+                  className="loading-bar-fill"
+                  style={{ width: `${loadingProgress}%` }}
+                />
+              </div>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="volume-slider"
-              title="Volume"
-            />
-          </div>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {songIndex !== null && (
-          <audio
-            ref={audioRef}
-            src={SONGS[songIndex].url}
-            onEnded={nextSong}
-          />
+      <div className="saas-layout">
+        {/* 3D Dynamic Backgrounds */}
+        {backgroundTheme === 'plane' ? (
+          <div className="fixed inset-0 z-[-1] bg-black pointer-events-none w-screen h-screen">
+            <Canvas camera={{ position: [0, 0, 5], fov: 75 }} style={{ width: '100%', height: '100%' }}>
+              <Shader3Container />
+            </Canvas>
+          </div>
+        ) : (
+          <GLSLHills />
         )}
 
-        {/* Theme Switcher */}
-        <CustomThemeSwitcher currentBg={bgIndex} setBg={setBgIndex} />
-
-        {/* Loadstring Container */}
-        <div className="script-container">
-          <span className="pc-only-text">This script is only supported on PC right now.</span>
-          <div className="animated-border-box">
-            <div className="script-box">
-              <div className="script-text">
-                <span className="prompt-icon">&gt;_</span>
-                <span className="script-code">
-                  loadstring(game:HttpGet(
-                  <span className="script-url">"https://zeneternity.vercel.app"</span>, true))()
-                </span>
+        {!isLoading && (
+          <>
+            <motion.div className="scroll-progress-bar" style={{ scaleY }} />
+            {/* Navbar */}
+            <nav className={`saas-navbar ${isScrolled ? 'scrolled' : ''}`}>
+          <div className="nav-content">
+            <div className="nav-logo">
+              <img src="/eternity.png" alt="Eternity" />
+            </div>
+            <div className="nav-links">
+              <div className="nav-page-links">
+                <a href="#">
+                  <RandomLetterSwap label="Home" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                </a>
+                <a href="#features">
+                  <RandomLetterSwap label="Features" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                </a>
+                <a href="#access">
+                  <RandomLetterSwap label="Access" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                </a>
               </div>
-              <button
-                className={`copy-btn ${copied ? 'copied' : ''}`}
-                id="copy-btn"
-                onClick={copyScript}
-              >
-                <img src="/copy.png" alt="copy" className="btn-icon" />
-                {copied ? 'COPIED' : 'COPY'}
-              </button>
+              <div className="nav-actions">
+                <AmbientSound />
+                <a href="https://discord.gg/4c9N49jtXq" target="_blank" rel="noopener noreferrer" className="discord-btn">
+                  <svg width="18" height="18" viewBox="0 0 127.14 96.36" fill="currentColor">
+                    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c0,0,.04-.06.05-.09h0c2.69-28.7-4.66-51.52-18.95-72.06ZM42.66,65.34c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Zm41.81,0c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Z"/>
+                  </svg>
+                  <span className="discord-btn-text">Join Discord</span>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
+        </nav>
 
-        {/* Discord Card */}
-        <div className="animated-border-box discord-wrapper">
-          <div className="script-box discord-box">
-            <div className="discord-text">
-              <img src="/discord.png" alt="Discord" className="discord-icon" />
-              <span className="discord-label">Developer Discord :</span>
-              <span className="discord-username">{DISCORD_NAME}</span>
+      <main className="saas-main">
+        {/* Hero Section */}
+        <section className="hero-section">
+          <motion.div initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring", bounce: 0.4 }} className="hero-badge-mono">
+            <span className="pulse-dot-green"></span>
+            Script Status: <strong style={{color: '#10b981'}}>Operational</strong>
+          </motion.div>
+          <motion.h1 initial={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.2, ease: "easeOut" }} className="hero-title">
+            R<span className="glitch-letter" style={{ animationDelay: '0.5s' }}>e</span>def<span className="glitch-letter" style={{ animationDelay: '1.2s' }}>i</span>n<span className="glitch-letter" style={{ animationDelay: '2.5s' }}>i</span>ng <span className="glitch-letter" style={{ animationDelay: '0.2s' }}>E</span>xec<span className="glitch-letter" style={{ animationDelay: '3.1s' }}>u</span>ti<span className="glitch-letter" style={{ animationDelay: '1.7s' }}>o</span>n
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, x: -30, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.4, type: "spring", bounce: 0.3 }} className="hero-subtitle">
+            Lightning fast, completely undetected, and built for absolute dominance.<br/>
+            Eternity is the premier execution engine for modern scripters.
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, scale: 0.9, y: 60, rotateX: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.5, type: "spring", bounce: 0.4 }} className="hero-terminal-wrapper-mono" style={{ perspective: '1000px' }}>
+            
+            {/* SVG Filter for Electrical Distortion */}
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+              <filter id="electric-distort" x="-200%" y="-200%" width="500%" height="500%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="3" result="noise">
+                  <animate attributeName="baseFrequency" values="0.15;0.2;0.15" dur="0.1s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+            </svg>
+
+            {/* Background Smoke Layers */}
+            <div className="smoke-container">
+              <div className="smoke-particle smoke-1"></div>
+              <div className="smoke-particle smoke-2"></div>
+              <div className="smoke-particle smoke-3"></div>
             </div>
-            <button
-              className={`copy-btn discord-copy ${discordCopied ? 'copied' : ''}`}
-              onClick={copyDiscord}
-              title="Copy Discord"
-            >
-              <img src="/copy.png" alt="copy" className="btn-icon" />
-            </button>
+
+            <div className="saber-lightning"></div>
+            
+            {/* Crackling Electrical Arc Border (Rounded and behind terminal) */}
+            <div className="saber-wrapper-arc">
+              <div className="saber-border-rounded"></div>
+            </div>
+
+            <div className={`hero-terminal-mono ${copied ? 'terminal-success-pulse' : ''}`}>
+
+              <div className="terminal-header-mono">
+                <div className="terminal-dots-mono">
+                  <span className="dot-mono dot-mono-r"></span>
+                  <span className="dot-mono dot-mono-y"></span>
+                  <span className="dot-mono dot-mono-g"></span>
+                </div>
+                <div className="terminal-title">project-eternity.lua</div>
+              </div>
+              <div className="terminal-body">
+                <div className="script-text">
+                  <span className="prompt-icon">&gt;_</span>
+                  <span className="script-code">
+                    {typedChars > 0 && (
+                      <>
+                        {fullScript.substring(0, Math.min(typedChars, 25))}
+                        {typedChars > 25 && (
+                          <span className="script-url">
+                            {fullScript.substring(25, Math.min(typedChars, 57))}
+                          </span>
+                        )}
+                        {typedChars > 57 && (
+                          fullScript.substring(57, Math.min(typedChars, fullScript.length))
+                        )}
+                      </>
+                    )}
+                    <span className="cursor-blink">|</span>
+                  </span>
+                </div>
+                <button
+                  className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
+                  onClick={copyScript}
+                >
+                  <img src="/copy.png" alt="copy" className="btn-icon" />
+                  {copied ? 'COPIED!' : 'COPY'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+          <motion.p initial={{ opacity: 0, y: -15, filter: 'blur(8px)' }} whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }} viewport={{ once: false }} transition={{ duration: 0.8, delay: 0.9, type: "spring", bounce: 0.6 }} className={`text-[13px] mt-4 font-medium tracking-wide transition-all duration-300 ${copied ? 'text-[#ff5f56] drop-shadow-[0_0_8px_rgba(255,95,86,0.8)]' : 'text-white/40'}`}>
+            <span className={copied ? 'inline-block warning-shake' : 'inline-block'}>
+              Make sure you have access before executing the script. <span className="opacity-70">(Ignore this if you are whitelisted and have an access key)</span>
+            </span>
+          </motion.p>
+        </section>
+
+        {/* Features Bento Grid */}
+        <section id="features" className="features-section">
+          <div className="features-header">
+            <motion.div initial={{ opacity: 0, y: -20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="badge-wrapper mb-4">
+              <div className="section-badge">
+                <span className="section-badge-text">Features</span>
+              </div>
+            </motion.div>
+            <motion.h2 initial={{ opacity: 0, x: -50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-title">Built for Performance</motion.h2>
+            <motion.p initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-subtitle">Everything you need to dominate, wrapped in a beautiful UI.</motion.p>
+          </div>
+          <div className="bento-grid">
+            <motion.div initial={{ opacity: 0, scale: 0.8, rotate: -3 }} whileInView={{ opacity: 1, scale: 1, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.5, delay: 0.1 }} className="bento-card col-span-2">
+              <div className="bento-icon">
+                <Zap size={28} className="text-white" />
+              </div>
+              <h3>Optimized</h3>
+              <p>Engineered from the ground up for maximum performance. Ensures your scripts run smoothly with minimal overhead and absolute stability.</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: -60, rotate: -5 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.2 }} className="bento-card">
+              <div className="bento-icon">
+                <ShieldCheck size={28} className="text-white" />
+              </div>
+              <h3>Undetected</h3>
+              <p>Advanced ring-0 bypasses and active signature morphing keep your execution completely hidden from automated anti-cheat systems.</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 60, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.3 }} className="bento-card">
+              <div className="bento-icon">
+                <RefreshCw size={28} className="text-white" />
+              </div>
+              <h3>Regular Updates</h3>
+              <p>Actively maintained by a dedicated developer. Game patches are monitored and adapted to in real-time so you never have to wait long for updates.</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: 60, rotate: 3 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.4 }} className="bento-card col-span-2">
+              <div className="bento-icon">
+                <Crown size={28} className="text-white" />
+              </div>
+              <h3>Exclusive Access</h3>
+              <p>Available only to a hand-picked network of elite users. Secured by a strict whitelist and unique key system to ensure maximum security, quality, and unparalleled support.</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, scale: 1.1, y: 40 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.3, delay: 0.5 }} className="bento-card col-span-2">
+              <div className="bento-icon">
+                <Wrench size={28} className="text-white" />
+              </div>
+              <h3>Unrivaled In-Script Arsenal</h3>
+              <p>Equipped with zero delay attaches, Anti-VC, custom reanimations, brand new visual shaders, an in-script chat system, and more exclusive tools which other scripts may not have.</p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Access Section */}
+        <section id="access" className="access-section">
+          <motion.div initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="access-header">
+            <div className="flex justify-center mb-6">
+              <div className="section-badge">
+                <span className="section-badge-text">Access</span>
+              </div>
+            </div>
+            <h2>How to Get Access</h2>
+            <p>Eternity is strictly invite-only. Follow these steps to apply for a whitelist and receive your execution key.</p>
+          </motion.div>
+          
+          <div className="access-steps">
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.1 }} className="access-step-card">
+              <div className="step-number">1</div>
+              <h3>Join the Server</h3>
+              <p>Gain entry to the private Project Eternity Discord server. This is your hub for updates, support, and community.</p>
+            </motion.div>
+            
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.2 }} className="access-step-card">
+              <div className="step-number">2</div>
+              <h3>DM @hor1zxn.</h3>
+              <p>Direct message Zen to apply. He will personally verify you, whitelist your Roblox username, and provide your unique key.</p>
+            </motion.div>
+            
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.3 }} className="access-step-card">
+              <div className="step-number">3</div>
+              <h3>Execute & Enjoy</h3>
+              <p>Run the script's loadstring and authenticate. Make sure to read the usage rules and guidelines in Discord before dominating.</p>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="saas-footer">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <img src="/eternity.png" alt="Eternity" className="footer-logo" />
+            <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
           </div>
         </div>
-
-        {/* Main Logo */}
-        <div className="logo-container">
-          <img src="/eternitylogo.png" alt="Eternity" className={`main-logo ${bgIndex === 2 ? 'grayscale-logo' : ''}`} />
+        <div className="footer-bottom">
+          <p>&copy; {new Date().getFullYear()} Eternity. All rights reserved.</p>
+          <div className="status-indicator">
+            <div className="status-dot" style={{ backgroundColor: '#10b981', boxShadow: '0 0 8px rgba(16,185,129,0.8)' }}></div>
+            <span>Script Status: <strong style={{color: '#10b981'}}>Operational</strong></span>
+          </div>
         </div>
-
-      </div>
-      
-      {/* Footer Text */}
-      <div className="footer-text">
-        Interact with the canvas & enjoy the music
-      </div>
+      </footer>
+      </>
+      )}
+    </div>
     </>
   );
 }

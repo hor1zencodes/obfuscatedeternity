@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
-import { VT323 } from 'next/font/google'
+import { VT323, Outfit, Fira_Code } from 'next/font/google'
 import './globals.css'
 
 const vt323 = VT323({ weight: '400', subsets: ['latin'], variable: '--font-vt323' })
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
+const firaCode = Fira_Code({ subsets: ['latin'], variable: '--font-fira-code' })
 
 export const viewport: import('next').Viewport = {
   width: 'device-width',
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://zeneternity.vercel.app/eternitylogo.png',
+        url: 'https://zeneternity.vercel.app/eternity.png',
         width: 1200,
         height: 630,
       }
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Eternity',
     description: 'Eternity — Redefining execution. Lightning fast, undetectable, and built for absolute dominance.',
-    images: ['https://zeneternity.vercel.app/eternitylogo.png'],
+    images: ['https://zeneternity.vercel.app/eternity.png'],
   },
 }
 
@@ -41,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={vt323.variable}>
+    <html lang="en" className={`${vt323.variable} ${outfit.variable} ${firaCode.variable}`}>
       <body>
         {children}
       </body>
