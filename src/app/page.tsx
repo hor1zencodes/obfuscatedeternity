@@ -521,7 +521,9 @@ export default function Home() {
             <nav className={`saas-navbar ${isScrolled ? 'scrolled' : ''}`}>
           <div className="nav-content">
             <div className="nav-logo">
-              <img src="/eternity.png" alt="Eternity" />
+              <a href="#" aria-label="Go to top">
+                <img src="/eternity.png" alt="Eternity" />
+              </a>
             </div>
             <div className="nav-links">
               <div className="nav-page-links">
@@ -565,13 +567,21 @@ export default function Home() {
 
           <motion.div initial={{ opacity: 0, scale: 0.9, y: 60, rotateX: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.5, type: "spring", bounce: 0.4 }} className="hero-terminal-wrapper-mono" style={{ perspective: '1000px' }}>
             
-            {/* SVG Filter for Electrical Distortion */}
+            {/* SVG Filters for Electrical Distortion */}
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+              {/* Border edge distortion - moderate */}
               <filter id="electric-distort" x="-200%" y="-200%" width="500%" height="500%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="3" result="noise">
-                  <animate attributeName="baseFrequency" values="0.15;0.2;0.15" dur="0.1s" repeatCount="indefinite" />
+                <feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="3" result="noise">
+                  <animate attributeName="baseFrequency" values="0.12;0.18;0.12" dur="0.4s" repeatCount="indefinite" />
                 </feTurbulence>
                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+              {/* Bolt-specific distortion - stronger zigzag for the falling beam */}
+              <filter id="bolt-distort" x="-500%" y="-10%" width="1100%" height="120%">
+                <feTurbulence type="turbulence" baseFrequency="0.05 0.8" numOctaves="4" result="noise" seed="2">
+                  <animate attributeName="baseFrequency" values="0.05 0.8;0.08 1.2;0.05 0.8" dur="0.3s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
               </filter>
             </svg>
 
@@ -586,7 +596,8 @@ export default function Home() {
             
             {/* Crackling Electrical Arc Border (Rounded and behind terminal) */}
             <div className="saber-wrapper-arc">
-              <div className="saber-border-rounded"></div>
+              <div className="saber-border-fill"></div>
+              <div className="saber-border-retract"></div>
             </div>
 
             <div className={`hero-terminal-mono ${copied ? 'terminal-success-pulse' : ''}`}>
@@ -723,7 +734,9 @@ export default function Home() {
       <footer className="saas-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <img src="/eternity.png" alt="Eternity" className="footer-logo" />
+            <a href="#" aria-label="Go to top">
+              <img src="/eternity.png" alt="Eternity" className="footer-logo" />
+            </a>
             <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
           </div>
         </div>

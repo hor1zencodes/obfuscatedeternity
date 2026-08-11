@@ -357,18 +357,13 @@ h1, h2, h3, h4, h5, h6 {
 /* =====================================
    ADVANCED LIGHTNING & SMOKE SEQUENCE
 ======================================== */
-@property --arc-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
 
 .saber-lightning {
   position: absolute;
   bottom: 100%;
   left: 50%;
   width: 4px;
-  height: 150vh; /* Ensures it ALWAYS starts completely off the top of the screen */
+  height: 100vh;
   background: #fff;
   border-radius: 10px;
   box-shadow: 
@@ -379,18 +374,18 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateX(-50%) scaleY(0);
   transform-origin: top;
   opacity: 0;
-  filter: url(#electric-distort);
+  filter: url(#bolt-distort);
   animation: 
     saber-bolt-intro 15s ease-in-out infinite,
-    arc-fx-glow 0.1s infinite alternate;
+    arc-fx-glow 0.3s infinite alternate;
   z-index: 10;
 }
 
 @keyframes saber-bolt-intro {
   0% { opacity: 0; transform: translateX(-50%) scaleY(0); filter: brightness(1); }
-  2% { opacity: 1; transform: translateX(-50%) scaleY(0.2); filter: brightness(1); }
-  10% { opacity: 1; transform: translateX(-50%) scaleY(1); filter: brightness(2.5) contrast(1.5); } /* hits at 1.5s */
-  14% { opacity: 0; transform: translateX(-50%) scaleY(1); filter: brightness(1); } /* fades at 2.1s */
+  2% { opacity: 1; transform: translateX(-50%) scaleY(0.05); filter: brightness(1); }
+  15% { opacity: 1; transform: translateX(-50%) scaleY(1); filter: brightness(2.5) contrast(1.5); } /* hits at 2.25s */
+  19% { opacity: 0; transform: translateX(-50%) scaleY(1); filter: brightness(1); } /* fades at 2.85s */
   100% { opacity: 0; transform: translateX(-50%) scaleY(1); filter: brightness(1); } 
 }
 
@@ -403,29 +398,67 @@ h1, h2, h3, h4, h5, h6 {
   filter: url(#electric-distort);
 }
 
-.saber-border-rounded {
+/* Shared base style for both border elements */
+.saber-border-fill,
+.saber-border-retract {
   position: absolute;
-  top: 19px; left: 19px; right: 19px; bottom: 19px; /* Matches perfectly to terminal border */
-  border-radius: 14px; /* Matches terminal rounded corners */
+  top: 19px; left: 19px; right: 19px; bottom: 19px;
+  border-radius: 14px;
   border: 3px solid #fff;
-  /* We use conic gradient to animate the drawing from center outwards */
-  --arc-angle: 0deg;
-  opacity: 0;
-  -webkit-mask: conic-gradient(from 0deg, #000 var(--arc-angle), transparent var(--arc-angle), transparent calc(360deg - var(--arc-angle)), #000 calc(360deg - var(--arc-angle)));
-  animation: 
-    draw-arc-mask-loop 15s ease-in-out infinite,
-    arc-fx-glow 0.1s infinite alternate;
+  animation: arc-fx-glow 0.4s infinite alternate;
 }
 
-@keyframes draw-arc-mask-loop {
-  0% { opacity: 0; --arc-angle: 0deg; }
-  9% { opacity: 0; --arc-angle: 0deg; } /* wait until bolt hits */
-  10% { opacity: 1; --arc-angle: 0deg; } /* start drawing at 1.5s */
-  18% { opacity: 1; --arc-angle: 180deg; } /* finished drawing at 2.7s */
-  58% { opacity: 1; --arc-angle: 180deg; } /* stay fully lit until 8.7s */
-  66% { opacity: 1; --arc-angle: 0deg; } /* retract exactly backwards by 9.9s */
-  67% { opacity: 0; --arc-angle: 0deg; } /* hide completely at 10.05s */
-  100% { opacity: 0; --arc-angle: 0deg; } /* Exactly 5 seconds of pause! */
+/* FILL element: draws from top-center outward using --arc-angle 0→180 */
+.saber-border-fill {
+  --arc-angle: 0deg;
+  opacity: 0;
+  -webkit-mask: conic-gradient(from 0deg, #000 0deg, #000 var(--arc-angle), transparent var(--arc-angle), transparent calc(360deg - var(--arc-angle)), #000 calc(360deg - var(--arc-angle)), #000 360deg);
+  mask: conic-gradient(from 0deg, #000 0deg, #000 var(--arc-angle), transparent var(--arc-angle), transparent calc(360deg - var(--arc-angle)), #000 calc(360deg - var(--arc-angle)), #000 360deg);
+  animation: border-fill-loop 15s ease-in-out infinite, arc-fx-glow 0.4s infinite alternate;
+}
+
+/* RETRACT element: erases from top-center outward using --retract-angle 0→180 */
+/* It sits on top and shows only the BOTTOM portion, which shrinks = top erases first */
+.saber-border-retract {
+  --retract-angle: 0deg;
+  opacity: 0;
+  -webkit-mask: conic-gradient(from 0deg, transparent 0deg, transparent var(--retract-angle), #000 var(--retract-angle), #000 calc(360deg - var(--retract-angle)), transparent calc(360deg - var(--retract-angle)), transparent 360deg);
+  mask: conic-gradient(from 0deg, transparent 0deg, transparent var(--retract-angle), #000 var(--retract-angle), #000 calc(360deg - var(--retract-angle)), transparent calc(360deg - var(--retract-angle)), transparent 360deg);
+  animation: border-retract-loop 15s ease-in-out infinite, arc-fx-glow 0.4s infinite alternate;
+}
+
+@property --arc-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --retract-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Draw: top → sides → bottom. Stays lit briefly. Then instantly hidden. */
+/* 15s loop: bolt hits ~2.25s, draw done ~3.45s, hold until ~5.55s (2.1s hold), retract done ~6.75s, then pause */
+@keyframes border-fill-loop {
+  0%   { opacity: 0; --arc-angle: 0deg; }
+  14%  { opacity: 0; --arc-angle: 0deg; }
+  15%  { opacity: 1; --arc-angle: 0deg; }
+  23%  { opacity: 1; --arc-angle: 180deg; }
+  37%  { opacity: 1; --arc-angle: 180deg; }
+  37.1%{ opacity: 0; --arc-angle: 180deg; }
+  100% { opacity: 0; --arc-angle: 0deg; }
+}
+
+/* Retract: starts right after hold ends at 37%, retracts by 45%, then long pause */
+@keyframes border-retract-loop {
+  0%   { opacity: 0; --retract-angle: 0deg; }
+  37%  { opacity: 0; --retract-angle: 0deg; }
+  37.1%{ opacity: 1; --retract-angle: 0deg; }
+  45%  { opacity: 1; --retract-angle: 180deg; }
+  46%  { opacity: 0; --retract-angle: 180deg; }
+  100% { opacity: 0; --retract-angle: 0deg; }
 }
 
 @keyframes arc-fx-glow {
