@@ -905,12 +905,24 @@ export default function Home() {
                 </feTurbulence>
                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
               </filter>
-              {/* Bolt-specific distortion - stronger zigzag for the falling beam */}
-              <filter id="bolt-distort" x="-500%" y="-10%" width="1100%" height="120%">
-                <feTurbulence type="turbulence" baseFrequency="0.05 0.8" numOctaves="4" result="noise" seed="2">
-                  <animate attributeName="baseFrequency" values="0.05 0.8;0.08 1.2;0.05 0.8" dur="0.3s" repeatCount="indefinite" />
+              {/* Multi-layered aggressive lightning bolt distortions */}
+              <filter id="bolt-distort-core" x="-500%" y="-10%" width="1100%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.08 0.4" numOctaves="4" result="noise" seed="1">
+                  <animate attributeName="baseFrequency" values="0.08 0.4;0.1 0.6;0.08 0.4" dur="0.2s" repeatCount="indefinite" />
                 </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+              <filter id="bolt-distort-arc1" x="-500%" y="-10%" width="1100%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.06 0.5" numOctaves="3" result="noise" seed="5">
+                  <animate attributeName="baseFrequency" values="0.06 0.5;0.09 0.7;0.06 0.5" dur="0.25s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="35" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
+              <filter id="bolt-distort-arc2" x="-500%" y="-10%" width="1100%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.1 0.3" numOctaves="3" result="noise" seed="9">
+                  <animate attributeName="baseFrequency" values="0.1 0.3;0.12 0.5;0.1 0.3" dur="0.15s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" />
               </filter>
             </svg>
 
@@ -921,7 +933,11 @@ export default function Home() {
               <div className="smoke-particle smoke-3"></div>
             </div>
 
-            <div className="saber-lightning"></div>
+            <div className="saber-lightning-group">
+              <div className="saber-lightning core"></div>
+              <div className="saber-lightning arc-1"></div>
+              <div className="saber-lightning arc-2"></div>
+            </div>
             
             {/* Crackling Electrical Arc Border (Rounded and behind terminal) */}
             <div className="saber-wrapper-arc">

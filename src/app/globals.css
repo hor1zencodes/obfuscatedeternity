@@ -422,27 +422,45 @@ h1, h2, h3, h4, h5, h6 {
    ADVANCED LIGHTNING & SMOKE SEQUENCE
 ======================================== */
 
-.saber-lightning {
+.saber-lightning-group {
   position: absolute;
   bottom: 100%;
   left: 50%;
-  width: 4px;
+  width: 0;
   height: 100vh;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 
-    0 0 10px #fff, 
-    0 0 20px #fff, 
-    0 0 40px #fff, 
-    0 0 80px rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  animation: saber-bolt-intro 15s ease-in-out infinite;
   transform: translateX(-50%) scaleY(0);
   transform-origin: top;
-  opacity: 0;
-  filter: url(#bolt-distort);
-  animation: 
-    saber-bolt-intro 15s ease-in-out infinite,
-    arc-fx-glow 0.3s infinite alternate;
-  z-index: 10;
+}
+
+.saber-lightning {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  background: #fff;
+  border-radius: 10px;
+  animation: arc-fx-glow 0.3s infinite alternate;
+}
+
+.saber-lightning.core {
+  width: 4px;
+  filter: url(#bolt-distort-core);
+  box-shadow: 0 0 20px #fff, 0 0 40px rgba(255, 255, 255, 0.8);
+}
+
+.saber-lightning.arc-1 {
+  width: 2px;
+  filter: url(#bolt-distort-arc1);
+  opacity: 0.7;
+}
+
+.saber-lightning.arc-2 {
+  width: 2px;
+  filter: url(#bolt-distort-arc2);
+  opacity: 0.5;
 }
 
 @keyframes saber-bolt-intro {
