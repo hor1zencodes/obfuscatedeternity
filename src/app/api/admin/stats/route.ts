@@ -37,10 +37,11 @@ export async function GET(request: NextRequest) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toISOString().split('T')[0];
+                const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
                 
                 const dailyExecs = await redis.get<string | number>(`eternity:stats:executions:${dateStr}`);
                 chartData.push({
-                    date: dateStr,
+                    date: dayName,
                     executions: dailyExecs ? parseInt(dailyExecs.toString(), 10) : 0
                 });
             }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -241,15 +241,21 @@ export default function AdminDashboard() {
           </div>
           <div style={{ padding: '20px', height: '250px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'var(--font-fira-code)' }} />
-                <YAxis stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'var(--font-fira-code)' }} />
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorExecutions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" stroke="none" tick={{ fill: '#a0a0a0', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-fira-code)' }} tickMargin={10} />
+                <YAxis stroke="none" tick={false} domain={['dataMin', 'auto']} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: 'rgba(10,10,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'var(--font-fira-code)' }}
-                  itemStyle={{ color: '#ffbd2e' }}
+                  itemStyle={{ color: '#3b82f6' }}
                 />
-                <Line type="monotone" dataKey="executions" stroke="#ffbd2e" strokeWidth={2} dot={{ fill: '#ffbd2e', strokeWidth: 2 }} activeDot={{ r: 6 }} />
-              </LineChart>
+                <Area type="monotone" dataKey="executions" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorExecutions)" activeDot={{ r: 6, fill: '#3b82f6' }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
