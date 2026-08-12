@@ -327,9 +327,9 @@ export default function AdminDashboard() {
             </div>
 
             {/* Whitelist Table */}
-            <div className="hero-terminal-wrapper-mono" style={{ flex: '2 1 500px', marginTop: '0' }}>
-              <div className="hero-terminal-mono" style={{ height: '100%' }}>
-                <div className="terminal-header-mono">
+            <div className="hero-terminal-wrapper-mono" style={{ flex: '2 1 500px', marginTop: '0', height: '500px' }}>
+              <div className="hero-terminal-mono" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div className="terminal-header-mono" style={{ flexShrink: 0 }}>
                   <div className="terminal-dots-mono">
                     <div className="dot-mono dot-mono-r"></div>
                     <div className="dot-mono dot-mono-y"></div>
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                 </div>
                 
                 {/* Search Bar */}
-                <div style={{ padding: '15px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ padding: '15px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
                   <div style={{ position: 'relative' }}>
                     <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', color: 'rgba(255,255,255,0.3)' }} />
                     <input 
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ padding: '0', height: '400px', overflowY: 'auto' }}>
+                <div style={{ padding: '0', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
