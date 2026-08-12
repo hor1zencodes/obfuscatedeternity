@@ -356,9 +356,9 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ padding: '0', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <div style={{ padding: '0', flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
+                    <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(5px)' }}>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                         <th style={{ padding: '15px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'normal' }}>Identifier</th>
                         <th style={{ padding: '15px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'normal', textAlign: 'right' }}>Action</th>
