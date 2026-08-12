@@ -10,15 +10,19 @@ if (kvUrl && kvToken) {
 }
 
 export async function GET(request: NextRequest) {
-    // Basic auth check
-    const authCookie = request.cookies.get('admin_session');
-    const adminSecret = process.env.ADMIN_SECRET;
-    
-    if (adminSecret && (!authCookie || authCookie.value !== adminSecret)) {
-        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
+        // Authenticate admin session
+        const token = request.cookies.get('admin_token')?.value;
+        if (!token) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+        
+        if (redis) {
+            const sessionValid = await redis.get(`admin_session:${token}`);
+            if (!sessionValid) {
+                return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+            }
+        }
         let totalExecutions = 1337;
         let chartData: { date: string; executions: number }[] = [];
 
