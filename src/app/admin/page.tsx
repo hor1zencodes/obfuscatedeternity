@@ -356,7 +356,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div style={{ padding: '0', maxHeight: '425px', overflowY: 'auto' }}>
+                <div style={{ padding: '0', height: '400px', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
