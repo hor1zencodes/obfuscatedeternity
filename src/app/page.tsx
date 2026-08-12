@@ -16,7 +16,7 @@ import { motion, useScroll, useSpring, AnimatePresence } from 'motion/react';
 
 const useShaderBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
   const rendererRef = useRef<any>(null);
   const pointersRef = useRef<any>(null);
 
