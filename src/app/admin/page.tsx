@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { GLSLHills } from "@/components/GLSLHills";
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -126,8 +127,8 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="saas-layout" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
-        <div className="canvas-background"></div>
+      <div className="saas-layout flex items-center justify-center min-h-screen p-4">
+        <GLSLHills />
         <div className="hero-terminal-wrapper-mono" style={{ maxWidth: '400px', width: '100%' }}>
           <div className="hero-terminal-mono">
             <div className="terminal-header-mono">
@@ -186,12 +187,12 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="saas-layout" style={{ padding: '60px 20px', alignItems: 'center' }}>
-      <div className="canvas-background"></div>
+    <div className="saas-layout min-h-screen flex flex-col items-center py-10 px-4 sm:py-16 sm:px-6">
+      <GLSLHills />
       
       {/* Top Navigation / Branding */}
-      <div style={{ maxWidth: '1000px', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
+      <div className="w-full max-w-[1000px] flex flex-col sm:flex-row justify-between items-center mb-10 gap-6 sm:gap-0">
+        <div className="text-center sm:text-left">
           <h1 className="hero-word-accent" style={{ fontSize: '32px', letterSpacing: '1px' }}>ETERNITY DASHBOARD</h1>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginTop: '5px' }}>Command Center</p>
         </div>
@@ -262,7 +263,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Tabs */}
-      <div style={{ maxWidth: '1000px', width: '100%', display: 'flex', gap: '20px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="w-full max-w-[1000px] flex flex-wrap gap-2 sm:gap-5 mb-5 border-b border-white/10">
         <button 
           onClick={() => setActiveTab("live")}
           style={{ 
@@ -304,7 +305,7 @@ export default function AdminDashboard() {
                 <div style={{ flex: 1 }}></div>
               </div>
               <div style={{ padding: '0', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '500px' }}>
                   <thead>
                     <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                       <th style={{ padding: '15px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'normal' }}>Identifier</th>
