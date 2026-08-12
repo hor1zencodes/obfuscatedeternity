@@ -33,6 +33,16 @@ export async function GET(request: NextRequest) {
             // Update live users in Redis if available
             if (redis) {
                 await redis.hset("live_users", { [user]: Date.now() });
+
+                // Increment execution telemetry
+                try {
+                    await redis.incr('eternity:stats:total_executions');
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    await redis.incr(`eternity:stats:executions:${today}`);
+                } catch(e) {
+                    console.error("Stats logging failed", e);
+                }
             }
 
             // Fetch the premium script
