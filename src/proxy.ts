@@ -14,19 +14,36 @@ export function proxy(request: NextRequest) {
     userAgent.includes('wave') ||
     userAgent.includes('macsploit')
   ) {
-    // 3. SECURE REWRITE: 
-    // Acts as an invisible proxy. The executor never sees the real URL.
-    const targetUrl = new URL('https://api.jnkie.com/api/v1/luascripts/public/33c4e8b5d41c8725d2d612456622846dc4201c3d8b2ea5d7f7eb90a374984081/download');
-    
-    // REMOVED cache busting timestamp. We WANT the edge network to cache this.
-    const response = NextResponse.rewrite(targetUrl);
-    
-    // Enable Edge Caching for blazingly fast execution. 
-    // Caches the script at the edge for 30 seconds. 
-    // Stale-while-revalidate serves the cached version instantly while silently updating in the background.
-    response.headers.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
-    
-    return response;
+    // 3. SECURE LOADER: 
+    // If they hit the root URL, we give them the Loader Script, not the full script.
+    if (request.nextUrl.pathname === '/') {
+      const loaderScript = `
+local username = game:GetService("Players").LocalPlayer.Name
+local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username
+local scriptData = game:HttpGet(url, true)
+
+if scriptData:match("Access Denied") then
+    game.Players.LocalPlayer:Kick("Eternity: You are not whitelisted.")
+    return
+end
+
+-- Start Heartbeat Ping Loop
+task.spawn(function()
+    while true do
+        task.wait(30)
+        pcall(function()
+            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username)
+        end)
+    end
+end)
+
+-- Execute Premium Script
+loadstring(scriptData)()
+`;
+      return new NextResponse(loaderScript, {
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
   }
 
   // 3. If it's a normal web browser, proceed to render the React page
