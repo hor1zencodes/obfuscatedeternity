@@ -210,7 +210,7 @@ export const GLSLHills = ({ width = '100vw', height = '100vh', cameraZ = 125, pl
   }, [cameraZ, planeSize, speed]);
 
   return (
-    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, overflow: 'hidden', backgroundColor: '#000' }}>
+    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1, overflow: 'hidden', backgroundColor: '#000' }}>
       <canvas
         ref={canvasRef}
         style={{

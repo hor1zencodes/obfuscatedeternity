@@ -263,7 +263,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="w-full max-w-[1000px] flex flex-wrap gap-2 sm:gap-5 mb-5 border-b border-white/10">
+      <div className="w-full max-w-[1000px] flex flex-wrap gap-2 sm:gap-5 mb-5 border-b border-white/10 relative z-10">
         <button 
           onClick={() => setActiveTab("live")}
           style={{ 
