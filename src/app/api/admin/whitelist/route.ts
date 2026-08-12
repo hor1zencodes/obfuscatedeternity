@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 // Helper to authenticate admin
 async function authenticateAdmin(request: NextRequest) {
     const token = request.cookies.get('admin_token')?.value;
     if (!token) return false;
-    if (redis) {
-        const sessionValid = await redis.get(`admin_session:${token}`);
-        return !!sessionValid;
+    
+    if (supabase) {
+        const { data, error } = await supabase
+            .from('admin_sessions')
+            .select('token')
+            .eq('token', token)
+            .gte('expires_at', new Date().toISOString())
+            .single();
+            
+        return !!data && !error;
     }
     return true; // Local fallback
 }
@@ -25,9 +25,11 @@ export async function GET(request: NextRequest) {
     }
     
     try {
-        if (redis) {
-            const whitelist = await redis.smembers("whitelist");
-            return NextResponse.json({ success: true, whitelist: whitelist || [] });
+        if (supabase) {
+            const { data, error } = await supabase.from('whitelist').select('username');
+            if (error) throw error;
+            const whitelist = data.map(row => row.username);
+            return NextResponse.json({ success: true, whitelist });
         } else {
             const defaultWhitelist = [
                 "MrJackson253", "vqzx1i", "horize1n", "shahnu2004", "SKY_SOHAM29",
@@ -59,8 +61,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: "Username required" }, { status: 400 });
         }
         
-        if (redis) {
-            await redis.sadd("whitelist", username.toLowerCase());
+        if (supabase) {
+            await supabase.from('whitelist').insert([{ username: username.toLowerCase() }]);
         }
         
         return NextResponse.json({ success: true, message: `Added ${username} to whitelist` });
@@ -80,8 +82,8 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ success: false, error: "Username required" }, { status: 400 });
         }
         
-        if (redis) {
-            await redis.srem("whitelist", username.toLowerCase());
+        if (supabase) {
+            await supabase.from('whitelist').delete().eq('username', username.toLowerCase());
         }
         
         return NextResponse.json({ success: true, message: `Removed ${username} from whitelist` });

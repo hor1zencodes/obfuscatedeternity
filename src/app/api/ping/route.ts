@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis if env vars exist
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -18,8 +10,8 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        if (redis) {
-            await redis.hset("live_users", { [user]: Date.now() });
+        if (supabase) {
+            await supabase.from('live_users').upsert({ username: user, last_ping: new Date().toISOString() });
         }
         return new NextResponse("OK");
     } catch (e) {

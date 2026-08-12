@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
     try {
-        if (!redis) {
-            return NextResponse.json({ success: false, error: "Redis is not configured. Cannot seed." }, { status: 400 });
+        if (!supabase) {
+            return NextResponse.json({ success: false, error: "Supabase is not configured. Cannot seed." }, { status: 400 });
         }
         
         // Fetch the old whitelist from GitHub
@@ -31,13 +24,13 @@ export async function GET(request: NextRequest) {
             if (matches) {
                 const names = matches.map(m => m.replace(/"/g, ''));
                 
-                // Add all to Redis
-                for (const name of names) {
-                    await redis.sadd("whitelist", name.toLowerCase());
-                }
+                // Add all to Supabase
+                const insertData = names.map(name => ({ username: name.toLowerCase() }));
+                await supabase.from("whitelist").upsert(insertData, { onConflict: 'username' });
+                
                 return NextResponse.json({ 
                     success: true, 
-                    message: `Successfully seeded ${names.length} users into the Redis database!`,
+                    message: `Successfully seeded ${names.length} users into the Supabase database!`,
                     users: names
                 });
             }
@@ -47,16 +40,15 @@ export async function GET(request: NextRequest) {
         const whitelist: string[] = JSON.parse(rawText);
         let count = 0;
         
-        for (const user of whitelist) {
-            if (user && user.trim()) {
-                await redis.sadd("whitelist", user.trim().toLowerCase());
-                count++;
-            }
+        const validNames = whitelist.filter(u => u && u.trim()).map(u => ({ username: u.trim().toLowerCase() }));
+        if (validNames.length > 0) {
+            await supabase.from("whitelist").upsert(validNames, { onConflict: 'username' });
+            count = validNames.length;
         }
         
         return NextResponse.json({ 
             success: true, 
-            message: `Successfully seeded ${count} users into the Redis database!` 
+            message: `Successfully seeded ${count} users into the Supabase database!` 
         });
         
     } catch (e: any) {

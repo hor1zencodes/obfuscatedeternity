@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
     const corsHeaders = {
@@ -16,8 +9,10 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-        if (redis) {
-            const whitelist = await redis.smembers("whitelist");
+        if (supabase) {
+            const { data, error } = await supabase.from('whitelist').select('username');
+            if (error) throw error;
+            const whitelist = data.map(row => row.username);
             return NextResponse.json(whitelist || [], { headers: corsHeaders });
         } else {
             const defaultWhitelist = [

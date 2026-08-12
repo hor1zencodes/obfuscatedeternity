@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis if env vars exist
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -20,26 +12,50 @@ export async function GET(request: NextRequest) {
     try {
         let isWhitelisted = false;
         
-        if (redis) {
-            // Check Redis database for the username (case-insensitive by storing all names in lowercase)
-            const result = await redis.sismember("whitelist", user.toLowerCase());
-            isWhitelisted = result === 1;
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('whitelist')
+                .select('username')
+                .ilike('username', user)
+                .single();
+            isWhitelisted = !!data && !error;
         } else {
-            // Fallback for local testing without Redis
+            // Fallback for local testing without Supabase
             isWhitelisted = user.toLowerCase() === "hor1zxn" || user.toLowerCase() === "testuser";
         }
 
         if (isWhitelisted) {
-            // Update live users in Redis if available
-            if (redis) {
-                await redis.hset("live_users", { [user]: Date.now() });
+            // Update live users in Supabase if available
+            if (supabase) {
+                await supabase.from('live_users').upsert({ username: user, last_ping: new Date().toISOString() });
 
                 // Increment execution telemetry
                 try {
-                    await redis.incr('eternity:stats:total_executions');
+                    // Update total_executions
+                    const { data: totalData } = await supabase
+                        .from('stats')
+                        .select('value')
+                        .eq('key', 'eternity:stats:total_executions')
+                        .single();
                     
+                    const newTotal = (totalData?.value || 1337) + 1;
+                    await supabase
+                        .from('stats')
+                        .upsert({ key: 'eternity:stats:total_executions', value: newTotal });
+                    
+                    // Update daily executions
                     const today = new Date().toISOString().split('T')[0];
-                    await redis.incr(`eternity:stats:executions:${today}`);
+                    const dailyKey = `eternity:stats:executions:${today}`;
+                    const { data: dailyData } = await supabase
+                        .from('stats')
+                        .select('value')
+                        .eq('key', dailyKey)
+                        .single();
+                        
+                    const newDaily = (dailyData?.value || 0) + 1;
+                    await supabase
+                        .from('stats')
+                        .upsert({ key: dailyKey, value: newDaily });
                 } catch(e) {
                     console.error("Stats logging failed", e);
                 }

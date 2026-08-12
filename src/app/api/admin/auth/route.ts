@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis if env vars exist
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
     try {
@@ -23,9 +15,10 @@ export async function POST(request: NextRequest) {
         // Generate a simple token
         const token = crypto.randomUUID();
         
-        // Store in Redis with 24 hour expiration
-        if (redis) {
-            await redis.setex(`admin_session:${token}`, 24 * 60 * 60, "valid");
+        // Store in Supabase with 24 hour expiration
+        if (supabase) {
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            await supabase.from('admin_sessions').insert([{ token, expires_at: expiresAt }]);
         }
         
         // Set cookie

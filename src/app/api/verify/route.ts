@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-
-// Initialize Redis if env vars exist
-let redis: Redis | null = null;
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-if (kvUrl && kvToken) {
-    redis = new Redis({ url: kvUrl, token: kvToken });
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
     // Enable CORS so the Roblox client can read the response
@@ -27,12 +19,15 @@ export async function GET(request: NextRequest) {
     try {
         let isWhitelisted = false;
         
-        if (redis) {
-            // Check Redis database for the username (case-insensitive by storing all names in lowercase)
-            const result = await redis.sismember("whitelist", user.toLowerCase());
-            isWhitelisted = result === 1;
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('whitelist')
+                .select('username')
+                .ilike('username', user)
+                .single();
+            isWhitelisted = !!data && !error;
         } else {
-            // Fallback for local testing without Redis
+            // Fallback for local testing without Supabase
             const defaultWhitelist = [
                 "MrJackson253", "vqzx1i", "horize1n", "shahnu2004", "SKY_SOHAM29",
                 "Alt_laryyy", "rndyboy_zehrilalund", "rndyboy_zamasu", "J4xznnalt",
@@ -50,12 +45,33 @@ export async function GET(request: NextRequest) {
         }
 
         if (isWhitelisted) {
-            if (redis) {
+            if (supabase) {
                 try {
-                    await redis.incr('eternity:stats:total_executions');
+                    // Update total_executions
+                    const { data: totalData } = await supabase
+                        .from('stats')
+                        .select('value')
+                        .eq('key', 'eternity:stats:total_executions')
+                        .single();
                     
+                    const newTotal = (totalData?.value || 1337) + 1;
+                    await supabase
+                        .from('stats')
+                        .upsert({ key: 'eternity:stats:total_executions', value: newTotal });
+                    
+                    // Update daily executions
                     const today = new Date().toISOString().split('T')[0];
-                    await redis.incr(`eternity:stats:executions:${today}`);
+                    const dailyKey = `eternity:stats:executions:${today}`;
+                    const { data: dailyData } = await supabase
+                        .from('stats')
+                        .select('value')
+                        .eq('key', dailyKey)
+                        .single();
+                        
+                    const newDaily = (dailyData?.value || 0) + 1;
+                    await supabase
+                        .from('stats')
+                        .upsert({ key: dailyKey, value: newDaily });
                 } catch(e) {
                     console.error("Stats logging failed", e);
                 }
