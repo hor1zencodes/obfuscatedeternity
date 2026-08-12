@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
     } finally {
-      setTimeout(() => setIsRefreshing(false), 500); // Visual delay for spinner
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
@@ -190,113 +190,82 @@ export default function AdminDashboard() {
     );
   }
 
-  // Use explicit styles to bypass Tailwind class failures
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', backgroundColor: '#050505', color: 'white', fontFamily: 'sans-serif' }}>
+    <div className="dashboard-layout-container">
       <GLSLHills />
       
-      {/* Sidebar - Fixed width, professional styling */}
-      <aside style={{ 
-        width: '280px', 
-        minWidth: '280px', 
-        backgroundColor: 'rgba(10, 10, 10, 0.7)', 
-        backdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255,255,255,0.08)',
-        display: 'flex', 
-        flexDirection: 'column', 
-        zIndex: 20,
-        boxShadow: '4px 0 24px rgba(0,0,0,0.5)'
-      }}>
-        <div style={{ height: '80px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <Shield style={{ color: '#fff', marginRight: '12px' }} size={26} />
-          <span className="hero-word-accent" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em' }}>ETERNITY</span>
+      {/* Sidebar */}
+      <aside className="dashboard-sidebar">
+        <div className="dashboard-sidebar-header">
+          <Shield style={{ color: '#fff', flexShrink: 0 }} size={26} />
+          <span className="hero-word-accent dashboard-sidebar-text" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em', marginLeft: '12px' }}>ETERNITY</span>
         </div>
         
         <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
           
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.15em', marginBottom: '8px', marginLeft: '8px' }}>MAIN MENU</div>
+          <div className="dashboard-sidebar-text" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.15em', marginBottom: '8px', marginLeft: '8px' }}>MAIN MENU</div>
 
           <button 
+            className="dashboard-nav-item"
             onClick={() => setActiveTab("overview")}
             style={{
-              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
               backgroundColor: activeTab === 'overview' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'overview' ? '#fff' : 'rgba(255,255,255,0.5)',
-              border: activeTab === 'overview' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-              width: '100%',
-              textAlign: 'left'
+              border: activeTab === 'overview' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
             }}
           >
             <LayoutDashboard size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Overview</span>
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Overview</span>
           </button>
           
           <button 
+            className="dashboard-nav-item"
             onClick={() => setActiveTab("sessions")}
             style={{
-              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
               backgroundColor: activeTab === 'sessions' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'sessions' ? '#fff' : 'rgba(255,255,255,0.5)',
-              border: activeTab === 'sessions' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-              width: '100%',
-              textAlign: 'left'
+              border: activeTab === 'sessions' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
             }}
           >
             <Activity size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Active Sessions</span>
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Active Sessions</span>
           </button>
 
           <button 
+            className="dashboard-nav-item"
             onClick={() => setActiveTab("whitelist")}
             style={{
-              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
               backgroundColor: activeTab === 'whitelist' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'whitelist' ? '#fff' : 'rgba(255,255,255,0.5)',
-              border: activeTab === 'whitelist' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-              width: '100%',
-              textAlign: 'left'
+              border: activeTab === 'whitelist' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
             }}
           >
             <Database size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Whitelist Manager</span>
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Access Control</span>
           </button>
         </nav>
         
         <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           <button 
+            className="dashboard-nav-item"
             onClick={() => { setIsAuthenticated(false); }} 
-            style={{
-              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
-              color: '#ff5f56', background: 'rgba(255, 95, 86, 0.1)', border: '1px solid transparent',
-              cursor: 'pointer', width: '100%', transition: 'all 0.2s ease'
-            }}
+            style={{ color: '#ff5f56', background: 'rgba(255, 95, 86, 0.1)' }}
           >
             <LogOut size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Terminate Session</span>
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Terminate</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', zIndex: 10, position: 'relative' }}>
-        <header style={{ 
-          height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-          padding: '0 40px', borderBottom: '1px solid rgba(255,255,255,0.08)', 
-          backgroundColor: 'rgba(10, 10, 10, 0.5)', backdropFilter: 'blur(10px)',
-          position: 'sticky', top: 0, zIndex: 30
-        }}>
+      <main className="dashboard-main-content">
+        <header className="dashboard-header">
           <div>
             <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
               activeTab === 'overview' ? 'DASHBOARD OVERVIEW' : 
               activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
             }</h1>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
+            <p className="hide-on-mobile" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
           </div>
           
           <button 
@@ -305,20 +274,18 @@ export default function AdminDashboard() {
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', cursor: 'pointer', color: '#fff', fontWeight: 600, fontSize: '13px' }}
           >
             <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} /> 
-            <span>REFRESH DATA</span>
+            <span className="hide-on-mobile">REFRESH DATA</span>
           </button>
         </header>
 
-        <div style={{ flex: 1, padding: '40px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+        <div className="dashboard-content-wrapper">
           
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
               
-              {/* Stats Cards (Grid Layout) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', width: '100%' }}>
+              <div className="dashboard-stats-grid">
                 
-                {/* Card 1 */}
                 <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #27c93f', borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Users size={24} color="#27c93f" />
@@ -327,7 +294,6 @@ export default function AdminDashboard() {
                   <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{liveUsers.length}</div>
                 </div>
                 
-                {/* Card 2 */}
                 <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #fff', borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Database size={24} color="#fff" />
@@ -336,7 +302,6 @@ export default function AdminDashboard() {
                   <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{whitelist.length}</div>
                 </div>
 
-                {/* Card 3 */}
                 <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #ffbd2e', borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Cpu size={24} color="#ffbd2e" />
@@ -348,7 +313,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Execution Graph */}
-              <div className="hero-terminal-wrapper-mono" style={{ width: '100%', marginTop: '8px' }}>
+              <div className="hero-terminal-wrapper-mono" style={{ width: '100%', marginTop: '8px', maxWidth: 'none' }}>
                 <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                   <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
@@ -386,7 +351,7 @@ export default function AdminDashboard() {
           {/* TAB 2: ACTIVE SESSIONS */}
           {activeTab === "sessions" && (
             <div style={{ width: '100%' }}>
-              <div className="hero-terminal-wrapper-mono" style={{ width: '100%' }}>
+              <div className="hero-terminal-wrapper-mono" style={{ width: '100%', maxWidth: 'none' }}>
                 <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                   <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
@@ -398,7 +363,7 @@ export default function AdminDashboard() {
                     <div style={{ flex: 1 }}></div>
                   </div>
                   <div style={{ overflowX: 'auto', padding: '0' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '500px' }}>
                       <thead>
                         <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                           <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
@@ -439,10 +404,10 @@ export default function AdminDashboard() {
 
           {/* TAB 3: WHITELIST */}
           {activeTab === "whitelist" && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) 1fr', gap: '32px', width: '100%', alignItems: 'start' }}>
+            <div className="dashboard-whitelist-grid">
               
               {/* Add User Form */}
-              <div className="hero-terminal-wrapper-mono" style={{ margin: 0 }}>
+              <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
                 <div className="hero-terminal-mono" style={{ borderRadius: '12px' }}>
                   <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
@@ -485,7 +450,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Whitelist Table */}
-              <div className="hero-terminal-wrapper-mono" style={{ margin: 0 }}>
+              <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
                 <div className="hero-terminal-mono" style={{ borderRadius: '12px', height: '600px', display: 'flex', flexDirection: 'column' }}>
                   <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
@@ -515,7 +480,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div style={{ flex: 1, overflowY: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '350px' }}>
                       <thead style={{ position: 'sticky', top: 0, backgroundColor: 'rgba(10,10,10,0.95)', zIndex: 10 }}>
                         <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                           <th style={{ padding: '16px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
