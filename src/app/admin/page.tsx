@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,6 +15,9 @@ export default function AdminDashboard() {
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"live" | "whitelist">("live");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const [totalExecutions, setTotalExecutions] = useState(1337);
+  const [chartData, setChartData] = useState<{date: string, executions: number}[]>([]);
 
   useEffect(() => {
     fetchData(true);
@@ -38,6 +42,16 @@ export default function AdminDashboard() {
       const dataWhite = await resWhite.json();
       if (dataWhite.success) {
         setWhitelist(dataWhite.whitelist);
+      }
+
+      const resStats = await fetch("/api/admin/stats");
+      if (resStats.ok) {
+        const dataStats = await resStats.json();
+        if (dataStats.success) {
+          setTotalExecutions(dataStats.totalExecutions);
+          // Reverse chart data so oldest is first (left to right)
+          setChartData(dataStats.chartData.reverse());
+        }
       }
     } catch (e) {
       console.error(e);
@@ -187,7 +201,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div style={{ maxWidth: '1000px', width: '100%', display: 'flex', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
+      <div style={{ maxWidth: '1000px', width: '100%', display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <div className="hero-terminal-mono" style={{ flex: '1 1 200px', padding: '20px', borderTop: '2px solid #27c93f' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <Users size={20} color="#27c93f" />
@@ -202,6 +216,42 @@ export default function AdminDashboard() {
             <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Whitelisted</span>
           </div>
           <div style={{ fontSize: '36px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)' }}>{whitelist.length}</div>
+        </div>
+
+        <div className="hero-terminal-mono" style={{ flex: '1 1 200px', padding: '20px', borderTop: '2px solid #ffbd2e' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <Cpu size={20} color="#ffbd2e" />
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Executions</span>
+          </div>
+          <div style={{ fontSize: '36px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)' }}>{totalExecutions}</div>
+        </div>
+      </div>
+
+      {/* Execution Graph */}
+      <div className="hero-terminal-wrapper-mono" style={{ maxWidth: '1000px', width: '100%', marginTop: '0', marginBottom: '40px' }}>
+        <div className="hero-terminal-mono">
+          <div className="terminal-header-mono">
+            <div className="terminal-dots-mono">
+              <div className="dot-mono dot-mono-r"></div>
+              <div className="dot-mono dot-mono-y"></div>
+              <div className="dot-mono dot-mono-g"></div>
+            </div>
+            <div className="terminal-title">execution_telemetry.chart</div>
+            <div style={{ flex: 1 }}></div>
+          </div>
+          <div style={{ padding: '20px', height: '250px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'var(--font-fira-code)' }} />
+                <YAxis stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12, fontFamily: 'var(--font-fira-code)' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'rgba(10,10,10,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontFamily: 'var(--font-fira-code)' }}
+                  itemStyle={{ color: '#ffbd2e' }}
+                />
+                <Line type="monotone" dataKey="executions" stroke="#ffbd2e" strokeWidth={2} dot={{ fill: '#ffbd2e', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

@@ -50,6 +50,17 @@ export async function GET(request: NextRequest) {
         }
 
         if (isWhitelisted) {
+            if (redis) {
+                try {
+                    await redis.incr('eternity:stats:total_executions');
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    await redis.incr(`eternity:stats:executions:${today}`);
+                } catch(e) {
+                    console.error("Stats logging failed", e);
+                }
+            }
+            
             // Return plaintext "true" for the Lua script to easily read
             return new NextResponse("true", { headers: corsHeaders });
         } else {
