@@ -49,8 +49,8 @@ export default function AdminDashboard() {
         const dataStats = await resStats.json();
         if (dataStats.success) {
           setTotalExecutions(dataStats.totalExecutions);
-          // Reverse chart data so oldest is first (left to right)
-          setChartData(dataStats.chartData.reverse());
+          // Set chart data (it is already ordered oldest to newest by the API)
+          setChartData(dataStats.chartData);
         }
       }
     } catch (e) {
