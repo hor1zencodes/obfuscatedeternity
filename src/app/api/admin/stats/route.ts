@@ -32,8 +32,15 @@ export async function GET(request: NextRequest) {
             if (!totalStr) {
                 // Initialize to 1337 if it doesn't exist
                 await redis.set('eternity:stats:total_executions', 1337);
+                totalExecutions = 1337;
             } else {
                 totalExecutions = parseInt(totalStr.toString(), 10);
+                
+                // Self-healing: if the tracker started from 0 instead of 1337
+                if (totalExecutions < 1337) {
+                    totalExecutions += 1337;
+                    await redis.set('eternity:stats:total_executions', totalExecutions);
+                }
             }
 
             // Get last 7 days of executions for the chart
