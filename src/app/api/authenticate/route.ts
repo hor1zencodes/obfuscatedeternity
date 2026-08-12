@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
                 await redis.hset("live_users", { [user]: Date.now() });
             }
 
-            // Fetch the premium script (Jnkie placeholder)
-            // LATER: Replace this with your raw.githubusercontent.com obfuscated script URL
-            const scriptUrl = 'https://api.jnkie.com/api/v1/luascripts/public/33c4e8b5d41c8725d2d612456622846dc4201c3d8b2ea5d7f7eb90a374984081/download';
+            // Fetch the premium script
+            const scriptUrl = 'https://raw.githubusercontent.com/hor1zencodes/patanahi/main/heybro.lua';
             const scriptRes = await fetch(scriptUrl);
             const scriptText = await scriptRes.text();
 
