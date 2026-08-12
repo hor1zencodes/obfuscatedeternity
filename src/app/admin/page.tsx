@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { GLSLHills } from "@/components/GLSLHills";
 
@@ -19,17 +19,21 @@ export default function AdminDashboard() {
   
   const [totalExecutions, setTotalExecutions] = useState(1337);
   const [chartData, setChartData] = useState<{date: string, executions: number}[]>([]);
+  
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchData(true);
   }, []);
 
   const fetchData = async (initialCheck = false) => {
+    setIsRefreshing(true);
     try {
       const resLive = await fetch("/api/admin/live-users");
       if (resLive.status === 401) {
         if (!initialCheck) setError("Session expired. Please log in again.");
         setIsAuthenticated(false);
+        setIsRefreshing(false);
         return;
       }
       
@@ -55,6 +59,8 @@ export default function AdminDashboard() {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Visual delay for spinner
     }
   };
 
@@ -125,9 +131,9 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="saas-layout flex items-center justify-center min-h-screen p-4">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '16px', position: 'relative' }}>
         <GLSLHills />
-        <div className="hero-terminal-wrapper-mono" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="hero-terminal-wrapper-mono" style={{ maxWidth: '400px', width: '100%', zIndex: 10 }}>
           <div className="hero-terminal-mono">
             <div className="terminal-header-mono">
               <div className="terminal-dots-mono">
@@ -184,104 +190,167 @@ export default function AdminDashboard() {
     );
   }
 
+  // Use explicit styles to bypass Tailwind class failures
   return (
-    <div className="flex h-screen w-full overflow-hidden relative font-sans text-white bg-black">
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative', backgroundColor: '#050505', color: 'white', fontFamily: 'sans-serif' }}>
       <GLSLHills />
       
-      {/* Sidebar */}
-      <aside className="w-16 md:w-64 bg-black/40 backdrop-blur-md border-r border-white/10 flex flex-col z-20 flex-shrink-0 transition-all duration-300">
-        <div className="h-20 flex items-center justify-center md:justify-start md:px-6 border-b border-white/10 shrink-0">
-          <Shield className="text-white md:mr-3 shrink-0" size={24} />
-          <span className="hidden md:block hero-word-accent font-bold text-xl tracking-wider">ETERNITY</span>
+      {/* Sidebar - Fixed width, professional styling */}
+      <aside style={{ 
+        width: '280px', 
+        minWidth: '280px', 
+        backgroundColor: 'rgba(10, 10, 10, 0.7)', 
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(255,255,255,0.08)',
+        display: 'flex', 
+        flexDirection: 'column', 
+        zIndex: 20,
+        boxShadow: '4px 0 24px rgba(0,0,0,0.5)'
+      }}>
+        <div style={{ height: '80px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <Shield style={{ color: '#fff', marginRight: '12px' }} size={26} />
+          <span className="hero-word-accent" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em' }}>ETERNITY</span>
         </div>
         
-        <nav className="flex-1 py-6 flex flex-col gap-2 px-3 overflow-y-auto">
+        <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
+          
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.15em', marginBottom: '8px', marginLeft: '8px' }}>MAIN MENU</div>
+
           <button 
             onClick={() => setActiveTab("overview")}
-            className={`flex items-center justify-center md:justify-start gap-3 px-0 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'overview' ? 'bg-white/10 text-white border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-white/50 hover:bg-white/5 hover:text-white border border-transparent'}`}
-            title="Overview"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
+              backgroundColor: activeTab === 'overview' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'overview' ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'overview' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'left'
+            }}
           >
-            <LayoutDashboard size={20} className="shrink-0" />
-            <span className="hidden md:block text-sm font-semibold tracking-wide whitespace-nowrap">Overview</span>
+            <LayoutDashboard size={20} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Overview</span>
           </button>
           
           <button 
             onClick={() => setActiveTab("sessions")}
-            className={`flex items-center justify-center md:justify-start gap-3 px-0 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'sessions' ? 'bg-white/10 text-white border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-white/50 hover:bg-white/5 hover:text-white border border-transparent'}`}
-            title="Active Sessions"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
+              backgroundColor: activeTab === 'sessions' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'sessions' ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'sessions' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'left'
+            }}
           >
-            <Activity size={20} className="shrink-0" />
-            <span className="hidden md:block text-sm font-semibold tracking-wide whitespace-nowrap">Active Sessions</span>
+            <Activity size={20} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Active Sessions</span>
           </button>
 
           <button 
             onClick={() => setActiveTab("whitelist")}
-            className={`flex items-center justify-center md:justify-start gap-3 px-0 md:px-4 py-3 rounded-xl transition-all ${activeTab === 'whitelist' ? 'bg-white/10 text-white border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-white/50 hover:bg-white/5 hover:text-white border border-transparent'}`}
-            title="Whitelist Management"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
+              backgroundColor: activeTab === 'whitelist' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'whitelist' ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'whitelist' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'left'
+            }}
           >
-            <Database size={20} className="shrink-0" />
-            <span className="hidden md:block text-sm font-semibold tracking-wide whitespace-nowrap">Access Control</span>
+            <Database size={20} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Whitelist Manager</span>
           </button>
         </nav>
         
-        <div className="p-3 border-t border-white/10 shrink-0">
-          <button onClick={() => { setIsAuthenticated(false); }} className="w-full flex items-center justify-center md:justify-start gap-3 px-0 md:px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20" title="Logout">
-            <LogOut size={20} className="shrink-0" />
-            <span className="hidden md:block text-sm font-semibold whitespace-nowrap">Terminate</span>
+        <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <button 
+            onClick={() => { setIsAuthenticated(false); }} 
+            style={{
+              display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px',
+              color: '#ff5f56', background: 'rgba(255, 95, 86, 0.1)', border: '1px solid transparent',
+              cursor: 'pointer', width: '100%', transition: 'all 0.2s ease'
+            }}
+          >
+            <LogOut size={20} />
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>Terminate Session</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto z-10 relative">
-        <header className="h-20 flex items-center justify-between px-6 md:px-10 border-b border-white/10 bg-black/20 backdrop-blur-sm sticky top-0 z-30 shrink-0">
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto', zIndex: 10, position: 'relative' }}>
+        <header style={{ 
+          height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+          padding: '0 40px', borderBottom: '1px solid rgba(255,255,255,0.08)', 
+          backgroundColor: 'rgba(10, 10, 10, 0.5)', backdropFilter: 'blur(10px)',
+          position: 'sticky', top: 0, zIndex: 30
+        }}>
           <div>
-            <h1 className="text-lg md:text-2xl font-bold tracking-wide text-white uppercase">{
-              activeTab === 'overview' ? 'Dashboard Overview' : 
-              activeTab === 'sessions' ? 'Live Telemetry' : 'Access Management'
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
+              activeTab === 'overview' ? 'DASHBOARD OVERVIEW' : 
+              activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
             }</h1>
-            <p className="text-white/40 text-xs md:text-sm mt-1 tracking-wider hidden sm:block">Eternity Command Center</p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
           </div>
-          <button className="terminal-copy-btn-mono" onClick={() => fetchData()}>
-            <Activity size={16} /> <span className="hidden sm:inline">REFRESH DATA</span>
+          
+          <button 
+            className="terminal-copy-btn-mono" 
+            onClick={() => fetchData()}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', cursor: 'pointer', color: '#fff', fontWeight: 600, fontSize: '13px' }}
+          >
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} /> 
+            <span>REFRESH DATA</span>
           </button>
         </header>
 
-        <div className="flex-1 p-4 sm:p-6 md:p-10 max-w-[1400px] w-full mx-auto pb-20">
+        <div style={{ flex: 1, padding: '40px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+          
+          {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
-            <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
               
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <div className="hero-terminal-mono p-6 border-t-[3px] !border-t-[#27c93f]">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Users size={22} color="#27c93f" />
-                    <span className="text-white/50 text-xs md:text-sm uppercase tracking-widest font-semibold">Live Users</span>
+              {/* Stats Cards (Grid Layout) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', width: '100%' }}>
+                
+                {/* Card 1 */}
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #27c93f', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <Users size={24} color="#27c93f" />
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Live Users</span>
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold font-[var(--font-fira-code)]">{liveUsers.length}</div>
+                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{liveUsers.length}</div>
                 </div>
                 
-                <div className="hero-terminal-mono p-6 border-t-[3px] !border-t-white">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Database size={22} color="#fff" />
-                    <span className="text-white/50 text-xs md:text-sm uppercase tracking-widest font-semibold">Whitelisted</span>
+                {/* Card 2 */}
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #fff', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <Database size={24} color="#fff" />
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Whitelisted Users</span>
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold font-[var(--font-fira-code)]">{whitelist.length}</div>
+                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{whitelist.length}</div>
                 </div>
 
-                <div className="hero-terminal-mono p-6 border-t-[3px] !border-t-[#ffbd2e]">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Cpu size={22} color="#ffbd2e" />
-                    <span className="text-white/50 text-xs md:text-sm uppercase tracking-widest font-semibold">Total Executions</span>
+                {/* Card 3 */}
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #ffbd2e', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                    <Cpu size={24} color="#ffbd2e" />
+                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Total Executions</span>
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold font-[var(--font-fira-code)]">{totalExecutions}</div>
+                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{totalExecutions}</div>
                 </div>
+                
               </div>
 
               {/* Execution Graph */}
-              <div className="hero-terminal-wrapper-mono w-full mt-2">
-                <div className="hero-terminal-mono">
-                  <div className="terminal-header-mono">
+              <div className="hero-terminal-wrapper-mono" style={{ width: '100%', marginTop: '8px' }}>
+                <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
+                  <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
                       <div className="dot-mono dot-mono-r"></div>
                       <div className="dot-mono dot-mono-y"></div>
@@ -290,7 +359,7 @@ export default function AdminDashboard() {
                     <div className="terminal-title">execution_telemetry.chart</div>
                     <div style={{ flex: 1 }}></div>
                   </div>
-                  <div className="p-4 md:p-6 h-[300px] md:h-[400px]">
+                  <div style={{ padding: '30px', height: '400px', width: '100%' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <defs>
@@ -314,11 +383,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* TAB 2: ACTIVE SESSIONS */}
           {activeTab === "sessions" && (
-            <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="hero-terminal-wrapper-mono w-full !mt-0">
-                <div className="hero-terminal-mono">
-                  <div className="terminal-header-mono">
+            <div style={{ width: '100%' }}>
+              <div className="hero-terminal-wrapper-mono" style={{ width: '100%' }}>
+                <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
+                  <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
                       <div className="dot-mono dot-mono-r"></div>
                       <div className="dot-mono dot-mono-y"></div>
@@ -327,33 +397,33 @@ export default function AdminDashboard() {
                     <div className="terminal-title">live_executions.sys</div>
                     <div style={{ flex: 1 }}></div>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse text-left min-w-[500px]">
+                  <div style={{ overflowX: 'auto', padding: '0' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                       <thead>
-                        <tr className="bg-white/5 border-b border-white/10">
-                          <th className="p-4 md:p-5 text-xs text-white/50 uppercase tracking-widest font-medium">Identifier</th>
-                          <th className="p-4 md:p-5 text-xs text-white/50 uppercase tracking-widest font-medium">Status</th>
-                          <th className="p-4 md:p-5 text-xs text-white/50 uppercase tracking-widest font-medium">Last Ping</th>
+                        <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                          <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
+                          <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
+                          <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Last Ping</th>
                         </tr>
                       </thead>
                       <tbody>
                         {liveUsers.length === 0 ? (
                           <tr>
-                            <td colSpan={3} className="p-10 text-center text-white/30 italic">
+                            <td colSpan={3} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                               NO ACTIVE EXECUTIONS DETECTED
                             </td>
                           </tr>
                         ) : (
                           liveUsers.map((user, i) => (
-                            <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                              <td className="p-4 md:p-5 font-[var(--font-fira-code)] font-medium text-white">{user.user}</td>
-                              <td className="p-4 md:p-5">
-                                <div className="inline-flex items-center gap-2 bg-[#27c93f]/10 border border-[#27c93f]/30 px-3 py-1.5 rounded-full text-xs text-[#27c93f] font-semibold tracking-wider">
-                                  <div className="pulse-dot-green w-1.5 h-1.5"></div>
+                            <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                              <td style={{ padding: '20px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>{user.user}</td>
+                              <td style={{ padding: '20px 24px' }}>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(39,201,63,0.1)', border: '1px solid rgba(39,201,63,0.3)', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', color: '#27c93f', fontWeight: 'bold', letterSpacing: '0.1em' }}>
+                                  <div className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></div>
                                   ONLINE
                                 </div>
                               </td>
-                              <td className="p-4 md:p-5 text-white/50 text-sm">
+                              <td style={{ padding: '20px 24px', color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
                                 {new Date(user.timestamp).toLocaleTimeString()}
                               </td>
                             </tr>
@@ -367,12 +437,14 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* TAB 3: WHITELIST */}
           {activeTab === "whitelist" && (
-            <div className="flex flex-col lg:flex-row gap-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) 1fr', gap: '32px', width: '100%', alignItems: 'start' }}>
+              
               {/* Add User Form */}
-              <div className="hero-terminal-wrapper-mono !mt-0 lg:w-[350px] shrink-0">
-                <div className="hero-terminal-mono h-full flex flex-col">
-                  <div className="terminal-header-mono shrink-0">
+              <div className="hero-terminal-wrapper-mono" style={{ margin: 0 }}>
+                <div className="hero-terminal-mono" style={{ borderRadius: '12px' }}>
+                  <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
                       <div className="dot-mono dot-mono-r"></div>
                       <div className="dot-mono dot-mono-y"></div>
@@ -381,22 +453,29 @@ export default function AdminDashboard() {
                     <div className="terminal-title">grant_access.exe</div>
                     <div style={{ flex: 1 }}></div>
                   </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <form onSubmit={handleAddWhitelist} className="w-full flex flex-col gap-5">
+                  <div style={{ padding: '30px' }}>
+                    <form onSubmit={handleAddWhitelist} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <div>
-                        <label className="block text-white/50 text-xs uppercase tracking-widest mb-3 font-semibold">Roblox Username</label>
+                        <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', fontWeight: 600 }}>Roblox Username</label>
                         <input 
                           type="text" 
                           value={newUsername}
                           onChange={(e) => setNewUsername(e.target.value)}
                           placeholder="e.g. user123"
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-white font-[var(--font-fira-code)] outline-none focus:border-white/30 focus:bg-black/60 transition-all text-sm"
+                          style={{
+                            width: '100%', backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '12px', padding: '14px 16px', color: '#fff', fontFamily: 'var(--font-fira-code)',
+                            outline: 'none', fontSize: '14px', transition: 'all 0.2s'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.3)'}
+                          onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                         />
                       </div>
                       <button 
                         type="submit" 
                         disabled={!newUsername.trim()}
-                        className="terminal-copy-btn-mono w-full justify-center !bg-white/10 hover:!bg-white/20 !py-3.5 !rounded-xl"
+                        className="terminal-copy-btn-mono"
+                        style={{ width: '100%', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', opacity: !newUsername.trim() ? 0.5 : 1 }}
                       >
                         <UserPlus size={18} /> ADD TO WHITELIST
                       </button>
@@ -406,9 +485,9 @@ export default function AdminDashboard() {
               </div>
 
               {/* Whitelist Table */}
-              <div className="hero-terminal-wrapper-mono !mt-0 flex-1 h-[500px] lg:h-[600px]">
-                <div className="hero-terminal-mono h-full flex flex-col">
-                  <div className="terminal-header-mono shrink-0">
+              <div className="hero-terminal-wrapper-mono" style={{ margin: 0 }}>
+                <div className="hero-terminal-mono" style={{ borderRadius: '12px', height: '600px', display: 'flex', flexDirection: 'column' }}>
+                  <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="terminal-dots-mono">
                       <div className="dot-mono dot-mono-r"></div>
                       <div className="dot-mono dot-mono-y"></div>
@@ -419,48 +498,56 @@ export default function AdminDashboard() {
                   </div>
                   
                   {/* Search Bar */}
-                  <div className="p-4 border-b border-white/10 shrink-0 bg-black/20">
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                    <div style={{ position: 'relative' }}>
+                      <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgba(255,255,255,0.4)' }} />
                       <input 
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search whitelist..."
-                        className="w-full bg-black/40 border border-white/5 rounded-lg py-2.5 px-4 pl-11 text-white outline-none text-sm focus:border-white/20 transition-colors"
+                        style={{
+                          width: '100%', backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.05)',
+                          borderRadius: '8px', padding: '12px 16px 12px 44px', color: '#fff', outline: 'none', fontSize: '14px'
+                        }}
                       />
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto">
-                    <table className="w-full border-collapse text-left relative">
-                      <thead className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-md">
-                        <tr className="bg-white/[0.02] border-b border-white/10 shadow-sm">
-                          <th className="p-4 md:p-5 text-xs text-white/50 uppercase tracking-widest font-medium">Identifier</th>
-                          <th className="p-4 md:p-5 text-xs text-white/50 uppercase tracking-widest font-medium text-right">Action</th>
+                  <div style={{ flex: 1, overflowY: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                      <thead style={{ position: 'sticky', top: 0, backgroundColor: 'rgba(10,10,10,0.95)', zIndex: 10 }}>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                          <th style={{ padding: '16px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
+                          <th style={{ padding: '16px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, textAlign: 'right' }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {whitelist.length === 0 ? (
                           <tr>
-                            <td colSpan={2} className="p-10 text-center text-white/30 italic">
+                            <td colSpan={2} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                               DATABASE EMPTY
                             </td>
                           </tr>
                         ) : filteredWhitelist.length === 0 ? (
                           <tr>
-                            <td colSpan={2} className="p-10 text-center text-white/30 italic">
+                            <td colSpan={2} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                               NO MATCHES FOUND
                             </td>
                           </tr>
                         ) : (
                           filteredWhitelist.map((user, i) => (
-                            <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                              <td className="p-4 md:p-5 font-[var(--font-fira-code)] font-medium text-white/90">{user}</td>
-                              <td className="p-4 md:p-5 text-right">
+                            <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                              <td style={{ padding: '16px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>{user}</td>
+                              <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                                 <button 
                                   onClick={() => handleRemoveWhitelist(user)}
-                                  className="text-red-400/70 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-lg transition-all opacity-50 group-hover:opacity-100"
+                                  style={{
+                                    color: 'rgba(255,95,86,0.7)', background: 'transparent', border: 'none', cursor: 'pointer',
+                                    padding: '8px', borderRadius: '8px', transition: 'all 0.2s'
+                                  }}
+                                  onMouseOver={(e) => { e.currentTarget.style.color = '#ff5f56'; e.currentTarget.style.backgroundColor = 'rgba(255,95,86,0.1)'; }}
+                                  onMouseOut={(e) => { e.currentTarget.style.color = 'rgba(255,95,86,0.7)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                                   title="Revoke Access"
                                 >
                                   <Trash2 size={18} />
