@@ -12,132 +12,368 @@ import { motion, useScroll, useSpring, AnimatePresence } from 'motion/react';
    SHADERS (ORIGINAL VERSIONS)
 ======================================== */
 
-// --- Shader Plane & Energy Ring (Theme 3) ---
-const vertexShader = `
-  uniform float time;
-  uniform float intensity;
-  varying vec2 vUv;
-  varying vec3 vPosition;
-  
-  void main() {
-    vUv = uv;
-    vPosition = position;
-    
-    vec3 pos = position;
-    pos.y += sin(pos.x * 10.0 + time) * 0.1 * intensity;
-    pos.x += cos(pos.y * 8.0 + time * 1.5) * 0.05 * intensity;
-    
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  }
-`;
+// --- New WebGL Clouds Shader (Theme 3 Replacement) ---
 
-const fragmentShader = `
-  uniform float time;
-  uniform float intensity;
-  uniform vec3 color1;
-  uniform vec3 color2;
-  varying vec2 vUv;
-  varying vec3 vPosition;
-  
-  void main() {
-    vec2 uv = vUv;
-    
-    // Create animated noise pattern
-    float noise = sin(uv.x * 20.0 + time) * cos(uv.y * 15.0 + time * 0.8);
-    noise += sin(uv.x * 35.0 - time * 2.0) * cos(uv.y * 25.0 + time * 1.2) * 0.5;
-    
-    // Mix colors based on noise and position
-    vec3 color = mix(color1, color2, noise * 0.5 + 0.5);
-    color = mix(color, vec3(1.0), pow(abs(noise), 2.0) * intensity);
-    
-    // Add glow effect
-    float glow = 1.0 - length(uv - 0.5) * 2.0;
-    glow = pow(glow, 2.0);
-    
-    gl_FragColor = vec4(color * glow, glow * 0.8);
-  }
-`;
+const useShaderBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number>();
+  const rendererRef = useRef<any>(null);
+  const pointersRef = useRef<any>(null);
 
-function ShaderPlane({
-  position,
-  color1 = "#ff5722",
-  color2 = "#ffffff",
-}: {
-  position: [number, number, number]
-  color1?: string
-  color2?: string
-}) {
-  const mesh = useRef<THREE.Mesh>(null!)
+  // WebGL Renderer class
+  class WebGLRenderer {
+    private canvas: HTMLCanvasElement;
+    private gl: WebGL2RenderingContext;
+    private program: WebGLProgram | null = null;
+    private vs: WebGLShader | null = null;
+    private fs: WebGLShader | null = null;
+    private buffer: WebGLBuffer | null = null;
+    private scale: number;
+    private shaderSource: string;
+    private mouseMove = [0, 0];
+    private mouseCoords = [0, 0];
+    private pointerCoords = [0, 0];
+    private nbrOfPointers = 0;
 
-  const uniforms = useMemo(
-    () => ({
-      time: { value: 0 },
-      intensity: { value: 1.0 },
-      color1: { value: new THREE.Color(color1) },
-      color2: { value: new THREE.Color(color2) },
-    }),
-    [color1, color2],
-  )
+    private vertexSrc = `#version 300 es
+precision highp float;
+in vec4 position;
+void main(){gl_Position=position;}`;
 
-  useFrame((state) => {
-    if (mesh.current) {
-      // @ts-ignore
-      mesh.current.material.uniforms.time.value = state.clock.elapsedTime
-      // @ts-ignore
-      mesh.current.material.uniforms.intensity.value = 1.0 + Math.sin(state.clock.elapsedTime * 2) * 0.3
+    private vertices = [-1, 1, -1, -1, 1, 1, 1, -1];
+
+    constructor(canvas: HTMLCanvasElement, scale: number) {
+      this.canvas = canvas;
+      this.scale = scale;
+      this.gl = canvas.getContext('webgl2')!;
+      this.gl.viewport(0, 0, canvas.width * scale, canvas.height * scale);
+      this.shaderSource = defaultShaderSource;
     }
-  })
 
+    updateShader(source: string) {
+      this.reset();
+      this.shaderSource = source;
+      this.setup();
+      this.init();
+    }
+
+    updateMove(deltas: number[]) {
+      this.mouseMove = deltas;
+    }
+
+    updateMouse(coords: number[]) {
+      this.mouseCoords = coords;
+    }
+
+    updatePointerCoords(coords: number[]) {
+      this.pointerCoords = coords;
+    }
+
+    updatePointerCount(nbr: number) {
+      this.nbrOfPointers = nbr;
+    }
+
+    updateScale(scale: number) {
+      this.scale = scale;
+      this.gl.viewport(0, 0, this.canvas.width * scale, this.canvas.height * scale);
+    }
+
+    compile(shader: WebGLShader, source: string) {
+      const gl = this.gl;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const error = gl.getShaderInfoLog(shader);
+        console.error('Shader compilation error:', error);
+      }
+    }
+
+    test(source: string) {
+      let result = null;
+      const gl = this.gl;
+      const shader = gl.createShader(gl.FRAGMENT_SHADER)!;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        result = gl.getShaderInfoLog(shader);
+      }
+      gl.deleteShader(shader);
+      return result;
+    }
+
+    reset() {
+      const gl = this.gl;
+      if (this.program && !gl.getProgramParameter(this.program, gl.DELETE_STATUS)) {
+        if (this.vs) {
+          gl.detachShader(this.program, this.vs);
+          gl.deleteShader(this.vs);
+        }
+        if (this.fs) {
+          gl.detachShader(this.program, this.fs);
+          gl.deleteShader(this.fs);
+        }
+        gl.deleteProgram(this.program);
+      }
+    }
+
+    setup() {
+      const gl = this.gl;
+      this.vs = gl.createShader(gl.VERTEX_SHADER)!;
+      this.fs = gl.createShader(gl.FRAGMENT_SHADER)!;
+      this.compile(this.vs, this.vertexSrc);
+      this.compile(this.fs, this.shaderSource);
+      this.program = gl.createProgram()!;
+      gl.attachShader(this.program, this.vs);
+      gl.attachShader(this.program, this.fs);
+      gl.linkProgram(this.program);
+
+      if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(this.program));
+      }
+    }
+
+    init() {
+      const gl = this.gl;
+      const program = this.program!;
+      
+      this.buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+
+      const position = gl.getAttribLocation(program, 'position');
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+      (program as any).resolution = gl.getUniformLocation(program, 'resolution');
+      (program as any).time = gl.getUniformLocation(program, 'time');
+      (program as any).move = gl.getUniformLocation(program, 'move');
+      (program as any).touch = gl.getUniformLocation(program, 'touch');
+      (program as any).pointerCount = gl.getUniformLocation(program, 'pointerCount');
+      (program as any).pointers = gl.getUniformLocation(program, 'pointers');
+    }
+
+    render(now = 0) {
+      const gl = this.gl;
+      const program = this.program;
+      
+      if (!program || gl.getProgramParameter(program, gl.DELETE_STATUS)) return;
+
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      
+      gl.uniform2f((program as any).resolution, this.canvas.width, this.canvas.height);
+      gl.uniform1f((program as any).time, now * 1e-3);
+      gl.uniform2f((program as any).move, ...this.mouseMove);
+      gl.uniform2f((program as any).touch, ...this.mouseCoords);
+      gl.uniform1i((program as any).pointerCount, this.nbrOfPointers);
+      gl.uniform2fv((program as any).pointers, this.pointerCoords);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+  }
+
+  // Pointer Handler class
+  class PointerHandler {
+    private scale: number;
+    private active = false;
+    private pointers = new Map<number, number[]>();
+    private lastCoords = [0, 0];
+    private moves = [0, 0];
+
+    constructor(element: HTMLCanvasElement, scale: number) {
+      this.scale = scale;
+      
+      const map = (element: HTMLCanvasElement, scale: number, x: number, y: number) => 
+        [x * scale, element.height - y * scale];
+
+      element.addEventListener('pointerdown', (e) => {
+        this.active = true;
+        this.pointers.set(e.pointerId, map(element, this.getScale(), e.clientX, e.clientY));
+      });
+
+      element.addEventListener('pointerup', (e) => {
+        if (this.count === 1) {
+          this.lastCoords = this.first;
+        }
+        this.pointers.delete(e.pointerId);
+        this.active = this.pointers.size > 0;
+      });
+
+      element.addEventListener('pointerleave', (e) => {
+        if (this.count === 1) {
+          this.lastCoords = this.first;
+        }
+        this.pointers.delete(e.pointerId);
+        this.active = this.pointers.size > 0;
+      });
+
+      element.addEventListener('pointermove', (e) => {
+        if (!this.active) return;
+        this.lastCoords = [e.clientX, e.clientY];
+        this.pointers.set(e.pointerId, map(element, this.getScale(), e.clientX, e.clientY));
+        this.moves = [this.moves[0] + e.movementX, this.moves[1] + e.movementY];
+      });
+    }
+
+    getScale() {
+      return this.scale;
+    }
+
+    updateScale(scale: number) {
+      this.scale = scale;
+    }
+
+    get count() {
+      return this.pointers.size;
+    }
+
+    get move() {
+      return this.moves;
+    }
+
+    get coords() {
+      return this.pointers.size > 0 
+        ? Array.from(this.pointers.values()).flat() 
+        : [0, 0];
+    }
+
+    get first() {
+      return this.pointers.values().next().value || this.lastCoords;
+    }
+  }
+
+  const resize = () => {
+    if (!canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
+    
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    
+    if (rendererRef.current) {
+      rendererRef.current.updateScale(dpr);
+    }
+  };
+
+  const loop = (now: number) => {
+    if (!rendererRef.current || !pointersRef.current) return;
+    
+    rendererRef.current.updateMouse(pointersRef.current.first);
+    rendererRef.current.updatePointerCount(pointersRef.current.count);
+    rendererRef.current.updatePointerCoords(pointersRef.current.coords);
+    rendererRef.current.updateMove(pointersRef.current.move);
+    rendererRef.current.render(now);
+    animationFrameRef.current = requestAnimationFrame(loop);
+  };
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
+    
+    rendererRef.current = new WebGLRenderer(canvas, dpr);
+    pointersRef.current = new PointerHandler(canvas, dpr);
+    
+    rendererRef.current.setup();
+    rendererRef.current.init();
+    
+    resize();
+    
+    if (rendererRef.current.test(defaultShaderSource) === null) {
+      rendererRef.current.updateShader(defaultShaderSource);
+    }
+    
+    loop(0);
+    
+    window.addEventListener('resize', resize);
+    
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (rendererRef.current) {
+        rendererRef.current.reset();
+      }
+    };
+  }, []);
+
+  return canvasRef;
+};
+
+const defaultShaderSource = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 resolution;
+uniform float time;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+float rnd(vec2 p) {
+  p=fract(p*vec2(12.9898,78.233));
+  p+=dot(p,p+34.56);
+  return fract(p.x*p.y);
+}
+float noise(in vec2 p) {
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.-2.*f);
+  float a=rnd(i), b=rnd(i+vec2(1,0)), c=rnd(i+vec2(0,1)), d=rnd(i+1.);
+  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+}
+float fbm(vec2 p) {
+  float t=.0, a=1.; mat2 m=mat2(1.,-.5,.2,1.2);
+  for (int i=0; i<5; i++) {
+    t+=a*noise(p); p*=2.*m; a*=.5;
+  }
+  return t;
+}
+float clouds(vec2 p) {
+	float d=1., t=.0;
+	for (float i=.0; i<3.; i++) {
+		float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);
+		t=mix(t,d,a); d=a; p*=2./(i+1.);
+	}
+	return t;
+}
+void main(void) {
+	vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
+	vec3 col=vec3(0);
+	float bg=clouds(vec2(st.x+T*.5,-st.y));
+	uv*=1.-.3*(sin(T*.2)*.5+.5);
+	for (float i=1.; i<12.; i++) {
+		uv+=.1*cos(i*vec2(.1+.01*i, .8)+i*i+T*.5+.1*uv.x);
+		vec2 p=uv;
+		float d=length(p);
+		// PURE MONOCHROME: Use vec3(1.0) instead of vec3(1,2,3) to remove color
+		col+=.00125/d*(cos(sin(i)*vec3(1.0))+1.);
+		float b=noise(i+p+bg*1.731);
+		col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+		// Darker base background
+		col=mix(col,vec3(bg*.15, bg*.15, bg*.15),d);
+	}
+	// Softly darken overall to find the middle ground
+	col = col * 0.65; 
+	O=vec4(col,1);
+}`;
+
+const GLSLClouds = () => {
+  const canvasRef = useShaderBackground();
   return (
-    <mesh ref={mesh} position={position}>
-      <planeGeometry args={[2, 2, 32, 32]} />
-      <shaderMaterial
-        uniforms={uniforms}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        transparent
-        side={THREE.DoubleSide}
+    <div className="fixed inset-0 z-[-1] bg-black pointer-events-none w-screen h-screen">
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full object-cover touch-none"
+        style={{ background: 'black' }}
       />
-    </mesh>
-  )
-}
-
-function EnergyRing({
-  radius = 1,
-  position = [0, 0, 0],
-}: {
-  radius?: number
-  position?: [number, number, number]
-}) {
-  const mesh = useRef<THREE.Mesh>(null!)
-
-  useFrame((state) => {
-    if (mesh.current) {
-      mesh.current.rotation.z = state.clock.elapsedTime
-      // @ts-ignore
-      mesh.current.material.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 3) * 0.3
-    }
-  })
-
-  return (
-    <mesh ref={mesh} position={position}>
-      <ringGeometry args={[radius * 0.8, radius, 32]} />
-      <meshBasicMaterial color="#ffffff" transparent opacity={0.6} side={THREE.DoubleSide} />
-    </mesh>
-  )
-}
-
-function Shader3Container() {
-  const { size } = useThree();
-  const scale = Math.max(size.width, size.height) / 100;
-  return (
-    <group scale={[scale, scale, 1]}>
-      {/* Passing black and white colors to keep it fully monochrome! */}
-      <ShaderPlane position={[0, 0, 0]} color1="#000000" color2="#ffffff" />
-      <EnergyRing position={[0, 0, 0.1]} />
-    </group>
+    </div>
   );
-}
+};
+
 
 // --- GLSL Hills (Theme 5) ---
 const GLSLHills = ({ cameraZ = 125, planeSize = 256, speed = 0.5 }) => {
@@ -385,6 +621,8 @@ export default function Home() {
   const [typedChars, setTypedChars] = useState(0);
   const [backgroundTheme, setBackgroundTheme] = useState<'plane' | 'hills' | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showEnterPrompt, setShowEnterPrompt] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
 
   const fullScript = 'loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()';
 
@@ -394,6 +632,12 @@ export default function Home() {
     damping: 30,
     restDelta: 0.001
   });
+
+  useEffect(() => {
+    return scrollYProgress.on('change', (latest) => {
+      setIsAtBottom(latest > 0.95);
+    });
+  }, [scrollYProgress]);
 
   useEffect(() => {
     if (!isLoading) return;
@@ -419,7 +663,7 @@ export default function Home() {
       clearInterval(textInterval);
       clearInterval(progressInterval);
       setLoadingProgress(100);
-      setIsLoading(false);
+      setShowEnterPrompt(true);
     }, textDuration * loadingTexts.length + 200);
 
     return () => {
@@ -474,29 +718,70 @@ export default function Home() {
             exit={{ opacity: 0, filter: 'blur(10px)' }} 
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="loading-overlay"
+            onClick={() => {
+              if (showEnterPrompt) {
+                setIsLoading(false);
+                setShowEnterPrompt(false);
+              }
+            }}
+            style={{ cursor: showEnterPrompt ? 'pointer' : 'default' }}
           >
             <div className="loading-content">
-              <div className="loading-text-container">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={loadingTextIndex}
-                    initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
-                    transition={{ duration: 0.25 }}
-                    className="loading-text"
-                  >
-                    {loadingTexts[loadingTextIndex]}
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-              
-              <div className="loading-bar-container">
-                <div 
-                  className="loading-bar-fill"
-                  style={{ width: `${loadingProgress}%` }}
+              {/* Circular Progress & Logo */}
+              <div className="circular-loader-wrapper">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+                  <motion.circle 
+                    cx="50" cy="50" r="46" 
+                    fill="none" 
+                    stroke="#ffffff" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                    animate={{ pathLength: loadingProgress / 100 }}
+                    initial={{ pathLength: 0 }}
+                    transition={{ duration: 0.1, ease: 'linear' }}
+                    style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }}
+                  />
+                </svg>
+
+                <motion.img 
+                  src="/eternity.png" 
+                  alt="Eternity Logo" 
+                  className="loading-logo-circular"
+                  style={{ zIndex: 2 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
+
+              {!showEnterPrompt ? (
+                <>
+                  <div className="loading-text-container">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={loadingTextIndex}
+                        initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
+                        transition={{ duration: 0.25 }}
+                        className="loading-text"
+                      >
+                        {loadingTexts[loadingTextIndex]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="enter-prompt-container"
+                >
+                  <p className="enter-prompt-text">TAP TO ENTER ETERNITY</p>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
@@ -504,19 +789,46 @@ export default function Home() {
 
       <div className="saas-layout">
         {/* 3D Dynamic Backgrounds */}
-        {backgroundTheme === 'plane' ? (
-          <div className="fixed inset-0 z-[-1] bg-black pointer-events-none w-screen h-screen">
-            <Canvas camera={{ position: [0, 0, 5], fov: 75 }} style={{ width: '100%', height: '100%' }}>
-              <Shader3Container />
-            </Canvas>
-          </div>
-        ) : (
-          <GLSLHills />
-        )}
+        <GLSLHills />
 
         {!isLoading && (
           <>
-            <motion.div className="scroll-progress-bar" style={{ scaleY }} />
+            {/* Circular Progress Indicator (Top Right) */}
+            <div 
+              className={`circular-progress ${isScrolled ? 'scrolled' : ''}`}
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                if (isAtBottom) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+              }}
+            >
+              <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+                <motion.circle 
+                  cx="50" cy="50" r="40" 
+                  fill="none" 
+                  stroke="#ffffff" 
+                  strokeWidth="6" 
+                  strokeLinecap="round"
+                  style={{ pathLength: scaleY }} 
+                />
+              </svg>
+              {/* Down/Up Arrow Icon */}
+              <motion.svg 
+                width="14" height="14" viewBox="0 0 24 24" 
+                fill="none" stroke="rgba(255,255,255,0.5)" 
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
+                style={{ position: 'relative', zIndex: 2 }}
+                animate={{ rotate: isAtBottom ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+              </motion.svg>
+            </div>
+
             {/* Navbar */}
             <nav className={`saas-navbar ${isScrolled ? 'scrolled' : ''}`}>
           <div className="nav-content">
@@ -557,9 +869,26 @@ export default function Home() {
             <span className="pulse-dot-green"></span>
             Script Status: <strong style={{color: '#10b981'}}>Operational</strong>
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.2, ease: "easeOut" }} className="hero-title">
-            R<span className="glitch-letter" style={{ animationDelay: '0.5s' }}>e</span>def<span className="glitch-letter" style={{ animationDelay: '1.2s' }}>i</span>n<span className="glitch-letter" style={{ animationDelay: '2.5s' }}>i</span>ng <span className="glitch-letter" style={{ animationDelay: '0.2s' }}>E</span>xec<span className="glitch-letter" style={{ animationDelay: '3.1s' }}>u</span>ti<span className="glitch-letter" style={{ animationDelay: '1.7s' }}>o</span>n
-          </motion.h1>
+          <div className="hero-title-wrapper">
+            <motion.span
+              className="hero-word"
+              initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+              viewport={{ once: false, margin: '-10%' }}
+              transition={{ duration: 0.9, delay: 0.15, type: 'spring', bounce: 0.3 }}
+            >
+              Redefining
+            </motion.span>
+            <motion.span
+              className="hero-word hero-word-accent"
+              initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+              viewport={{ once: false, margin: '-10%' }}
+              transition={{ duration: 0.9, delay: 0.38, type: 'spring', bounce: 0.3 }}
+            >
+              Execution
+            </motion.span>
+          </div>
           <motion.p initial={{ opacity: 0, x: -30, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.4, type: "spring", bounce: 0.3 }} className="hero-subtitle">
             Lightning fast, completely undetected, and built for absolute dominance.<br/>
             Eternity is the premier execution engine for modern scripters.

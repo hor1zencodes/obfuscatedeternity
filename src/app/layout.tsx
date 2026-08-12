@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { VT323, Outfit, Fira_Code } from 'next/font/google'
+import { VT323, Montserrat, Fira_Code, Poppins } from 'next/font/google'
 import './globals.css'
 
 const vt323 = VT323({ weight: '400', subsets: ['latin'], variable: '--font-vt323' })
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
 const firaCode = Fira_Code({ subsets: ['latin'], variable: '--font-fira-code' })
+const poppins = Poppins({ weight: ['400','600','700','800','900'], subsets: ['latin'], variable: '--font-poppins' })
 
 export const viewport: import('next').Viewport = {
   width: 'device-width',
@@ -37,15 +38,19 @@ export const metadata: Metadata = {
   },
 }
 
+import SmoothScroll from '@/components/SmoothScroll'
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${vt323.variable} ${outfit.variable} ${firaCode.variable}`}>
+    <html lang="en" className={`${vt323.variable} ${montserrat.variable} ${firaCode.variable} ${poppins.variable}`}>
       <body>
-        {children}
+        <SmoothScroll>
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   )

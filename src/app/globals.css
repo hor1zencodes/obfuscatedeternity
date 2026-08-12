@@ -6,7 +6,7 @@
   margin: 0; 
   padding: 0; 
   box-sizing: border-box; 
-  font-family: var(--font-outfit), sans-serif; 
+  font-family: var(--font-montserrat), sans-serif; 
 }
 
 html {
@@ -19,16 +19,39 @@ html {
   display: none;
 }
 
-.scroll-progress-bar {
+.circular-progress {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 4px;
-  background: #ffffff;
-  transform-origin: top;
-  z-index: 1000;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  top: 24px;
+  right: 2.5%; /* At nav level but to the far right */
+  width: 48px;
+  height: 48px;
+  background: rgba(10, 10, 10, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.circular-progress.scrolled {
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px) {
+  .circular-progress {
+    top: auto;
+    bottom: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+  }
 }
 
 body {
@@ -42,7 +65,7 @@ body {
 
 /* Typography Overrides */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-montserrat), sans-serif;
 }
 
 /* Script / Code Fonts */
@@ -245,47 +268,88 @@ h1, h2, h3, h4, h5, h6 {
   100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
-.hero-title {
-  font-size: clamp(40px, 8vw, 72px);
+/* =========================================
+   HERO TITLE — CINEMATIC SPLIT-WORD REVEAL
+   ========================================= */
+.hero-title-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  flex-wrap: wrap;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.hero-word {
+  display: inline-block;
+  font-size: clamp(36px, 5.5vw, 68px);
   font-weight: 800;
-  line-height: 1.1;
+  font-family: var(--font-poppins), sans-serif;
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, #ffffff 0%, #555555 50%, #ffffff 100%);
-  background-size: 200% auto;
+  text-transform: none;
+  line-height: 1;
+  background: linear-gradient(
+    100deg,
+    #444444 0%,
+    #444444 30%,
+    #ffffff 44%,
+    #ffffff 50%,
+    #ffffff 56%,
+    #444444 70%,
+    #444444 100%
+  );
+  background-size: 300% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: text-shine 3s linear infinite;
+  text-shadow: none;
+  filter: drop-shadow(0 0 40px rgba(255,255,255,0.15));
+  animation: word-shimmer 2.4s linear infinite, hero-breathe 6s ease-in-out infinite;
 }
 
-@keyframes text-shine {
-  0% {
-    background-position: 0% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
+.hero-word-accent {
+  background: linear-gradient(
+    100deg,
+    #333333 0%,
+    #333333 28%,
+    #dddddd 40%,
+    #ffffff 50%,
+    #dddddd 60%,
+    #333333 72%,
+    #333333 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 60px rgba(255,255,255,0.3)) drop-shadow(0 0 120px rgba(255,255,255,0.1));
+  animation: word-shimmer-fast 2s linear infinite, hero-breathe 6s ease-in-out infinite 0.5s;
 }
 
-.glitch-letter {
-  animation: letter-glitch 4s infinite;
+@keyframes word-shimmer {
+  0%   { background-position: 150% center; }
+  100% { background-position: -150% center; }
 }
 
-@keyframes letter-glitch {
-  0%, 90% { opacity: 1; }
-  91% { opacity: 0; }
-  92% { opacity: 1; }
-  93% { opacity: 0.3; }
-  94% { opacity: 1; }
-  96% { opacity: 0; }
-  98% { opacity: 1; }
-  100% { opacity: 1; }
+@keyframes word-shimmer-fast {
+  0%   { background-position: -150% center; }
+  100% { background-position: 150% center; }
 }
+
+@keyframes hero-breathe {
+  0%, 100% { filter: drop-shadow(0 0 40px rgba(255,255,255,0.15)); }
+  50%       { filter: drop-shadow(0 0 70px rgba(255,255,255,0.35)); }
+}
+
+/* Keep glitch class in case used elsewhere but neutralise it */
+.glitch-letter { animation: none; }
 .hero-subtitle {
-  font-size: 18px;
+  font-size: clamp(12px, 2vw, 16px);
   color: rgba(255, 255, 255, 0.5);
-  max-width: 600px;
+  max-width: 800px;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -349,7 +413,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.05);
-  animation: cinematic-terminal-glow 4s ease-in-out 3s forwards;
+  animation: cinematic-terminal-glow 15s ease-in-out infinite;
   transition: transform 0.3s ease;
   position: relative;
 }
@@ -463,9 +527,9 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes arc-fx-glow {
   0% { box-shadow: 2px -2px 10px #fff, -2px 2px 20px rgba(255,255,255,0.8), 0 0 30px #fff; }
-  25% { box-shadow: -2px 2px 15px #fff, 2px -2px 25px rgba(200,230,255,0.9), 0 0 40px #fff; }
+  25% { box-shadow: -2px 2px 15px #fff, 2px -2px 25px rgba(255,255,255,0.8), 0 0 40px #fff; }
   50% { box-shadow: 3px 0 10px #fff, -3px 0 20px rgba(255,255,255,0.7), 0 0 30px #fff; }
-  75% { box-shadow: -3px 0 15px rgba(200,230,255,0.9), 3px 0 25px #fff, 0 0 50px #fff; }
+  75% { box-shadow: -3px 0 15px rgba(255,255,255,0.8), 3px 0 25px #fff, 0 0 50px #fff; }
   100% { box-shadow: 0 -3px 10px #fff, 0 3px 20px rgba(255,255,255,0.8), 0 0 40px #fff; }
 }
 
@@ -502,15 +566,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes cinematic-terminal-glow {
-  0% {
+  0%, 15% {
     box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.05);
     border-color: rgba(255, 255, 255, 0.15);
   }
-  30% {
-    box-shadow: 0 0 60px rgba(150, 220, 255, 0.4), inset 0 0 30px rgba(255,255,255,0.2);
+  22% {
+    box-shadow: 0 0 60px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(255,255,255,0.15);
     border-color: rgba(255, 255, 255, 0.6);
   }
-  100% {
+  41%, 100% {
     box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.1);
     border-color: rgba(255, 255, 255, 0.25);
   }
@@ -1049,6 +1113,23 @@ h1, h2, h3, h4, h5, h6 {
   .bento-icon {
     font-size: 24px;
   }
+  /* Loading screen mobile fixes */
+  .circular-loader-wrapper {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 24px;
+  }
+  .loading-logo-circular {
+    width: 90px;
+  }
+  .loading-text {
+    font-size: 16px;
+    letter-spacing: 0.05em;
+  }
+  .enter-prompt-text {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+  }
 }
 
 /* =====================================
@@ -1065,7 +1146,9 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #050505;
+  background-color: rgba(5, 5, 5, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .loading-content {
@@ -1095,20 +1178,60 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
 }
 
-.loading-bar-container {
-  width: 100%;
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
-  overflow: hidden;
+.circular-loader-wrapper {
   position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
 }
 
-.loading-bar-fill {
-  height: 100%;
-  background-color: #fff;
-  transition: width 75ms linear;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+.loading-logo-circular {
+  width: 130px;
+  height: auto;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+  animation: logo-pulse 4s ease-in-out infinite;
+  z-index: 2;
+}
+
+.loading-logo {
+  width: 180px;
+  max-width: 80%;
+  height: auto;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+  animation: logo-pulse 4s ease-in-out infinite;
+}
+
+.enter-prompt-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.enter-prompt-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin: 0;
+  animation: prompt-pulse 2s ease-in-out infinite;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes logo-pulse {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.4)); transform: scale(1.02); }
+}
+
+@keyframes prompt-pulse {
+  0%, 100% { opacity: 0.5; filter: blur(0px); }
+  50% { opacity: 1; filter: blur(0.5px); }
 }
 
 /* =====================================

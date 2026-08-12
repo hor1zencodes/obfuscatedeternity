@@ -10,7 +10,7 @@ export function AmbientSound() {
 
   useEffect(() => {
     // Initialize the audio element
-    const audio = new Audio('/Trance (Instrumental).mp3');
+    const audio = new Audio('/Timeless (Instrumental).mp3');
     audio.loop = true;
     audio.volume = 0.05; // Very low/dimmed volume
     audioRef.current = audio;
