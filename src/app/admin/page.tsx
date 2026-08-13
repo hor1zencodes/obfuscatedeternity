@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { GLSLHills } from "@/components/GLSLHills";
+import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist">("overview");
+  const [logFilter, setLogFilter] = useState<"all" | "auth" | "whitelist" | "alerts">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [totalExecutions, setTotalExecutions] = useState(1337);
@@ -141,7 +142,7 @@ export default function AdminDashboard() {
   if (!isAuthenticated) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '16px', position: 'relative' }}>
-        <GLSLHills />
+        <ThreeJsBackground />
         <div className="hero-terminal-wrapper-mono" style={{ maxWidth: '400px', width: '100%', zIndex: 10 }}>
           <div className="hero-terminal-mono">
             <div className="terminal-header-mono">
@@ -201,7 +202,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard-layout-container">
-      <GLSLHills />
+      <ThreeJsBackground />
 
       {/* Mobile Sidebar Overlay */}
       <div
@@ -402,20 +403,50 @@ export default function AdminDashboard() {
                 <div className="hero-terminal-wrapper-mono" style={{ flex: '1 1 300px', margin: 0, maxWidth: 'none' }}>
                   <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <div className="terminal-dots-mono">
-                        <div className="dot-mono dot-mono-r"></div>
-                        <div className="dot-mono dot-mono-y"></div>
-                        <div className="dot-mono dot-mono-g"></div>
+                      <div className="terminal-title" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        activity_feed.log
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {['all', 'auth', 'whitelist', 'alerts'].map((f) => (
+                            <button
+                              key={f}
+                              onClick={() => setLogFilter(f as any)}
+                              style={{
+                                background: logFilter === f ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                border: '1px solid',
+                                borderColor: logFilter === f ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                color: logFilter === f ? '#fff' : 'rgba(255,255,255,0.4)',
+                                fontSize: '9px',
+                                textTransform: 'uppercase',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                lineHeight: 1,
+                                transition: 'all 0.2s'
+                              }}>
+                              {f}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="terminal-title">activity_feed.log</div>
-                      <div style={{ flex: 1 }}></div>
                     </div>
-                    <div style={{ padding: '20px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      {activityFeed.length === 0 ? (
+                    <div style={{ padding: '20px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px' }}>
+                      {activityFeed.filter(log => {
+                        if (logFilter === 'all') return true;
+                        if (logFilter === 'auth' && log.text.toLowerCase().includes('authenticated')) return true;
+                        if (logFilter === 'whitelist' && (log.text.toLowerCase().includes('admin granted') || log.text.toLowerCase().includes('admin revoked'))) return true;
+                        if (logFilter === 'alerts' && (log.text.toLowerCase().includes('unauthorized') || log.text.toLowerCase().includes('failed'))) return true;
+                        return false;
+                      }).length === 0 ? (
                         <div style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', fontSize: '13px' }}>
                           NO RECENT SYSTEM ACTIVITY
                         </div>
-                      ) : activityFeed.map((event) => (
+                      ) : activityFeed.filter(log => {
+                        if (logFilter === 'all') return true;
+                        if (logFilter === 'auth' && log.text.toLowerCase().includes('authenticated')) return true;
+                        if (logFilter === 'whitelist' && (log.text.toLowerCase().includes('admin granted') || log.text.toLowerCase().includes('admin revoked'))) return true;
+                        if (logFilter === 'alerts' && (log.text.toLowerCase().includes('unauthorized') || log.text.toLowerCase().includes('failed'))) return true;
+                        return false;
+                      }).map((event) => (
                         <div key={event.id} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                           <div style={{ marginTop: '5px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: event.color, flexShrink: 0, boxShadow: `0 0 10px ${event.color}` }}></div>
                           <div>
