@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
+import { Globe } from "@/components/Globe";
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -25,9 +26,32 @@ export default function AdminDashboard() {
   const [executionTrend, setExecutionTrend] = useState("Stable");
   const [executionTrendUp, setExecutionTrendUp] = useState(true);
   const [whitelistTrend, setWhitelistTrend] = useState("+0 this week");
+  const [pieChartData, setPieChartData] = useState<{ name: string, value: number }[]>([]);
+  const [leaderboard, setLeaderboard] = useState<{ user: string, count: number }[]>([]);
+  const [locations, setLocations] = useState<{ lat: number, lon: number, size: number }[]>([]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [greeting, setGreeting] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const options: Intl.DateTimeFormatOptions = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      setCurrentTime(now.toLocaleTimeString('en-IN', options));
+      const istHourStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false });
+      const istHour = parseInt(istHourStr.split(':')[0]);
+      if (istHour >= 5 && istHour < 12) setGreeting('Good morning');
+      else if (istHour >= 12 && istHour < 17) setGreeting('Good afternoon');
+      else if (istHour >= 17 && istHour < 22) setGreeting('Good evening');
+      else setGreeting('Good night');
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchData(true);
@@ -66,6 +90,9 @@ export default function AdminDashboard() {
           if (dataStats.executionTrend) setExecutionTrend(dataStats.executionTrend);
           if (dataStats.executionTrendUp !== undefined) setExecutionTrendUp(dataStats.executionTrendUp);
           if (dataStats.whitelistTrend) setWhitelistTrend(dataStats.whitelistTrend);
+          if (dataStats.pieChartData) setPieChartData(dataStats.pieChartData);
+          if (dataStats.leaderboard) setLeaderboard(dataStats.leaderboard);
+          if (dataStats.locations) setLocations(dataStats.locations);
         }
       }
     } catch (e) {
@@ -219,9 +246,9 @@ export default function AdminDashboard() {
 
       {/* Sidebar */}
       <aside className={`dashboard-sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
-        <div className="dashboard-sidebar-header">
-          <Shield style={{ color: '#fff', flexShrink: 0 }} size={26} />
-          <span className="hero-word-accent dashboard-sidebar-text" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em', marginLeft: '12px' }}>ETERNITY</span>
+        <div className="dashboard-sidebar-header" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/eternity.png" alt="Eternity Logo" style={{ width: '26px', height: '26px', objectFit: 'contain', flexShrink: 0 }} />
+          <span className="hero-word-accent dashboard-sidebar-text" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em', marginLeft: '12px' }}>Admin</span>
         </div>
 
         <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
@@ -268,7 +295,16 @@ export default function AdminDashboard() {
           </button>
         </nav>
 
-        <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            className="dashboard-nav-item"
+            onClick={() => fetchData()}
+            style={{ color: '#fff', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} />
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Refresh</span>
+          </button>
+
           <button
             className="dashboard-nav-item"
             onClick={() => { setIsAuthenticated(false); }}
@@ -281,36 +317,26 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="dashboard-main-content">
-        <header className="dashboard-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              className="mobile-menu-btn"
-              onClick={() => setIsSidebarOpen(true)}
-              aria-label="Open Menu"
-            >
-              <Menu size={24} />
-            </button>
-            <div>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
-                activeTab === 'overview' ? 'DASHBOARD OVERVIEW' :
-                  activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
-              }</h1>
-              <p className="hide-on-mobile" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
-            </div>
-          </div>
-
+      <main data-lenis-prevent="true" className="dashboard-main-content" style={{ paddingTop: 0 }}>
+        <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', padding: '24px' }}>
           <button
-            className="terminal-copy-btn-mono"
-            onClick={() => fetchData()}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', cursor: 'pointer', color: '#fff', fontWeight: 600, fontSize: '13px' }}
+            className="mobile-menu-btn"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open Menu"
+            style={{ marginRight: '16px' }}
           >
-            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} />
-            <span className="hide-on-mobile">REFRESH DATA</span>
+            <Menu size={28} />
           </button>
+
+          <div style={{ padding: '0 4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <h1 className="hero-word-accent" style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: '#fff', letterSpacing: '0.02em', lineHeight: 1.2 }}>{greeting}, Horizen.</h1>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', margin: 0, fontWeight: 600, letterSpacing: '0.05em', display: 'flex', alignItems: 'center' }}>
+              <Clock size={14} style={{ marginRight: '6px' }} /> Local Time: {currentTime} (IST)
+            </p>
+          </div>
         </header>
 
-        <div className="dashboard-content-wrapper">
+        <div className="dashboard-content-wrapper" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
           <AnimatePresence mode="wait">
             {/* TAB 1: OVERVIEW */}
             {activeTab === "overview" && (
@@ -323,7 +349,7 @@ export default function AdminDashboard() {
                 style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}
               >
                 <div className="dashboard-stats-grid">
-                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="hero-terminal-mono terminal-grid-bg" style={{ padding: '30px', borderTop: '3px solid #27c93f', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #27c93f', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <Users size={24} color="#27c93f" />
                       <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Live Users</span>
@@ -346,7 +372,7 @@ export default function AdminDashboard() {
                     </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="hero-terminal-mono terminal-grid-bg" style={{ padding: '30px', borderTop: '3px solid #fff', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #fff', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <Database size={24} color="#fff" />
                       <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Whitelisted Users</span>
@@ -359,7 +385,7 @@ export default function AdminDashboard() {
                     </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="hero-terminal-mono terminal-grid-bg" style={{ padding: '30px', borderTop: '3px solid #ffbd2e', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #ffbd2e', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <Cpu size={24} color="#ffbd2e" />
                       <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Total Executions</span>
@@ -388,7 +414,7 @@ export default function AdminDashboard() {
                         <div className="terminal-title">execution_telemetry.chart</div>
                         <div style={{ flex: 1 }}></div>
                       </div>
-                      <div style={{ padding: '30px', height: '400px', width: '100%' }}>
+                      <div className="terminal-card-body chart-container" style={{ width: '100%', position: 'relative', zIndex: 1 }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
@@ -441,7 +467,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </div>
-                      <div style={{ padding: '20px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px' }}>
+                      <div className="terminal-card-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px' }}>
                         {activityFeed.filter(log => {
                           if (logFilter === 'all') return true;
                           if (logFilter === 'auth' && log.text.toLowerCase().includes('authenticated')) return true;
@@ -471,12 +497,79 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', marginTop: '32px' }}>
+
+                  {/* Left: Interactive World Globe */}
+                  <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderRadius: '12px', minHeight: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <h2 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', width: '100%', marginBottom: '16px', fontWeight: 700 }}>GLOBAL GEO-MATRIX</h2>
+                    <Globe locations={locations} />
+                  </div>
+
+                  {/* Right: Pie Chart & Leaderboard Stack */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+                    {/* Executor Market Share */}
+                    <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderRadius: '12px', display: 'flex', flexDirection: 'column' }}>
+                      <h2 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginBottom: '8px', fontWeight: 700 }}>EXECUTOR METRICS</h2>
+                      <div style={{ height: '200px', width: '100%' }}>
+                        {pieChartData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                                {pieChartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={['#27c93f', '#ff5f56', '#ffbd2e', '#3b82f6', '#a855f7'][index % 5]} />
+                                ))}
+                              </Pie>
+                              <Tooltip contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '12px' }}>AWAITING METRICS</div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '12px', justifyContent: 'center' }}>
+                        {pieChartData.map((d, i) => (
+                          <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: ['#27c93f', '#ff5f56', '#ffbd2e', '#3b82f6', '#a855f7'][i % 5] }} />
+                            <span style={{ fontSize: '12px', color: '#fff' }}>{d.name.substring(0, 8)} ({d.value})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Top Leaderboard */}
+                    <div className="hero-terminal-mono terminal-card-body" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', flex: 1 }}>
+                      <h2 style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginBottom: '16px', fontWeight: 700 }}>TOP EXECUTORS</h2>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {leaderboard.length > 0 ? leaderboard.map((usr, i) => (
+                          <div key={usr.user} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', borderLeft: i === 0 ? '3px solid #ffbd2e' : i === 1 ? '3px solid #e2e8f0' : i === 2 ? '3px solid #b45309' : '3px solid transparent' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <img src={`/api/admin/avatar?username=${usr.user}`} alt="Avatar" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>{usr.user}</span>
+                            </div>
+                            <span style={{ fontSize: '12px', color: '#27c93f', fontWeight: 'bold' }}>{usr.count} <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 'normal' }}>EXEC</span></span>
+                          </div>
+                        )) : <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '12px', padding: '20px' }}>NO DATA FOUND</div>}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </motion.div>
             )}
 
             {/* TAB 2: ACTIVE SESSIONS */}
             {activeTab === "sessions" && (
-              <div style={{ width: '100%' }}>
+              <motion.div
+                key="sessions"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                style={{ width: '100%' }}
+              >
                 <div className="hero-terminal-wrapper-mono" style={{ width: '100%', maxWidth: 'none' }}>
                   <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                     <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -536,12 +629,19 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* TAB 3: WHITELIST */}
             {activeTab === "whitelist" && (
-              <div className="dashboard-whitelist-grid">
+              <motion.div
+                key="whitelist"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="dashboard-whitelist-grid"
+              >
 
                 {/* Add User Form */}
                 <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
@@ -663,7 +763,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

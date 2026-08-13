@@ -27,6 +27,9 @@ export async function GET(request: NextRequest) {
         let executionTrend = "Stable";
         let executionTrendUp = true;
         let whitelistTrend = "Authorized Users";
+        let pieChartData: { name: string; value: number }[] = [];
+        let leaderboard: { user: string; count: number }[] = [];
+        let locations: { lat: number; lon: number; size: number }[] = [];
 
         if (supabase) {
             // Get total executions
@@ -133,6 +136,55 @@ export async function GET(request: NextRequest) {
                     return { ...feed, time: timeStr };
                 });
             }
+
+            // Fetch executor market share
+            const { data: execData } = await supabase
+                .from('stats')
+                .select('value')
+                .ilike('key', 'eternity:executor:%');
+            if (execData) {
+                const share: Record<string, number> = {};
+                execData.forEach(row => {
+                    const exName = typeof row.value === 'string' ? row.value : 'Unknown';
+                    share[exName] = (share[exName] || 0) + 1;
+                });
+                pieChartData = Object.keys(share).map(n => ({ name: n, value: share[n] }));
+            }
+
+            // Extract Leaderboard from logs
+            if (logData) {
+                const userCounts: Record<string, number> = {};
+                const parsedLogs = logData.map(log => {
+                    try { return typeof log.value === 'string' ? JSON.parse(log.value) : log.value; } catch (e) { return {}; }
+                });
+                parsedLogs.forEach(log => {
+                    const match = log.text?.match(/User '([^']+)' authenticated/);
+                    if (match) {
+                        const u = match[1];
+                        userCounts[u] = (userCounts[u] || 0) + 1;
+                    }
+                });
+                leaderboard = Object.keys(userCounts)
+                    .map(u => ({ user: u, count: userCounts[u] }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+            }
+
+            // Fetch globe locations
+            const { data: locationData } = await supabase
+                .from('stats')
+                .select('value')
+                .ilike('key', 'eternity:geo:%');
+            if (locationData) {
+                locationData.forEach(row => {
+                    try {
+                        const loc = typeof row.value === 'string' ? JSON.parse(row.value) : row.value;
+                        if (loc.lat && loc.lon) {
+                            locations.push({ lat: loc.lat, lon: loc.lon, size: 0.1 });
+                        }
+                    } catch (e) { }
+                });
+            }
         }
 
         return NextResponse.json({
@@ -142,7 +194,10 @@ export async function GET(request: NextRequest) {
             activityFeed,
             executionTrend,
             executionTrendUp,
-            whitelistTrend
+            whitelistTrend,
+            pieChartData,
+            leaderboard,
+            locations
         });
     } catch (e) {
         console.error("Stats fetch error:", e);

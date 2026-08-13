@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const user = searchParams.get('user');
+    const executor = searchParams.get('executor') || 'Unknown';
 
     if (!user) {
         return new NextResponse("print('Access Denied: No User Provided')", { status: 400 });
@@ -34,6 +35,31 @@ export async function GET(request: NextRequest) {
                     key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
                     value: JSON.stringify({ text: `User '${user}' authenticated from script executor`, color: "#27c93f" })
                 });
+
+                // Store executor mapping
+                await supabase.from('stats').upsert({
+                    key: `eternity:executor:${user}`,
+                    value: executor
+                });
+
+                // Capture Geo Location of the Roblox Server
+                const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+                if (ip) {
+                    try {
+                        const geoRes = await fetch(`http://ip-api.com/json/${ip.split(',')[0].trim()}`);
+                        if (geoRes.ok) {
+                            const geoData = await geoRes.json();
+                            if (geoData.lat && geoData.lon) {
+                                await supabase.from('stats').upsert({
+                                    key: `eternity:geo:${user}`,
+                                    value: JSON.stringify({ lat: geoData.lat, lon: geoData.lon, country: geoData.country })
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("GeoIP Fetch Error:", e);
+                    }
+                }
 
                 // Increment execution telemetry
                 try {
