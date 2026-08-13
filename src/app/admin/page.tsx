@@ -19,6 +19,10 @@ export default function AdminDashboard() {
 
   const [totalExecutions, setTotalExecutions] = useState(1337);
   const [chartData, setChartData] = useState<{ date: string, executions: number }[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
+  const [executionTrend, setExecutionTrend] = useState("Stable");
+  const [executionTrendUp, setExecutionTrendUp] = useState(true);
+  const [whitelistTrend, setWhitelistTrend] = useState("+0 this week");
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -56,6 +60,10 @@ export default function AdminDashboard() {
         if (dataStats.success) {
           setTotalExecutions(dataStats.totalExecutions);
           setChartData(dataStats.chartData);
+          if (dataStats.activityFeed) setActivityFeed(dataStats.activityFeed);
+          if (dataStats.executionTrend) setExecutionTrend(dataStats.executionTrend);
+          if (dataStats.executionTrendUp !== undefined) setExecutionTrendUp(dataStats.executionTrendUp);
+          if (dataStats.whitelistTrend) setWhitelistTrend(dataStats.whitelistTrend);
         }
       }
     } catch (e) {
@@ -323,7 +331,7 @@ export default function AdminDashboard() {
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{whitelist.length}</div>
                     <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
-                      +2 this week
+                      {whitelistTrend}
                     </div>
                   </div>
                 </div>
@@ -335,8 +343,8 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{totalExecutions}</div>
-                    <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
-                      ▲ 15% increase
+                    <div style={{ color: executionTrendUp ? '#27c93f' : '#ff5f56', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                      {executionTrend}
                     </div>
                   </div>
                 </div>
@@ -393,14 +401,11 @@ export default function AdminDashboard() {
                       <div style={{ flex: 1 }}></div>
                     </div>
                     <div style={{ padding: '20px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      {[
-                        { id: 1, text: "User 'hor1zen' authenticated from Windows", time: "2 mins ago", color: "#27c93f" },
-                        { id: 2, text: "Admin granted access to 'new_player123'", time: "15 mins ago", color: "#fff" },
-                        { id: 3, text: "Failed authentication attempt (Invalid Key)", time: "1 hour ago", color: "#ff5f56" },
-                        { id: 4, text: "User 'Serenity' authenticated from macOS", time: "2 hours ago", color: "#27c93f" },
-                        { id: 5, text: "Admin revoked access for 'rulebreaker99'", time: "5 hours ago", color: "#ffbd2e" },
-                        { id: 6, text: "System daily backup completed", time: "1 day ago", color: "rgba(255,255,255,0.3)" }
-                      ].map((event) => (
+                      {activityFeed.length === 0 ? (
+                        <div style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', fontSize: '13px' }}>
+                          NO RECENT SYSTEM ACTIVITY
+                        </div>
+                      ) : activityFeed.map((event) => (
                         <div key={event.id} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                           <div style={{ marginTop: '5px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: event.color, flexShrink: 0, boxShadow: `0 0 10px ${event.color}` }}></div>
                           <div>

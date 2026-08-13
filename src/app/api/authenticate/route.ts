@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     try {
         let isWhitelisted = false;
-        
+
         if (supabase) {
             const { data, error } = await supabase
                 .from('whitelist')
@@ -29,6 +29,12 @@ export async function GET(request: NextRequest) {
             if (supabase) {
                 await supabase.from('live_users').upsert({ username: user, last_ping: new Date().toISOString() });
 
+                // Log authentication to feed
+                await supabase.from('stats').upsert({
+                    key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                    value: JSON.stringify({ text: `User '${user}' authenticated from script executor`, color: "#27c93f" })
+                });
+
                 // Increment execution telemetry
                 try {
                     // Update total_executions
@@ -37,12 +43,12 @@ export async function GET(request: NextRequest) {
                         .select('value')
                         .eq('key', 'eternity:stats:total_executions')
                         .single();
-                    
+
                     const newTotal = (totalData?.value || 1337) + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: 'eternity:stats:total_executions', value: newTotal });
-                    
+
                     // Update daily executions
                     const today = new Date().toISOString().split('T')[0];
                     const dailyKey = `eternity:stats:executions:${today}`;
@@ -51,12 +57,12 @@ export async function GET(request: NextRequest) {
                         .select('value')
                         .eq('key', dailyKey)
                         .single();
-                        
+
                     const newDaily = (dailyData?.value || 0) + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: dailyKey, value: newDaily });
-                } catch(e) {
+                } catch (e) {
                     console.error("Stats logging failed", e);
                 }
             }
@@ -70,6 +76,12 @@ export async function GET(request: NextRequest) {
                 headers: { 'Content-Type': 'text/plain' },
             });
         } else {
+            if (supabase) {
+                await supabase.from('stats').upsert({
+                    key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                    value: JSON.stringify({ text: `Failed authentication attempt for '${user}' (Verification failed)`, color: "#ff5f56" })
+                });
+            }
             return new NextResponse("print('Access Denied: Not Whitelisted')", { status: 403 });
         }
     } catch (e) {

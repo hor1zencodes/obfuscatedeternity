@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 async function authenticateAdmin(request: NextRequest) {
     const token = request.cookies.get('admin_token')?.value;
     if (!token) return false;
-    
+
     if (supabase) {
         const { data, error } = await supabase
             .from('admin_sessions')
@@ -13,7 +13,7 @@ async function authenticateAdmin(request: NextRequest) {
             .eq('token', token)
             .gte('expires_at', new Date().toISOString())
             .single();
-            
+
         return !!data && !error;
     }
     return true; // Local fallback
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     if (!(await authenticateAdmin(request))) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    
+
     try {
         if (supabase) {
             const { data, error } = await supabase.from('whitelist').select('username');
@@ -54,17 +54,21 @@ export async function POST(request: NextRequest) {
     if (!(await authenticateAdmin(request))) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    
+
     try {
         const { username } = await request.json();
         if (!username) {
             return NextResponse.json({ success: false, error: "Username required" }, { status: 400 });
         }
-        
+
         if (supabase) {
             await supabase.from('whitelist').insert([{ username: username.toLowerCase() }]);
+            await supabase.from('stats').upsert({
+                key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                value: JSON.stringify({ text: `Admin granted access to '${username}'`, color: "#fff" })
+            });
         }
-        
+
         return NextResponse.json({ success: true, message: `Added ${username} to whitelist` });
     } catch (e) {
         return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
@@ -75,17 +79,21 @@ export async function DELETE(request: NextRequest) {
     if (!(await authenticateAdmin(request))) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    
+
     try {
         const { username } = await request.json();
         if (!username) {
             return NextResponse.json({ success: false, error: "Username required" }, { status: 400 });
         }
-        
+
         if (supabase) {
             await supabase.from('whitelist').delete().eq('username', username.toLowerCase());
+            await supabase.from('stats').upsert({
+                key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                value: JSON.stringify({ text: `Admin revoked access for '${username}'`, color: "#ffbd2e" })
+            });
         }
-        
+
         return NextResponse.json({ success: true, message: `Removed ${username} from whitelist` });
     } catch (e) {
         return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
