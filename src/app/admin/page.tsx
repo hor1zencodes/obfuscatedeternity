@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { GLSLHills } from "@/components/GLSLHills";
 
 export default function AdminDashboard() {
@@ -10,16 +10,16 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
-  const [liveUsers, setLiveUsers] = useState<{user: string, timestamp: number, isActive: boolean}[]>([]);
+
+  const [liveUsers, setLiveUsers] = useState<{ user: string, timestamp: number, isActive: boolean }[]>([]);
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist">("overview");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const [totalExecutions, setTotalExecutions] = useState(1337);
-  const [chartData, setChartData] = useState<{date: string, executions: number}[]>([]);
-  
+  const [chartData, setChartData] = useState<{ date: string, executions: number }[]>([]);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -37,7 +37,7 @@ export default function AdminDashboard() {
         setIsRefreshing(false);
         return;
       }
-      
+
       const dataLive = await resLive.json();
       if (dataLive.success) {
         setIsAuthenticated(true);
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredWhitelist = whitelist.filter(user => 
+  const filteredWhitelist = whitelist.filter(user =>
     user.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -151,12 +151,12 @@ export default function AdminDashboard() {
                 <h1 className="hero-word-accent" style={{ fontSize: '24px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '5px' }}>Eternity Admin</h1>
                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Restricted Access Area</p>
               </div>
-              
+
               <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ position: 'relative' }}>
                   <Lock style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', width: '18px', color: 'rgba(255,255,255,0.3)' }} />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter passphrase"
@@ -174,9 +174,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 {error && <p style={{ color: '#ff5f56', fontSize: '12px', margin: '0' }}>{error}</p>}
-                
-                <button 
-                  type="submit" 
+
+                <button
+                  type="submit"
                   disabled={loading}
                   className="terminal-copy-btn-mono"
                   style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}
@@ -194,25 +194,25 @@ export default function AdminDashboard() {
   return (
     <div className="dashboard-layout-container">
       <GLSLHills />
-      
+
       {/* Mobile Sidebar Overlay */}
-      <div 
+      <div
         className={`mobile-overlay ${isSidebarOpen ? 'mobile-open' : ''}`}
         onClick={() => setIsSidebarOpen(false)}
       ></div>
-      
+
       {/* Sidebar */}
       <aside className={`dashboard-sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="dashboard-sidebar-header">
           <Shield style={{ color: '#fff', flexShrink: 0 }} size={26} />
           <span className="hero-word-accent dashboard-sidebar-text" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em', marginLeft: '12px' }}>ETERNITY</span>
         </div>
-        
+
         <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
-          
+
           <div className="dashboard-sidebar-text" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.15em', marginBottom: '8px', marginLeft: '8px' }}>MAIN MENU</div>
 
-          <button 
+          <button
             className="dashboard-nav-item"
             onClick={() => { setActiveTab("overview"); setIsSidebarOpen(false); }}
             style={{
@@ -224,8 +224,8 @@ export default function AdminDashboard() {
             <LayoutDashboard size={20} />
             <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Overview</span>
           </button>
-          
-          <button 
+
+          <button
             className="dashboard-nav-item"
             onClick={() => { setActiveTab("sessions"); setIsSidebarOpen(false); }}
             style={{
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
             <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Active Sessions</span>
           </button>
 
-          <button 
+          <button
             className="dashboard-nav-item"
             onClick={() => { setActiveTab("whitelist"); setIsSidebarOpen(false); }}
             style={{
@@ -251,11 +251,11 @@ export default function AdminDashboard() {
             <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Access Control</span>
           </button>
         </nav>
-        
+
         <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <button 
+          <button
             className="dashboard-nav-item"
-            onClick={() => { setIsAuthenticated(false); }} 
+            onClick={() => { setIsAuthenticated(false); }}
             style={{ color: '#ff5f56', background: 'rgba(255, 95, 86, 0.1)' }}
           >
             <LogOut size={20} />
@@ -268,8 +268,8 @@ export default function AdminDashboard() {
       <main className="dashboard-main-content">
         <header className="dashboard-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button 
-              className="mobile-menu-btn" 
+            <button
+              className="mobile-menu-btn"
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Open Menu"
             >
@@ -277,87 +277,139 @@ export default function AdminDashboard() {
             </button>
             <div>
               <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
-                activeTab === 'overview' ? 'DASHBOARD OVERVIEW' : 
-                activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
+                activeTab === 'overview' ? 'DASHBOARD OVERVIEW' :
+                  activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
               }</h1>
               <p className="hide-on-mobile" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
             </div>
           </div>
-          
-          <button 
-            className="terminal-copy-btn-mono" 
+
+          <button
+            className="terminal-copy-btn-mono"
             onClick={() => fetchData()}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', cursor: 'pointer', color: '#fff', fontWeight: 600, fontSize: '13px' }}
           >
-            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} /> 
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} style={{ transition: 'transform 0.5s', transform: isRefreshing ? 'rotate(180deg)' : 'none' }} />
             <span className="hide-on-mobile">REFRESH DATA</span>
           </button>
         </header>
 
         <div className="dashboard-content-wrapper">
-          
+
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
-              
+
               <div className="dashboard-stats-grid">
-                
-                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #27c93f', borderRadius: '12px' }}>
+
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #27c93f', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Users size={24} color="#27c93f" />
                     <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Live Users</span>
                   </div>
-                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{liveUsers.length}</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{liveUsers.length}</div>
+                    <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <span className="pulse-dot-green" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }}></span> Active now
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #fff', borderRadius: '12px' }}>
+
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #fff', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Database size={24} color="#fff" />
                     <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Whitelisted Users</span>
                   </div>
-                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{whitelist.length}</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{whitelist.length}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                      +2 this week
+                    </div>
+                  </div>
                 </div>
 
-                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #ffbd2e', borderRadius: '12px' }}>
+                <div className="hero-terminal-mono" style={{ padding: '30px', borderTop: '3px solid #ffbd2e', borderRadius: '12px', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                     <Cpu size={24} color="#ffbd2e" />
                     <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Total Executions</span>
                   </div>
-                  <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{totalExecutions}</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{totalExecutions}</div>
+                    <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+                      ▲ 15% increase
+                    </div>
+                  </div>
                 </div>
-                
+
               </div>
 
-              {/* Execution Graph */}
-              <div className="hero-terminal-wrapper-mono" style={{ width: '100%', marginTop: '8px', maxWidth: 'none' }}>
-                <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
-                  <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="terminal-dots-mono">
-                      <div className="dot-mono dot-mono-r"></div>
-                      <div className="dot-mono dot-mono-y"></div>
-                      <div className="dot-mono dot-mono-g"></div>
+              {/* Graphical Area & Feed */}
+              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'stretch' }}>
+                {/* Execution Graph */}
+                <div className="hero-terminal-wrapper-mono" style={{ flex: '2 1 600px', margin: 0, maxWidth: 'none' }}>
+                  <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden', height: '100%' }}>
+                    <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="terminal-dots-mono">
+                        <div className="dot-mono dot-mono-r"></div>
+                        <div className="dot-mono dot-mono-y"></div>
+                        <div className="dot-mono dot-mono-g"></div>
+                      </div>
+                      <div className="terminal-title">execution_telemetry.chart</div>
+                      <div style={{ flex: 1 }}></div>
                     </div>
-                    <div className="terminal-title">execution_telemetry.chart</div>
-                    <div style={{ flex: 1 }}></div>
+                    <div style={{ padding: '30px', height: '400px', width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorExecutions" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ffffff" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                          <XAxis dataKey="date" stroke="none" tick={{ fill: '#a0a0a0', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-fira-code)' }} tickMargin={15} />
+                          <YAxis stroke="none" tick={false} domain={['dataMin', 'auto']} />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: 'rgba(10,10,10,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', fontFamily: 'var(--font-fira-code)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+                            itemStyle={{ color: '#ffffff' }}
+                          />
+                          <Area type="monotone" dataKey="executions" stroke="#ffffff" strokeWidth={3} fillOpacity={1} fill="url(#colorExecutions)" activeDot={{ r: 6, fill: '#ffffff', stroke: '#000', strokeWidth: 2 }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
-                  <div style={{ padding: '30px', height: '400px', width: '100%' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorExecutions" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ffffff" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <XAxis dataKey="date" stroke="none" tick={{ fill: '#a0a0a0', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-fira-code)' }} tickMargin={15} />
-                        <YAxis stroke="none" tick={false} domain={['dataMin', 'auto']} />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: 'rgba(10,10,10,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', fontFamily: 'var(--font-fira-code)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
-                          itemStyle={{ color: '#ffffff' }}
-                        />
-                        <Area type="monotone" dataKey="executions" stroke="#ffffff" strokeWidth={3} fillOpacity={1} fill="url(#colorExecutions)" activeDot={{ r: 6, fill: '#ffffff', stroke: '#000', strokeWidth: 2 }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                </div>
+
+                {/* Recent Activity Feed */}
+                <div className="hero-terminal-wrapper-mono" style={{ flex: '1 1 300px', margin: 0, maxWidth: 'none' }}>
+                  <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="terminal-dots-mono">
+                        <div className="dot-mono dot-mono-r"></div>
+                        <div className="dot-mono dot-mono-y"></div>
+                        <div className="dot-mono dot-mono-g"></div>
+                      </div>
+                      <div className="terminal-title">activity_feed.log</div>
+                      <div style={{ flex: 1 }}></div>
+                    </div>
+                    <div style={{ padding: '20px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      {[
+                        { id: 1, text: "User 'hor1zen' authenticated from Windows", time: "2 mins ago", color: "#27c93f" },
+                        { id: 2, text: "Admin granted access to 'new_player123'", time: "15 mins ago", color: "#fff" },
+                        { id: 3, text: "Failed authentication attempt (Invalid Key)", time: "1 hour ago", color: "#ff5f56" },
+                        { id: 4, text: "User 'Serenity' authenticated from macOS", time: "2 hours ago", color: "#27c93f" },
+                        { id: 5, text: "Admin revoked access for 'rulebreaker99'", time: "5 hours ago", color: "#ffbd2e" },
+                        { id: 6, text: "System daily backup completed", time: "1 day ago", color: "rgba(255,255,255,0.3)" }
+                      ].map((event) => (
+                        <div key={event.id} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                          <div style={{ marginTop: '5px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: event.color, flexShrink: 0, boxShadow: `0 0 10px ${event.color}` }}></div>
+                          <div>
+                            <div style={{ color: '#fff', fontSize: '13px', lineHeight: 1.5, fontFamily: 'var(--font-fira-code)' }}>{event.text}</div>
+                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '4px' }}>{event.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -421,7 +473,7 @@ export default function AdminDashboard() {
           {/* TAB 3: WHITELIST */}
           {activeTab === "whitelist" && (
             <div className="dashboard-whitelist-grid">
-              
+
               {/* Add User Form */}
               <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
                 <div className="hero-terminal-mono" style={{ borderRadius: '12px' }}>
@@ -438,8 +490,8 @@ export default function AdminDashboard() {
                     <form onSubmit={handleAddWhitelist} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <div>
                         <label style={{ display: 'block', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', fontWeight: 600 }}>Roblox Username</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={newUsername}
                           onChange={(e) => setNewUsername(e.target.value)}
                           placeholder="e.g. user123"
@@ -452,8 +504,8 @@ export default function AdminDashboard() {
                           onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                         />
                       </div>
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         disabled={!newUsername.trim()}
                         className="terminal-copy-btn-mono"
                         style={{ width: '100%', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px', opacity: !newUsername.trim() ? 0.5 : 1 }}
@@ -477,13 +529,13 @@ export default function AdminDashboard() {
                     <div className="terminal-title">authorized_users.db</div>
                     <div style={{ flex: 1 }}></div>
                   </div>
-                  
+
                   {/* Search Bar */}
                   <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <div style={{ position: 'relative' }}>
                       <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgba(255,255,255,0.4)' }} />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search whitelist..."
@@ -521,7 +573,7 @@ export default function AdminDashboard() {
                             <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                               <td style={{ padding: '16px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>{user}</td>
                               <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                                <button 
+                                <button
                                   onClick={() => handleRemoveWhitelist(user)}
                                   style={{
                                     color: 'rgba(255,95,86,0.7)', background: 'transparent', border: 'none', cursor: 'pointer',
