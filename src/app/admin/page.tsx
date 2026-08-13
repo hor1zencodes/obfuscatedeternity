@@ -11,7 +11,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [liveUsers, setLiveUsers] = useState<{ user: string, timestamp: number, isActive: boolean }[]>([]);
+  const [liveUsers, setLiveUsers] = useState<{ user: string, timestamp: number, isActive: boolean, executor?: string }[]>([]);
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist">("overview");
@@ -317,8 +317,18 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff', lineHeight: 1 }}>{liveUsers.length}</div>
-                    <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                      <span className="pulse-dot-green" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }}></span> Active now
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '6px' }}>
+                      {liveUsers.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+                          {liveUsers.slice(0, 5).map((u, i) => (
+                            <img key={u.user} src={`/api/admin/avatar?username=${u.user}`} title={u.user} alt={u.user} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid #000', marginLeft: '-12px', zIndex: i, backgroundColor: 'rgba(255,255,255,0.1)', objectFit: 'cover' }} />
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="pulse-dot-green" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }}></span> Active now
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -440,6 +450,7 @@ export default function AdminDashboard() {
                       <thead>
                         <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                           <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
+                          <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Executor</th>
                           <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
                           <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Last Ping</th>
                         </tr>
@@ -447,14 +458,24 @@ export default function AdminDashboard() {
                       <tbody>
                         {liveUsers.length === 0 ? (
                           <tr>
-                            <td colSpan={3} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                            <td colSpan={4} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                               NO ACTIVE EXECUTIONS DETECTED
                             </td>
                           </tr>
                         ) : (
                           liveUsers.map((user, i) => (
                             <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                              <td style={{ padding: '20px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>{user.user}</td>
+                              <td style={{ padding: '20px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <img src={`/api/admin/avatar?username=${user.user}`} alt="Avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', objectFit: 'cover' }} />
+                                  {user.user}
+                                </div>
+                              </td>
+                              <td style={{ padding: '20px 24px', color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: 500 }}>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                  {user.executor || "Unknown"}
+                                </div>
+                              </td>
                               <td style={{ padding: '20px 24px' }}>
                                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(39,201,63,0.1)', border: '1px solid rgba(39,201,63,0.3)', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', color: '#27c93f', fontWeight: 'bold', letterSpacing: '0.1em' }}>
                                   <div className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></div>

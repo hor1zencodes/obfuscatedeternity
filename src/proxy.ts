@@ -23,8 +23,9 @@ while not Players.LocalPlayer or Players.LocalPlayer.Name == "" do
     task.wait(0.1) 
 end
 local username = Players.LocalPlayer.Name
+local exec = (identifyexecutor and identifyexecutor()) or "Unknown"
 
-local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username
+local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20"))
 local scriptData = game:HttpGet(url, true)
 
 if scriptData:match("Access Denied") then
