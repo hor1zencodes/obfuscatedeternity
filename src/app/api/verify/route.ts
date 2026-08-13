@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     try {
         let isWhitelisted = false;
-        
+
         if (supabase) {
             const { data, error } = await supabase
                 .from('whitelist')
@@ -53,12 +53,13 @@ export async function GET(request: NextRequest) {
                         .select('value')
                         .eq('key', 'eternity:stats:total_executions')
                         .single();
-                    
-                    const newTotal = (totalData?.value || 1337) + 1;
+
+                    const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 1515;
+                    const newTotal = currentTotal + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: 'eternity:stats:total_executions', value: newTotal });
-                    
+
                     // Update daily executions
                     const today = new Date().toISOString().split('T')[0];
                     const dailyKey = `eternity:stats:executions:${today}`;
@@ -67,16 +68,17 @@ export async function GET(request: NextRequest) {
                         .select('value')
                         .eq('key', dailyKey)
                         .single();
-                        
-                    const newDaily = (dailyData?.value || 0) + 1;
+
+                    const currentDaily = dailyData?.value ? parseInt(dailyData.value.toString(), 10) : 0;
+                    const newDaily = currentDaily + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: dailyKey, value: newDaily });
-                } catch(e) {
+                } catch (e) {
                     console.error("Stats logging failed", e);
                 }
             }
-            
+
             // Return plaintext "true" for the Lua script to easily read
             return new NextResponse("true", { headers: corsHeaders });
         } else {
