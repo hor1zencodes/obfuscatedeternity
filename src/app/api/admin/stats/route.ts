@@ -109,7 +109,22 @@ export async function GET(request: NextRequest) {
                 .ilike('key', 'eternity:log:%');
 
             if (logData) {
-                let parsedLogs = logData.map(log => {
+                const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
+
+                // Identify and wipe expired logs (older than 48 hours)
+                const expiredLogs = logData.filter(log => {
+                    const timestamp = parseInt(log.key.split(':')[2].split('_')[0], 10) || Date.now();
+                    return timestamp < fortyEightHoursAgo;
+                });
+                if (expiredLogs.length > 0) {
+                    const expiredKeys = expiredLogs.map(log => log.key);
+                    await supabase.from('stats').delete().in('key', expiredKeys);
+                }
+
+                let parsedLogs = logData.filter(log => {
+                    const timestamp = parseInt(log.key.split(':')[2].split('_')[0], 10) || Date.now();
+                    return timestamp >= fortyEightHoursAgo;
+                }).map(log => {
                     const timestamp = parseInt(log.key.split(':')[2].split('_')[0], 10) || Date.now();
                     let content = { text: "System Activity", color: "rgba(255,255,255,0.5)" };
                     try {

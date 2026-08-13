@@ -163,6 +163,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const clearLogs = async () => {
+    if (!confirm('Are you sure you want to permanently clear all activity logs?')) return;
+    try {
+      const res = await fetch("/api/admin/logs", {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActivityFeed([]);
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const filteredWhitelist = whitelist.filter(user =>
     user.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -441,30 +457,35 @@ export default function AdminDashboard() {
                   <div className="hero-terminal-wrapper-mono" style={{ flex: '1 1 300px', margin: 0, maxWidth: 'none' }}>
                     <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                       <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                        <div className="terminal-title" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          activity_feed.log
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {['all', 'auth', 'whitelist', 'alerts'].map((f) => (
-                              <button
-                                key={f}
-                                onClick={() => setLogFilter(f as any)}
-                                style={{
-                                  background: logFilter === f ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                  border: '1px solid',
-                                  borderColor: logFilter === f ? 'rgba(255,255,255,0.2)' : 'transparent',
-                                  color: logFilter === f ? '#fff' : 'rgba(255,255,255,0.4)',
-                                  fontSize: '9px',
-                                  textTransform: 'uppercase',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  lineHeight: 1,
-                                  transition: 'all 0.2s'
-                                }}>
-                                {f}
-                              </button>
-                            ))}
+                        <div className="terminal-title" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            activity.log
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              {['all', 'auth', 'whitelist', 'alerts'].map((f) => (
+                                <button
+                                  key={f}
+                                  onClick={() => setLogFilter(f as any)}
+                                  style={{
+                                    background: logFilter === f ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: logFilter === f ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                    color: logFilter === f ? '#fff' : 'rgba(255,255,255,0.4)',
+                                    fontSize: '9px',
+                                    textTransform: 'uppercase',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    lineHeight: 1,
+                                    transition: 'all 0.2s'
+                                  }}>
+                                  {f}
+                                </button>
+                              ))}
+                            </div>
                           </div>
+                          <button onClick={clearLogs} style={{ fontSize: '10px', color: '#ff5f56', background: 'rgba(255, 95, 86, 0.1)', border: '1px solid rgba(255, 95, 86, 0.2)', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
+                            Clear
+                          </button>
                         </div>
                       </div>
                       <div className="terminal-card-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '400px' }}>
