@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { GLSLHills } from "@/components/GLSLHills";
 
@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<{date: string, executions: number}[]>([]);
   
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchData(true);
@@ -194,8 +195,14 @@ export default function AdminDashboard() {
     <div className="dashboard-layout-container">
       <GLSLHills />
       
+      {/* Mobile Sidebar Overlay */}
+      <div 
+        className={`mobile-overlay ${isSidebarOpen ? 'mobile-open' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+      ></div>
+      
       {/* Sidebar */}
-      <aside className="dashboard-sidebar">
+      <aside className={`dashboard-sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="dashboard-sidebar-header">
           <Shield style={{ color: '#fff', flexShrink: 0 }} size={26} />
           <span className="hero-word-accent dashboard-sidebar-text" style={{ fontWeight: 'bold', fontSize: '1.25rem', letterSpacing: '0.1em', marginLeft: '12px' }}>ETERNITY</span>
@@ -207,7 +214,7 @@ export default function AdminDashboard() {
 
           <button 
             className="dashboard-nav-item"
-            onClick={() => setActiveTab("overview")}
+            onClick={() => { setActiveTab("overview"); setIsSidebarOpen(false); }}
             style={{
               backgroundColor: activeTab === 'overview' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'overview' ? '#fff' : 'rgba(255,255,255,0.5)',
@@ -220,7 +227,7 @@ export default function AdminDashboard() {
           
           <button 
             className="dashboard-nav-item"
-            onClick={() => setActiveTab("sessions")}
+            onClick={() => { setActiveTab("sessions"); setIsSidebarOpen(false); }}
             style={{
               backgroundColor: activeTab === 'sessions' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'sessions' ? '#fff' : 'rgba(255,255,255,0.5)',
@@ -233,7 +240,7 @@ export default function AdminDashboard() {
 
           <button 
             className="dashboard-nav-item"
-            onClick={() => setActiveTab("whitelist")}
+            onClick={() => { setActiveTab("whitelist"); setIsSidebarOpen(false); }}
             style={{
               backgroundColor: activeTab === 'whitelist' ? 'rgba(255,255,255,0.1)' : 'transparent',
               color: activeTab === 'whitelist' ? '#fff' : 'rgba(255,255,255,0.5)',
@@ -260,12 +267,21 @@ export default function AdminDashboard() {
       {/* Main Content Area */}
       <main className="dashboard-main-content">
         <header className="dashboard-header">
-          <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
-              activeTab === 'overview' ? 'DASHBOARD OVERVIEW' : 
-              activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
-            }</h1>
-            <p className="hide-on-mobile" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button 
+              className="mobile-menu-btn" 
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="Open Menu"
+            >
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', color: '#fff', margin: 0 }}>{
+                activeTab === 'overview' ? 'DASHBOARD OVERVIEW' : 
+                activeTab === 'sessions' ? 'LIVE TELEMETRY' : 'ACCESS MANAGEMENT'
+              }</h1>
+              <p className="hide-on-mobile" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', margin: 0 }}>Command Center & Analytics</p>
+            </div>
           </div>
           
           <button 
