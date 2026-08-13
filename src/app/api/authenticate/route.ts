@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
                         .eq('key', 'eternity:stats:total_executions')
                         .single();
 
-                    const newTotal = (totalData?.value || 1337) + 1;
+                    const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 1337;
+                    const newTotal = currentTotal + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: 'eternity:stats:total_executions', value: newTotal });
@@ -84,7 +85,8 @@ export async function GET(request: NextRequest) {
                         .eq('key', dailyKey)
                         .single();
 
-                    const newDaily = (dailyData?.value || 0) + 1;
+                    const currentDaily = dailyData?.value ? parseInt(dailyData.value.toString(), 10) : 0;
+                    const newDaily = currentDaily + 1;
                     await supabase
                         .from('stats')
                         .upsert({ key: dailyKey, value: newDaily });
