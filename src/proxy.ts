@@ -18,7 +18,12 @@ export function proxy(request: NextRequest) {
     // If they hit the root URL, we give them the Loader Script, not the full script.
     if (request.nextUrl.pathname === '/') {
       const loaderScript = `
-local username = game:GetService("Players").LocalPlayer.Name
+local Players = game:GetService("Players")
+while not Players.LocalPlayer or Players.LocalPlayer.Name == "" do 
+    task.wait(0.1) 
+end
+local username = Players.LocalPlayer.Name
+
 local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username
 local scriptData = game:HttpGet(url, true)
 
