@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
                         .eq('key', 'eternity:stats:total_executions')
                         .single();
 
-                    const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 1337;
+                    const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 1515;
                     const newTotal = currentTotal + 1;
                     await supabase
                         .from('stats')

@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        let totalExecutions = 1337;
+        let totalExecutions = 1515;
         let chartData: { date: string; executions: number }[] = [];
         let activityFeed: any[] = [];
         let executionTrend = "Stable";
@@ -40,15 +40,15 @@ export async function GET(request: NextRequest) {
                 .single();
 
             if (!totalData) {
-                // Initialize to 1337 if it doesn't exist
-                await supabase.from('stats').insert({ key: 'eternity:stats:total_executions', value: 1337 });
-                totalExecutions = 1337;
+                // Initialize to 1515 if it doesn't exist
+                await supabase.from('stats').insert({ key: 'eternity:stats:total_executions', value: 1515 });
+                totalExecutions = 1515;
             } else {
                 totalExecutions = parseInt(totalData.value.toString(), 10);
 
-                // Self-healing: if the tracker started from 0 instead of 1337
-                if (totalExecutions < 1337) {
-                    totalExecutions += 1337;
+                // Self-healing: if the tracker started from 0 instead of 1515
+                if (totalExecutions < 1515) {
+                    totalExecutions += 1515;
                     await supabase.from('stats').upsert({ key: 'eternity:stats:total_executions', value: totalExecutions });
                 }
             }
