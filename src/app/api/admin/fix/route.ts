@@ -10,7 +10,7 @@ export async function GET() {
 
         const today = new Date().toISOString().split('T')[0];
         const dailyKey = `eternity:stats:executions:${today}`;
-        await supabase.from('stats').upsert({ key: dailyKey, value: 5 });
+        await supabase.from('stats').upsert({ key: dailyKey, value: 169 });
 
         return NextResponse.json({ success: true, message: "Production Execution Counters successfully reset to Integers." });
     } catch (e: any) {
