@@ -6,7 +6,10 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { RandomLetterSwap } from '@/components/ui/random-letter-swap';
 import { AmbientSound } from '@/components/AmbientSound';
 import { Zap, ShieldCheck, RefreshCw, Crown, Wrench } from 'lucide-react';
-import { motion, useScroll, useSpring, AnimatePresence } from 'motion/react';
+import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'motion/react';
+import { DiscordProfile } from '@/components/DiscordProfile';
+import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
+import { Lightning } from '@/components/ui/Lightning';
 
 /* =====================================
    SHADERS (ORIGINAL VERSIONS)
@@ -137,7 +140,7 @@ void main(){gl_Position=position;}`;
     init() {
       const gl = this.gl;
       const program = this.program!;
-      
+
       this.buffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
@@ -157,14 +160,14 @@ void main(){gl_Position=position;}`;
     render(now = 0) {
       const gl = this.gl;
       const program = this.program;
-      
+
       if (!program || gl.getProgramParameter(program, gl.DELETE_STATUS)) return;
 
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-      
+
       gl.uniform2f((program as any).resolution, this.canvas.width, this.canvas.height);
       gl.uniform1f((program as any).time, now * 1e-3);
       gl.uniform2f((program as any).move, this.mouseMove[0], this.mouseMove[1]);
@@ -185,8 +188,8 @@ void main(){gl_Position=position;}`;
 
     constructor(element: HTMLCanvasElement, scale: number) {
       this.scale = scale;
-      
-      const map = (element: HTMLCanvasElement, scale: number, x: number, y: number) => 
+
+      const map = (element: HTMLCanvasElement, scale: number, x: number, y: number) =>
         [x * scale, element.height - y * scale];
 
       element.addEventListener('pointerdown', (e) => {
@@ -235,8 +238,8 @@ void main(){gl_Position=position;}`;
     }
 
     get coords() {
-      return this.pointers.size > 0 
-        ? Array.from(this.pointers.values()).flat() 
+      return this.pointers.size > 0
+        ? Array.from(this.pointers.values()).flat()
         : [0, 0];
     }
 
@@ -247,13 +250,13 @@ void main(){gl_Position=position;}`;
 
   const resize = () => {
     if (!canvasRef.current) return;
-    
+
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
-    
+
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
-    
+
     if (rendererRef.current) {
       rendererRef.current.updateScale(dpr);
     }
@@ -261,7 +264,7 @@ void main(){gl_Position=position;}`;
 
   const loop = (now: number) => {
     if (!rendererRef.current || !pointersRef.current) return;
-    
+
     rendererRef.current.updateMouse(pointersRef.current.first);
     rendererRef.current.updatePointerCount(pointersRef.current.count);
     rendererRef.current.updatePointerCoords(pointersRef.current.coords);
@@ -275,23 +278,23 @@ void main(){gl_Position=position;}`;
 
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
-    
+
     rendererRef.current = new WebGLRenderer(canvas, dpr);
     pointersRef.current = new PointerHandler(canvas, dpr);
-    
+
     rendererRef.current.setup();
     rendererRef.current.init();
-    
+
     resize();
-    
+
     if (rendererRef.current.test(defaultShaderSource) === null) {
       rendererRef.current.updateShader(defaultShaderSource);
     }
-    
+
     loop(0);
-    
+
     window.addEventListener('resize', resize);
-    
+
     return () => {
       window.removeEventListener('resize', resize);
       if (animationFrameRef.current) {
@@ -609,7 +612,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  
+
   const loadingTexts = useMemo(() => [
     "Welcome to Eternity",
     "Redefining Execution",
@@ -633,6 +636,10 @@ export default function Home() {
     restDelta: 0.001
   });
 
+  // Scroll Scrubbing Mappings
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
+
   useEffect(() => {
     return scrollYProgress.on('change', (latest) => {
       setIsAtBottom(latest > 0.95);
@@ -644,7 +651,7 @@ export default function Home() {
 
     const textDuration = 450;
     let index = 0;
-    
+
     const textInterval = setInterval(() => {
       index++;
       if (index < loadingTexts.length) {
@@ -713,9 +720,9 @@ export default function Home() {
     <>
       <AnimatePresence>
         {isLoading && (
-          <motion.div 
-            initial={{ opacity: 1 }} 
-            exit={{ opacity: 0, filter: 'blur(10px)' }} 
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: 'blur(10px)' }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="loading-overlay"
             onClick={() => {
@@ -731,11 +738,11 @@ export default function Home() {
               <div className="circular-loader-wrapper">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
                   <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
-                  <motion.circle 
-                    cx="50" cy="50" r="46" 
-                    fill="none" 
-                    stroke="#ffffff" 
-                    strokeWidth="2" 
+                  <motion.circle
+                    cx="50" cy="50" r="46"
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     animate={{ pathLength: loadingProgress / 100 }}
                     initial={{ pathLength: 0 }}
@@ -744,9 +751,9 @@ export default function Home() {
                   />
                 </svg>
 
-                <motion.img 
-                  src="/eternity.png" 
-                  alt="Eternity Logo" 
+                <motion.img
+                  src="/eternity.png"
+                  alt="Eternity Logo"
                   className="loading-logo-circular"
                   style={{ zIndex: 2 }}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -794,7 +801,7 @@ export default function Home() {
         {!isLoading && (
           <>
             {/* Circular Progress Indicator (Top Right) */}
-            <div 
+            <div
               className={`circular-progress ${isScrolled ? 'scrolled' : ''}`}
               style={{ cursor: 'pointer' }}
               onClick={() => {
@@ -807,295 +814,279 @@ export default function Home() {
             >
               <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
                 <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
-                <motion.circle 
-                  cx="50" cy="50" r="40" 
-                  fill="none" 
-                  stroke="#ffffff" 
-                  strokeWidth="6" 
+                <motion.circle
+                  cx="50" cy="50" r="40"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="6"
                   strokeLinecap="round"
-                  style={{ pathLength: scaleY }} 
+                  style={{ pathLength: scaleY }}
                 />
               </svg>
               {/* Down/Up Arrow Icon */}
-              <motion.svg 
-                width="14" height="14" viewBox="0 0 24 24" 
-                fill="none" stroke="rgba(255,255,255,0.5)" 
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
+              <motion.svg
+                width="14" height="14" viewBox="0 0 24 24"
+                fill="none" stroke="rgba(255,255,255,0.5)"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                 style={{ position: 'relative', zIndex: 2 }}
                 animate={{ rotate: isAtBottom ? 180 : 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <path d="M12 5v14M5 12l7 7 7-7"/>
+                <path d="M12 5v14M5 12l7 7 7-7" />
               </motion.svg>
             </div>
 
             {/* Navbar */}
             <nav className={`saas-navbar ${isScrolled ? 'scrolled' : ''}`}>
-          <div className="nav-content">
-            <div className="nav-logo">
-              <a href="#" aria-label="Go to top">
-                <img src="/eternity.png" alt="Eternity" />
-              </a>
-            </div>
-            <div className="nav-links">
-              <div className="nav-page-links">
-                <a href="#">
-                  <RandomLetterSwap label="Home" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
-                </a>
-                <a href="#features">
-                  <RandomLetterSwap label="Features" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
-                </a>
-                <a href="#access">
-                  <RandomLetterSwap label="Access" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
-                </a>
-              </div>
-              <div className="nav-actions">
-                <AmbientSound />
-                <a href="https://discord.gg/4c9N49jtXq" target="_blank" rel="noopener noreferrer" className="discord-btn">
-                  <svg width="18" height="18" viewBox="0 0 127.14 96.36" fill="currentColor">
-                    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c0,0,.04-.06.05-.09h0c2.69-28.7-4.66-51.52-18.95-72.06ZM42.66,65.34c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Zm41.81,0c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Z"/>
-                  </svg>
-                  <span className="discord-btn-text">Join Discord</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-      <main className="saas-main">
-        {/* Hero Section */}
-        <section className="hero-section">
-          <motion.div initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring", bounce: 0.4 }} className="hero-badge-mono">
-            <span className="pulse-dot-green"></span>
-            Script Status: <strong style={{color: '#10b981'}}>Operational</strong>
-          </motion.div>
-          <div className="hero-title-wrapper">
-            <motion.span
-              className="hero-word"
-              initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
-              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-              viewport={{ once: false, margin: '-10%' }}
-              transition={{ duration: 0.9, delay: 0.15, type: 'spring', bounce: 0.3 }}
-            >
-              Redefining
-            </motion.span>
-            <motion.span
-              className="hero-word hero-word-accent"
-              initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
-              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-              viewport={{ once: false, margin: '-10%' }}
-              transition={{ duration: 0.9, delay: 0.38, type: 'spring', bounce: 0.3 }}
-            >
-              Execution
-            </motion.span>
-          </div>
-          <motion.p initial={{ opacity: 0, x: -30, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.4, type: "spring", bounce: 0.3 }} className="hero-subtitle">
-            Lightning fast, completely undetected, and built for absolute dominance.<br/>
-            Eternity is the premier execution engine for modern scripters.
-          </motion.p>
-
-          <motion.div initial={{ opacity: 0, scale: 0.9, y: 60, rotateX: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.5, type: "spring", bounce: 0.4 }} className="hero-terminal-wrapper-mono" style={{ perspective: '1000px' }}>
-            
-            {/* SVG Filters for Electrical Distortion */}
-            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-              {/* Border edge distortion - moderate */}
-              <filter id="electric-distort" x="-200%" y="-200%" width="500%" height="500%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="3" result="noise">
-                  <animate attributeName="baseFrequency" values="0.12;0.18;0.12" dur="0.4s" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" />
-              </filter>
-              {/* Multi-layered aggressive lightning bolt distortions */}
-              <filter id="bolt-distort-core" x="-500%" y="-10%" width="1100%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.08 0.4" numOctaves="4" result="noise" seed="1">
-                  <animate attributeName="baseFrequency" values="0.08 0.4;0.1 0.6;0.08 0.4" dur="0.2s" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G" />
-              </filter>
-              <filter id="bolt-distort-arc1" x="-500%" y="-10%" width="1100%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.06 0.5" numOctaves="3" result="noise" seed="5">
-                  <animate attributeName="baseFrequency" values="0.06 0.5;0.09 0.7;0.06 0.5" dur="0.25s" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="35" xChannelSelector="R" yChannelSelector="G" />
-              </filter>
-              <filter id="bolt-distort-arc2" x="-500%" y="-10%" width="1100%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.1 0.3" numOctaves="3" result="noise" seed="9">
-                  <animate attributeName="baseFrequency" values="0.1 0.3;0.12 0.5;0.1 0.3" dur="0.15s" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" />
-              </filter>
-            </svg>
-
-            {/* Background Smoke Layers */}
-            <div className="smoke-container">
-              <div className="smoke-particle smoke-1"></div>
-              <div className="smoke-particle smoke-2"></div>
-              <div className="smoke-particle smoke-3"></div>
-            </div>
-
-            <div className="saber-lightning-group">
-              <div className="saber-lightning core"></div>
-              <div className="saber-lightning arc-1"></div>
-              <div className="saber-lightning arc-2"></div>
-            </div>
-            
-            {/* Crackling Electrical Arc Border (Rounded and behind terminal) */}
-            <div className="saber-wrapper-arc">
-              <div className="saber-border-fill"></div>
-              <div className="saber-border-retract"></div>
-            </div>
-
-            <div className={`hero-terminal-mono ${copied ? 'terminal-success-pulse' : ''}`}>
-
-              <div className="terminal-header-mono">
-                <div className="terminal-dots-mono">
-                  <span className="dot-mono dot-mono-r"></span>
-                  <span className="dot-mono dot-mono-y"></span>
-                  <span className="dot-mono dot-mono-g"></span>
+              <div className="nav-content">
+                <div className="nav-logo">
+                  <a href="#" aria-label="Go to top">
+                    <img src="/eternity.png" alt="Eternity" />
+                  </a>
                 </div>
-                <div className="terminal-title">project-eternity.lua</div>
+                <div className="nav-links">
+                  <div className="nav-page-links">
+                    <a href="#">
+                      <RandomLetterSwap label="Home" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                    </a>
+                    <a href="#features">
+                      <RandomLetterSwap label="Features" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                    </a>
+                    <a href="#access">
+                      <RandomLetterSwap label="Access" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                    </a>
+                  </div>
+                  <div className="nav-actions">
+                    <AmbientSound />
+                    <a href="https://discord.gg/4c9N49jtXq" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '12px' }}>
+                      <LiquidMetalButton
+                        label="Discord"
+                        icon={
+                          <svg width="16" height="16" viewBox="0 0 127.14 96.36" fill="currentColor">
+                            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c0,0,.04-.06.05-.09h0c2.69-28.7-4.66-51.52-18.95-72.06ZM42.66,65.34c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Zm41.81,0c-5.32,0-9.71-4.86-9.71-10.8s4.31-10.8,9.71-10.8c5.44,0,9.77,4.9,9.71,10.8,0,5.94-4.31,10.8-9.71,10.8Z" />
+                          </svg>
+                        }
+                      />
+                    </a>
+                  </div>
+                </div>
               </div>
-              <div className="terminal-body">
-                <div className="script-text">
-                  <span className="prompt-icon">&gt;_</span>
-                  <span className="script-code">
-                    {typedChars > 0 && (
-                      <>
-                        {fullScript.substring(0, Math.min(typedChars, 25))}
-                        {typedChars > 25 && (
-                          <span className="script-url">
-                            {fullScript.substring(25, Math.min(typedChars, 57))}
-                          </span>
-                        )}
-                        {typedChars > 57 && (
-                          fullScript.substring(57, Math.min(typedChars, fullScript.length))
-                        )}
-                      </>
-                    )}
-                    <span className="cursor-blink">|</span>
+            </nav>
+
+            <main className="saas-main">
+              <section className="hero-section" style={{ position: 'relative' }}>
+                <Lightning intensity={0.5} speed={1.2} size={2.2} hue={0} />
+                <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="hero-title-container" initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring", bounce: 0.4 }}>
+                  <div className="hero-badge-mono" style={{ margin: '0 auto 24px auto', width: 'fit-content' }}>
+                    <span className="pulse-dot-green"></span>
+                    Script Status: <strong style={{ color: '#10b981' }}>Operational</strong>
+                  </div>
+                  <div className="hero-title-wrapper">
+                    <motion.span
+                      className="hero-word"
+                      initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
+                      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                      viewport={{ once: false, margin: '-10%' }}
+                      transition={{ duration: 0.9, delay: 0.15, type: 'spring', bounce: 0.3 }}
+                    >
+                      Redefining
+                    </motion.span>
+                    <motion.span
+                      className="hero-word hero-word-accent"
+                      initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
+                      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                      viewport={{ once: false, margin: '-10%' }}
+                      transition={{ duration: 0.9, delay: 0.38, type: 'spring', bounce: 0.3 }}
+                    >
+                      Execution
+                    </motion.span>
+                  </div>
+                  <motion.p initial={{ opacity: 0, x: -30, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.4, type: "spring", bounce: 0.3 }} className="hero-subtitle" style={{ margin: '24px auto 0' }}>
+                    Lightning fast, completely undetected, and built for absolute dominance.<br />
+                    Eternity is the premier execution engine for modern scripters.
+                  </motion.p>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, scale: 0.9, y: 60, rotateX: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.5, type: "spring", bounce: 0.4 }} className="hero-terminal-wrapper-mono" style={{ perspective: '1000px' }}>
+
+                  {/* SVG Filters for Electrical Distortion (Removed) */}
+
+                  {/* Saber Lightning Overlays (Removed) */}
+
+                  <div className={`hero-terminal-mono ${copied ? 'terminal-success-pulse' : ''}`}>
+
+                    <div className="terminal-header-mono">
+                      <div className="terminal-dots-mono">
+                        <span className="dot-mono dot-mono-r"></span>
+                        <span className="dot-mono dot-mono-y"></span>
+                        <span className="dot-mono dot-mono-g"></span>
+                      </div>
+                      <div className="terminal-title">project-eternity.lua</div>
+                    </div>
+                    <div className="terminal-body">
+                      <div className="script-text">
+                        <span className="prompt-icon">&gt;_</span>
+                        <span className="script-code">
+                          {typedChars > 0 && (
+                            <>
+                              {fullScript.substring(0, Math.min(typedChars, 25))}
+                              {typedChars > 25 && (
+                                <span className="script-url">
+                                  {fullScript.substring(25, Math.min(typedChars, 57))}
+                                </span>
+                              )}
+                              {typedChars > 57 && (
+                                fullScript.substring(57, Math.min(typedChars, fullScript.length))
+                              )}
+                            </>
+                          )}
+                          <span className="cursor-blink">|</span>
+                        </span>
+                      </div>
+                      <button
+                        className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
+                        onClick={copyScript}
+                      >
+                        <img src="/copy.png" alt="copy" className="btn-icon" />
+                        {copied ? 'COPIED!' : 'COPY'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+                <motion.p initial={{ opacity: 0, y: -15, filter: 'blur(8px)' }} whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }} viewport={{ once: false }} transition={{ duration: 0.8, delay: 0.9, type: "spring", bounce: 0.6 }} className={`text-[13px] mt-4 font-medium tracking-wide transition-all duration-300 ${copied ? 'text-[#ff5f56] drop-shadow-[0_0_8px_rgba(255,95,86,0.8)]' : 'text-white/40'}`}>
+                  <span className={copied ? 'inline-block warning-shake' : 'inline-block'}>
+                    Make sure you have access before executing the script. <span className="opacity-70">(Ignore this if you are whitelisted and have an access key)</span>
                   </span>
+                </motion.p>
+              </section>
+
+              {/* Features Bento Grid */}
+              <section id="features" className="features-section">
+                <div className="features-header">
+                  <motion.div initial={{ opacity: 0, y: -20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="badge-wrapper mb-4">
+                    <div className="section-badge">
+                      <span className="section-badge-text">Features</span>
+                    </div>
+                  </motion.div>
+                  <motion.h2 initial={{ opacity: 0, x: -50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-title">Built for Performance</motion.h2>
+                  <motion.p initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-subtitle">Everything you need to dominate, wrapped in a beautiful UI.</motion.p>
                 </div>
-                <button
-                  className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
-                  onClick={copyScript}
-                >
-                  <img src="/copy.png" alt="copy" className="btn-icon" />
-                  {copied ? 'COPIED!' : 'COPY'}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-          <motion.p initial={{ opacity: 0, y: -15, filter: 'blur(8px)' }} whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }} viewport={{ once: false }} transition={{ duration: 0.8, delay: 0.9, type: "spring", bounce: 0.6 }} className={`text-[13px] mt-4 font-medium tracking-wide transition-all duration-300 ${copied ? 'text-[#ff5f56] drop-shadow-[0_0_8px_rgba(255,95,86,0.8)]' : 'text-white/40'}`}>
-            <span className={copied ? 'inline-block warning-shake' : 'inline-block'}>
-              Make sure you have access before executing the script. <span className="opacity-70">(Ignore this if you are whitelisted and have an access key)</span>
-            </span>
-          </motion.p>
-        </section>
+                <div className="bento-grid">
+                  <motion.div initial={{ opacity: 0, scale: 0.8, rotate: -3 }} whileInView={{ opacity: 1, scale: 1, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.5, delay: 0.1 }} className="bento-card col-span-2">
+                    <div className="bento-icon">
+                      <Zap size={28} className="text-white" />
+                    </div>
+                    <h3>Optimized</h3>
+                    <p>Engineered from the ground up for maximum performance. Ensures your scripts run smoothly with minimal overhead and absolute stability.</p>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, x: -60, rotate: -5 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.2 }} className="bento-card">
+                    <div className="bento-icon">
+                      <ShieldCheck size={28} className="text-white" />
+                    </div>
+                    <h3>Undetected</h3>
+                    <p>Advanced ring-0 bypasses and active signature morphing keep your execution completely hidden from automated anti-cheat systems.</p>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 60, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.3 }} className="bento-card">
+                    <div className="bento-icon">
+                      <RefreshCw size={28} className="text-white" />
+                    </div>
+                    <h3>Regular Updates</h3>
+                    <p>Actively maintained by a dedicated developer. Game patches are monitored and adapted to in real-time so you never have to wait long for updates.</p>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, x: 60, rotate: 3 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.4 }} className="bento-card col-span-2">
+                    <div className="bento-icon">
+                      <Crown size={28} className="text-white" />
+                    </div>
+                    <h3>Exclusive Access</h3>
+                    <p>Available only to a hand-picked network of elite users. Secured by a strict whitelist and unique key system to ensure maximum security, quality, and unparalleled support.</p>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, scale: 1.1, y: 40 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.3, delay: 0.5 }} className="bento-card col-span-2">
+                    <div className="bento-icon">
+                      <Wrench size={28} className="text-white" />
+                    </div>
+                    <h3>Unrivaled In-Script Arsenal</h3>
+                    <p>Equipped with zero delay attaches, Anti-VC, custom reanimations, brand new visual shaders, an in-script chat system, and more exclusive tools which other scripts may not have.</p>
+                  </motion.div>
+                </div>
+              </section>
 
-        {/* Features Bento Grid */}
-        <section id="features" className="features-section">
-          <div className="features-header">
-            <motion.div initial={{ opacity: 0, y: -20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="badge-wrapper mb-4">
-              <div className="section-badge">
-                <span className="section-badge-text">Features</span>
-              </div>
-            </motion.div>
-            <motion.h2 initial={{ opacity: 0, x: -50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-title">Built for Performance</motion.h2>
-            <motion.p initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring" }} className="section-subtitle">Everything you need to dominate, wrapped in a beautiful UI.</motion.p>
-          </div>
-          <div className="bento-grid">
-            <motion.div initial={{ opacity: 0, scale: 0.8, rotate: -3 }} whileInView={{ opacity: 1, scale: 1, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.5, delay: 0.1 }} className="bento-card col-span-2">
-              <div className="bento-icon">
-                <Zap size={28} className="text-white" />
-              </div>
-              <h3>Optimized</h3>
-              <p>Engineered from the ground up for maximum performance. Ensures your scripts run smoothly with minimal overhead and absolute stability.</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: -60, rotate: -5 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.2 }} className="bento-card">
-              <div className="bento-icon">
-                <ShieldCheck size={28} className="text-white" />
-              </div>
-              <h3>Undetected</h3>
-              <p>Advanced ring-0 bypasses and active signature morphing keep your execution completely hidden from automated anti-cheat systems.</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 60, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.3 }} className="bento-card">
-              <div className="bento-icon">
-                <RefreshCw size={28} className="text-white" />
-              </div>
-              <h3>Regular Updates</h3>
-              <p>Actively maintained by a dedicated developer. Game patches are monitored and adapted to in real-time so you never have to wait long for updates.</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: 60, rotate: 3 }} whileInView={{ opacity: 1, x: 0, rotate: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.4, delay: 0.4 }} className="bento-card col-span-2">
-              <div className="bento-icon">
-                <Crown size={28} className="text-white" />
-              </div>
-              <h3>Exclusive Access</h3>
-              <p>Available only to a hand-picked network of elite users. Secured by a strict whitelist and unique key system to ensure maximum security, quality, and unparalleled support.</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, scale: 1.1, y: 40 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: 'spring', bounce: 0.3, delay: 0.5 }} className="bento-card col-span-2">
-              <div className="bento-icon">
-                <Wrench size={28} className="text-white" />
-              </div>
-              <h3>Unrivaled In-Script Arsenal</h3>
-              <p>Equipped with zero delay attaches, Anti-VC, custom reanimations, brand new visual shaders, an in-script chat system, and more exclusive tools which other scripts may not have.</p>
-            </motion.div>
-          </div>
-        </section>
+              {/* Access Section */}
+              <section id="access" className="access-section" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '80px', padding: '100px 40px', maxWidth: '1200px', margin: '0 auto', flexWrap: 'wrap' }}>
+                <motion.div initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="access-header" style={{ position: 'sticky', top: '30vh', flex: '1 1 400px', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div className="flex justify-start mb-6">
+                    <div className="section-badge">
+                      <span className="section-badge-text">Access</span>
+                    </div>
+                  </div>
+                  <h2 style={{ textAlign: 'left', margin: '0 0 24px 0', fontSize: 'clamp(36px, 4vw, 54px)' }}>How to Get Access</h2>
+                  <p style={{ textAlign: 'left', fontSize: '18px', color: 'rgba(255,255,255,0.6)' }}>Eternity is strictly invite-only. Follow these steps to apply for a whitelist and receive your execution key.</p>
+                </motion.div>
 
-        {/* Access Section */}
-        <section id="access" className="access-section">
-          <motion.div initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="access-header">
-            <div className="flex justify-center mb-6">
-              <div className="section-badge">
-                <span className="section-badge-text">Access</span>
-              </div>
-            </div>
-            <h2>How to Get Access</h2>
-            <p>Eternity is strictly invite-only. Follow these steps to apply for a whitelist and receive your execution key.</p>
-          </motion.div>
-          
-          <div className="access-steps">
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.1 }} className="access-step-card">
-              <div className="step-number">1</div>
-              <h3>Join the Server</h3>
-              <p>Gain entry to the private Project Eternity Discord server. This is your hub for updates, support, and community.</p>
-            </motion.div>
-            
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.2 }} className="access-step-card">
-              <div className="step-number">2</div>
-              <h3>DM @hor1zxn.</h3>
-              <p>Direct message Zen to apply. He will personally verify you, whitelist your Roblox username, and provide your unique key.</p>
-            </motion.div>
-            
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.3 }} className="access-step-card">
-              <div className="step-number">3</div>
-              <h3>Execute & Enjoy</h3>
-              <p>Run the script's loadstring and authenticate. Make sure to read the usage rules and guidelines in Discord before dominating.</p>
-            </motion.div>
-          </div>
-        </section>
-      </main>
+                <div className="access-steps" style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '32px', paddingTop: '10vh', paddingBottom: '20vh' }}>
+                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.1 }} className="access-step-card">
+                    <div className="step-number">1</div>
+                    <h3>Join the Server</h3>
+                    <p>Gain entry to the private Project Eternity Discord server. This is your hub for updates, support, and community.</p>
+                  </motion.div>
 
-      <footer className="saas-footer">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <a href="#" aria-label="Go to top">
-              <img src="/eternity.png" alt="Eternity" className="footer-logo" />
-            </a>
-            <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Eternity. All rights reserved.</p>
-          <div className="status-indicator">
-            <div className="status-dot" style={{ backgroundColor: '#10b981', boxShadow: '0 0 8px rgba(16,185,129,0.8)' }}></div>
-            <span>Script Status: <strong style={{color: '#10b981'}}>Operational</strong></span>
-          </div>
-        </div>
-      </footer>
-      </>
-      )}
-    </div>
+                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.2 }} className="access-step-card">
+                    <div className="step-number">2</div>
+                    <h3>DM @hor1zxn.</h3>
+                    <p>Direct message Zen to apply. He will personally verify you, whitelist your Roblox username, and provide your unique key.</p>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.3 }} className="access-step-card">
+                    <div className="step-number">3</div>
+                    <h3>Execute & Enjoy</h3>
+                    <p>Run the script's loadstring and authenticate. Make sure to read the usage rules and guidelines in Discord before dominating.</p>
+                  </motion.div>
+                </div>
+              </section>
+
+              {/* Live Discord Profile Section */}
+              <section id="developer-presence" style={{ paddingTop: '100px', display: 'flex', flexDirection: 'row-reverse', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center', gap: '60px', width: '100%', maxWidth: '1000px', margin: '0 auto', paddingBottom: '120px', paddingLeft: '20px', paddingRight: '20px' }}>
+
+                <motion.div className="dev-discord-text-container" initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} style={{ flex: '1 1 400px', maxWidth: '440px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', marginBottom: '24px' }}>
+                    <div className="section-badge">
+                      <span className="section-badge-text">Developer</span>
+                    </div>
+                  </div>
+                  <h2 className="section-title" style={{ fontSize: 'clamp(32px, 4vw, 46px)', margin: '0 0 16px 0', letterSpacing: '-0.02em', lineHeight: '1.1', textAlign: 'left' }}>Developer Discord</h2>
+                  <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.6', fontFamily: 'var(--font-montserrat)', fontWeight: 500, margin: 0, textAlign: 'left', maxWidth: '380px' }}>
+                    Add me on Discord to request whitelist access, or if you require any assistance regarding script support.
+                  </p>
+                </motion.div>
+
+                <div className="dev-discord-card-container" style={{ flex: '1 1 400px', maxWidth: '420px', display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                  <div style={{ width: '100%' }}>
+                    <DiscordProfile userId="511924930028240907" />
+                  </div>
+                </div>
+
+              </section>
+            </main>
+
+            <footer className="saas-footer">
+              <div className="footer-content">
+                <div className="footer-brand">
+                  <a href="#" aria-label="Go to top">
+                    <img src="/eternity.png" alt="Eternity" className="footer-logo" />
+                  </a>
+                  <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
+                </div>
+              </div>
+              <div className="footer-bottom">
+                <p>&copy; {new Date().getFullYear()} Eternity. All rights reserved.</p>
+                <div className="status-indicator">
+                  <div className="status-dot" style={{ backgroundColor: '#10b981', boxShadow: '0 0 8px rgba(16,185,129,0.8)' }}></div>
+                  <span>Script Status: <strong style={{ color: '#10b981' }}>Operational</strong></span>
+                </div>
+              </div>
+            </footer>
+          </>
+        )}
+      </div>
     </>
   );
 }
