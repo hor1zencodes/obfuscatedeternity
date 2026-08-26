@@ -12,7 +12,8 @@ export function proxy(request: NextRequest) {
     userAgent.includes('krnl') ||
     userAgent.includes('fluxus') ||
     userAgent.includes('wave') ||
-    userAgent.includes('macsploit')
+    userAgent.includes('macsploit') ||
+    userAgent.includes('swift')
   ) {
     // 3. SECURE LOADER: 
     // If they hit the root URL, we give them the Loader Script, not the full script.
