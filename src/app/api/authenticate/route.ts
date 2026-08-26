@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { premiumScript } from '@/lib/premiumScript';
 
 export async function GET(request: NextRequest) {
     // SECURITY PATCH: Block random browser/Postman access by checking User-Agent
@@ -42,9 +43,8 @@ export async function GET(request: NextRequest) {
         }
 
         if (isWhitelisted) {
-            // 2. Fetch the premium script in parallel (cached for 60 seconds)
-            const scriptUrl = 'https://raw.githubusercontent.com/hor1zencodes/patanahi/main/heybro.lua';
-            const scriptFetchPromise = fetch(scriptUrl, { next: { revalidate: 60 } }).then(res => res.text());
+            // 2. Fetch the premium script (NOW INSTANT & SECURE, NO GITHUB FETCH)
+            const scriptText = premiumScript;
 
             // 3. Process telemetry in parallel to speed up execution
             if (supabase) {
@@ -92,14 +92,13 @@ export async function GET(request: NextRequest) {
                     }
                 });
                 
-                // Await both the script fetching AND telemetry, massively reducing bottleneck
-                const [scriptText] = await Promise.all([scriptFetchPromise, telemetryPromise]);
+                // Wait for telemetry to finish (non-blocking for script but ensures we don't return before starting)
+                await telemetryPromise;
                 
                 return new NextResponse(scriptText, {
                     headers: { 'Content-Type': 'text/plain' },
                 });
             } else {
-                const scriptText = await scriptFetchPromise;
                 return new NextResponse(scriptText, {
                     headers: { 'Content-Type': 'text/plain' },
                 });
