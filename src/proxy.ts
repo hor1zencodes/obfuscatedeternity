@@ -45,7 +45,28 @@ task.spawn(function()
 end)
 
 -- Execute Premium Script
-loadstring(scriptData)()
+local fn, compileErr = loadstring(scriptData)
+if not fn then
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Eternity Error",
+            Text = "Failed to compile: " .. tostring(compileErr):sub(1, 80),
+            Duration = 10
+        })
+    end)
+    return
+end
+
+local ok, runErr = pcall(fn)
+if not ok then
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Eternity Error",
+            Text = "Runtime error: " .. tostring(runErr):sub(1, 80),
+            Duration = 10
+        })
+    end)
+end
 `;
       return new NextResponse(loaderScript, {
         headers: { 'Content-Type': 'text/plain' },
