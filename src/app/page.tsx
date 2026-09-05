@@ -855,6 +855,20 @@ export default function Home() {
                     <a href="#access">
                       <RandomLetterSwap label="Access" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
                     </a>
+                    <a href="/eternityblox" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <RandomLetterSwap label="EternityBlox" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                      <span style={{ 
+                        fontSize: '9px', 
+                        fontWeight: 700, 
+                        letterSpacing: '0.06em', 
+                        padding: '1px 6px', 
+                        borderRadius: '999px', 
+                        background: 'rgba(255, 255, 255, 0.1)', 
+                        color: '#ffffff', 
+                        border: '1px solid rgba(255, 255, 255, 0.25)',
+                        textTransform: 'uppercase'
+                      }}>App</span>
+                    </a>
                   </div>
                   <div className="nav-actions">
                     <AmbientSound />
