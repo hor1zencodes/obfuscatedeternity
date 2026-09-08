@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 import { Globe } from "@/components/Globe";
@@ -13,12 +13,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [liveUsers, setLiveUsers] = useState<{ user: string, timestamp: number, isActive: boolean, executor?: string }[]>([]);
+  const [liveUsers, setLiveUsers] = useState<{
+    user: string;
+    timestamp: number;
+    isActive: boolean;
+    executor?: string;
+    gameName?: string | null;
+    placeId?: number | string | null;
+    jobId?: string;
+    isPlaying?: boolean;
+  }[]>([]);
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist">("overview");
   const [logFilter, setLogFilter] = useState<"all" | "auth" | "whitelist" | "alerts">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
 
   const [totalExecutions, setTotalExecutions] = useState(1337);
   const [chartData, setChartData] = useState<{ date: string, executions: number }[]>([]);
@@ -55,7 +65,19 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData(true);
+    const pollInterval = setInterval(() => {
+      fetchData(false);
+    }, 15000);
+    return () => clearInterval(pollInterval);
   }, []);
+
+  const copyToClipboard = (text: string, id: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedJobId(id);
+      setTimeout(() => setCopiedJobId(null), 2000);
+    }
+  };
 
   const fetchData = async (initialCheck = false) => {
     setIsRefreshing(true);
@@ -381,8 +403,13 @@ export default function AdminDashboard() {
                             ))}
                           </div>
                         )}
-                        <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="pulse-dot-green" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }}></span> Active now
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                          <div style={{ color: '#27c93f', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="pulse-dot-green" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#27c93f', display: 'inline-block' }}></span> Active now
+                          </div>
+                          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontFamily: 'var(--font-fira-code)' }}>
+                            {liveUsers.filter(u => u.isPlaying).length} in game
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -589,9 +616,64 @@ export default function AdminDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.3 }}
-                style={{ width: '100%' }}
+                style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}
               >
-                <div className="hero-terminal-wrapper-mono" style={{ width: '100%', maxWidth: 'none' }}>
+                {/* Search and Summary Bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div style={{ position: 'relative', minWidth: '280px', maxWidth: '400px', flex: 1 }}>
+                    <Search size={16} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder="Search user, game, or executor..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px 10px 38px',
+                        backgroundColor: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'var(--font-fira-code)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', backgroundColor: 'rgba(39,201,63,0.1)', border: '1px solid rgba(39,201,63,0.2)', borderRadius: '8px', fontSize: '12px', color: '#27c93f', fontWeight: 600 }}>
+                      <Gamepad2 size={14} />
+                      <span>{liveUsers.filter(u => u.isPlaying).length} Playing</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>
+                      <span>{liveUsers.filter(u => !u.isPlaying).length} Idle</span>
+                    </div>
+                    <button
+                      onClick={() => fetchData(false)}
+                      disabled={isRefreshing}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-fira-code)',
+                        cursor: 'pointer'
+                      }}
+                      title="Refresh live activity"
+                    >
+                      <RefreshCw size={12} className={isRefreshing ? "animate-spin" : ""} />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="hero-terminal-wrapper-mono" style={{ width: '100%', maxWidth: 'none', margin: 0 }}>
                   <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                     <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       <div className="terminal-dots-mono">
@@ -599,52 +681,140 @@ export default function AdminDashboard() {
                         <div className="dot-mono dot-mono-y"></div>
                         <div className="dot-mono dot-mono-g"></div>
                       </div>
-                      <div className="terminal-title">live_executions.sys</div>
+                      <div className="terminal-title">live_user_activity.sys</div>
                       <div style={{ flex: 1 }}></div>
+                      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontFamily: 'var(--font-fira-code)' }}>
+                        Online: {liveUsers.length}
+                      </div>
                     </div>
                     <div style={{ overflowX: 'auto', padding: '0' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '500px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '750px' }}>
                         <thead>
                           <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                            <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
-                            <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Executor</th>
-                            <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
-                            <th style={{ padding: '20px 24px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Last Ping</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Identifier</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Current Game & Server</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Executor</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Last Ping</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {liveUsers.length === 0 ? (
-                            <tr>
-                              <td colSpan={4} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
-                                NO ACTIVE EXECUTIONS DETECTED
-                              </td>
-                            </tr>
-                          ) : (
-                            liveUsers.map((user, i) => (
+                          {(() => {
+                            const filteredUsers = liveUsers.filter(u => {
+                              if (!searchQuery.trim()) return true;
+                              const q = searchQuery.toLowerCase();
+                              return (
+                                u.user.toLowerCase().includes(q) ||
+                                (u.gameName && u.gameName.toLowerCase().includes(q)) ||
+                                (u.executor && u.executor.toLowerCase().includes(q)) ||
+                                (u.placeId && String(u.placeId).includes(q))
+                              );
+                            });
+
+                            if (filteredUsers.length === 0) {
+                              return (
+                                <tr>
+                                  <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                                    {searchQuery ? "NO MATCHING USERS OR GAMES FOUND" : "NO ACTIVE EXECUTIONS DETECTED"}
+                                  </td>
+                                </tr>
+                              );
+                            }
+
+                            return filteredUsers.map((user, i) => (
                               <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                <td style={{ padding: '20px 24px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>
+                                {/* User Identifier */}
+                                <td style={{ padding: '18px 20px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <img src={`/api/admin/avatar?username=${user.user}`} alt="Avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', objectFit: 'cover' }} />
-                                    {user.user}
+                                    <span>{user.user}</span>
                                   </div>
                                 </td>
-                                <td style={{ padding: '20px 24px', color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: 500 }}>
+
+                                {/* Current Game & Server */}
+                                <td style={{ padding: '18px 20px' }}>
+                                  {user.isPlaying && user.placeId ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <Gamepad2 size={16} color="#27c93f" />
+                                        <span style={{ color: '#fff', fontWeight: 600, fontSize: '13px' }}>
+                                          {user.gameName || "In Game"}
+                                        </span>
+                                        <a
+                                          href={`https://www.roblox.com/games/${user.placeId}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          title="Open game on Roblox"
+                                          style={{ display: 'inline-flex', alignItems: 'center', color: '#60a5fa', transition: 'opacity 0.2s' }}
+                                        >
+                                          <ExternalLink size={13} />
+                                        </a>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-fira-code)' }}>
+                                          Place ID: {user.placeId}
+                                        </span>
+                                        {user.jobId && (
+                                          <button
+                                            type="button"
+                                            onClick={() => copyToClipboard(user.jobId!, `job-${i}`)}
+                                            style={{
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px',
+                                              backgroundColor: 'rgba(255,255,255,0.06)',
+                                              border: '1px solid rgba(255,255,255,0.1)',
+                                              borderRadius: '4px',
+                                              padding: '2px 6px',
+                                              color: copiedJobId === `job-${i}` ? '#27c93f' : 'rgba(255,255,255,0.6)',
+                                              fontSize: '10px',
+                                              fontFamily: 'var(--font-fira-code)',
+                                              cursor: 'pointer'
+                                            }}
+                                            title="Click to copy server instance JobId"
+                                          >
+                                            {copiedJobId === `job-${i}` ? <Check size={10} color="#27c93f" /> : <Copy size={10} />}
+                                            <span>{copiedJobId === `job-${i}` ? 'Copied' : `Job: ${user.jobId.slice(0, 8)}...`}</span>
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.3)', fontSize: '12px', fontStyle: 'italic' }}>
+                                      <span>• Idle / No Game Data</span>
+                                    </div>
+                                  )}
+                                </td>
+
+                                {/* Executor */}
+                                <td style={{ padding: '18px 20px', color: 'rgba(255,255,255,0.7)', fontSize: '13px', fontWeight: 500 }}>
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
                                     {user.executor || "Unknown"}
                                   </div>
                                 </td>
-                                <td style={{ padding: '20px 24px' }}>
-                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(39,201,63,0.1)', border: '1px solid rgba(39,201,63,0.3)', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', color: '#27c93f', fontWeight: 'bold', letterSpacing: '0.1em' }}>
-                                    <div className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></div>
-                                    ONLINE
-                                  </div>
+
+                                {/* Status */}
+                                <td style={{ padding: '18px 20px' }}>
+                                  {user.isPlaying ? (
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(39,201,63,0.1)', border: '1px solid rgba(39,201,63,0.3)', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', color: '#27c93f', fontWeight: 'bold', letterSpacing: '0.1em' }}>
+                                      <div className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></div>
+                                      IN GAME
+                                    </div>
+                                  ) : (
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '999px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, letterSpacing: '0.1em' }}>
+                                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.4)' }}></div>
+                                      ONLINE
+                                    </div>
+                                  )}
                                 </td>
-                                <td style={{ padding: '20px 24px', color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
+
+                                {/* Last Ping */}
+                                <td style={{ padding: '18px 20px', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontFamily: 'var(--font-fira-code)' }}>
                                   {new Date(user.timestamp).toLocaleTimeString()}
                                 </td>
                               </tr>
-                            ))
-                          )}
+                            ));
+                          })()}
                         </tbody>
                       </table>
                     </div>
