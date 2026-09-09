@@ -36,25 +36,8 @@ end
 local username = Players.LocalPlayer.Name
 local exec = (identifyexecutor and identifyexecutor()) or "Unknown"
 
-local _req = (syn and syn.request) or http_request or request or (http and http.request)
-local function fetchText(targetUrl)
-    if _req then
-        local ok, res = pcall(function()
-            return _req({
-                Url = targetUrl,
-                Method = "GET",
-                Headers = { ["Cache-Control"] = "no-cache" }
-            })
-        end)
-        if ok and res and res.Body and #res.Body > 0 then
-            return res.Body
-        end
-    end
-    return game:HttpGet(targetUrl .. (targetUrl:find("%?") and "&" or "?") .. "t=" .. tostring(tick()), true)
-end
-
 local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20"))
-local scriptData = fetchText(url)
+local scriptData = game:HttpGet(url, true)
 
 if scriptData:match("Access Denied") then
     game.Players.LocalPlayer:Kick("Eternity: You are not whitelisted.")
@@ -66,7 +49,7 @@ task.spawn(function()
     while true do
         task.wait(30)
         pcall(function()
-            fetchText("https://zeneternity.vercel.app/api/ping?user=" .. username)
+            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username, true)
         end)
     end
 end)
