@@ -37,7 +37,15 @@ export async function GET(request: NextRequest) {
                 value: JSON.stringify(activityPayload)
             });
 
-            return NextResponse.json({ success: true, message: "Activity updated" });
+            return NextResponse.json(
+                { success: true, message: "Activity updated" },
+                {
+                    headers: {
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                    }
+                }
+            );
         }
 
         // Otherwise, fetch all live users' activity within the last 2 minutes (120s)
@@ -90,7 +98,15 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        return NextResponse.json({ success: true, users });
+        return NextResponse.json(
+            { success: true, users },
+            {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                    'Pragma': 'no-cache',
+                }
+            }
+        );
     } catch (e) {
         console.error("Users Activity API error:", e);
         return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });

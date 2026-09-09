@@ -14,7 +14,16 @@ export function proxy(request: NextRequest) {
     userAgent.includes('wave') ||
     userAgent.includes('macsploit') ||
     userAgent.includes('swift') ||
-    userAgent.includes('real')
+    userAgent.includes('real') ||
+    userAgent.includes('delta') ||
+    userAgent.includes('arceus') ||
+    userAgent.includes('codex') ||
+    userAgent.includes('solara') ||
+    userAgent.includes('celery') ||
+    userAgent.includes('hydrogen') ||
+    userAgent.includes('appleware') ||
+    userAgent.includes('vega') ||
+    userAgent.includes('xeno')
   ) {
     // 3. SECURE LOADER: 
     // If they hit the root URL, we give them the Loader Script, not the full script.
@@ -27,7 +36,7 @@ end
 local username = Players.LocalPlayer.Name
 local exec = (identifyexecutor and identifyexecutor()) or "Unknown"
 
-local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20"))
+local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
 local scriptData = game:HttpGet(url, true)
 
 if scriptData:match("Access Denied") then
@@ -40,7 +49,7 @@ task.spawn(function()
     while true do
         task.wait(30)
         pcall(function()
-            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username, true)
+            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username .. "&t=" .. tostring(tick()), true)
         end)
     end
 end)
@@ -70,7 +79,11 @@ if not ok then
 end
 `;
       return new NextResponse(loaderScript, {
-        headers: { 'Content-Type': 'text/plain' },
+        headers: {
+          'Content-Type': 'text/plain',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
       });
     }
   }

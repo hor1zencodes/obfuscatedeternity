@@ -13,7 +13,16 @@ export async function GET(request: NextRequest) {
         userAgent.includes('wave') ||
         userAgent.includes('macsploit') ||
         userAgent.includes('swift') ||
-        userAgent.includes('real');
+        userAgent.includes('real') ||
+        userAgent.includes('delta') ||
+        userAgent.includes('arceus') ||
+        userAgent.includes('codex') ||
+        userAgent.includes('solara') ||
+        userAgent.includes('celery') ||
+        userAgent.includes('hydrogen') ||
+        userAgent.includes('appleware') ||
+        userAgent.includes('vega') ||
+        userAgent.includes('xeno');
 
     if (!isRobloxExecutor) {
         return new NextResponse("print('Access Denied: Invalid Client')", { status: 403 });
@@ -97,11 +106,19 @@ export async function GET(request: NextRequest) {
                 await telemetryPromise;
                 
                 return new NextResponse(scriptText, {
-                    headers: { 'Content-Type': 'text/plain' },
+                    headers: {
+                        'Content-Type': 'text/plain',
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                    },
                 });
             } else {
                 return new NextResponse(scriptText, {
-                    headers: { 'Content-Type': 'text/plain' },
+                    headers: {
+                        'Content-Type': 'text/plain',
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                    },
                 });
             }
         } else {

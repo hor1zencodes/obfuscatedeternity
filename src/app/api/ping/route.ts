@@ -31,7 +31,12 @@ export async function GET(request: NextRequest) {
                 });
             }
         }
-        return new NextResponse("OK");
+        return new NextResponse("OK", {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma': 'no-cache',
+            },
+        });
     } catch (e) {
         console.error("Ping error:", e);
         return new NextResponse("Error", { status: 500 });

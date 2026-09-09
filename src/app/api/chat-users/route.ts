@@ -20,13 +20,26 @@ export async function GET() {
             // Map the rows to just an array of usernames
             const liveUsers = liveUsersData.map(row => row.username);
 
-            return NextResponse.json({ success: true, liveUsers });
+            return NextResponse.json(
+                { success: true, liveUsers },
+                {
+                    headers: {
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                    },
+                }
+            );
         } else {
             // For local development without Supabase
-            return NextResponse.json({
-                success: true,
-                liveUsers: []
-            });
+            return NextResponse.json(
+                { success: true, liveUsers: [] },
+                {
+                    headers: {
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                    },
+                }
+            );
         }
     } catch (e) {
         console.error("Chat users API error:", e);
