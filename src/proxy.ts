@@ -36,7 +36,7 @@ end
 local username = Players.LocalPlayer.Name
 local exec = (identifyexecutor and identifyexecutor()) or "Unknown"
 
-local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20"))
+local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
 local scriptData = game:HttpGet(url, true)
 
 if scriptData:match("Access Denied") then
@@ -49,7 +49,7 @@ task.spawn(function()
     while true do
         task.wait(30)
         pcall(function()
-            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username, true)
+            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username .. "&t=" .. tostring(tick()), true)
         end)
     end
 end)
