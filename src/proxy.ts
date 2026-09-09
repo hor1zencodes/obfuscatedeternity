@@ -13,7 +13,8 @@ export function proxy(request: NextRequest) {
     userAgent.includes('fluxus') ||
     userAgent.includes('wave') ||
     userAgent.includes('macsploit') ||
-    userAgent.includes('swift')
+    userAgent.includes('swift') ||
+    userAgent.includes('real')
   ) {
     // 3. SECURE LOADER: 
     // If they hit the root URL, we give them the Loader Script, not the full script.
@@ -39,7 +40,7 @@ task.spawn(function()
     while true do
         task.wait(30)
         pcall(function()
-            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username)
+            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username, true)
         end)
     end
 end)

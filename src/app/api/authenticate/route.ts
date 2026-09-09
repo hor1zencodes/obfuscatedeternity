@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
         userAgent.includes('fluxus') ||
         userAgent.includes('wave') ||
         userAgent.includes('macsploit') ||
-        userAgent.includes('swift');
+        userAgent.includes('swift') ||
+        userAgent.includes('real');
 
     if (!isRobloxExecutor) {
         return new NextResponse("print('Access Denied: Invalid Client')", { status: 403 });
