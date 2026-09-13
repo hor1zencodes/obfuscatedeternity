@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const placeId = searchParams.get('placeId');
     const jobId = searchParams.get('jobId');
     const gameName = searchParams.get('gameName');
+    const executor = searchParams.get('executor');
 
     try {
         if (!supabase) {
@@ -37,6 +38,14 @@ export async function GET(request: NextRequest) {
                 value: JSON.stringify(activityPayload)
             });
 
+            // 3. Update executor if provided
+            if (executor) {
+                await supabase.from('stats').upsert({
+                    key: `eternity:executor:${user}`,
+                    value: executor
+                });
+            }
+
             return NextResponse.json(
                 { success: true, message: "Activity updated" },
                 {
@@ -48,13 +57,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Otherwise, fetch all live users' activity within the last 2 minutes (120s)
-        const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
+        // Otherwise, fetch all live users' activity within the last 300 seconds (5 minutes)
+        const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
 
         const { data: liveUsersData, error: liveError } = await supabase
             .from('live_users')
             .select('username, last_ping')
-            .gte('last_ping', twoMinutesAgo);
+            .gte('last_ping', fiveMinutesAgo);
 
         if (liveError) {
             console.error("Supabase error fetching live_users:", liveError);

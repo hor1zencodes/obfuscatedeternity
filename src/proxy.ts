@@ -36,10 +36,35 @@ end
 local username = Players.LocalPlayer.Name
 local exec = (identifyexecutor and identifyexecutor()) or "Unknown"
 
-local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
-local scriptData = game:HttpGet(url, true)
+local function safeRequest(u)
+    local req = (syn and syn.request) or (http and http.request) or http_request or request
+    if type(req) == "function" then
+        local ok, res = pcall(function()
+            return req({
+                Url = u,
+                Method = "GET",
+                Headers = {
+                    ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Roblox/Delta (" .. exec .. ")",
+                    ["Accept"] = "*/*"
+                }
+            })
+        end)
+        if ok and res and type(res) == "table" then
+            local b = res.Body or res.body
+            if b and type(b) == "string" and #b > 0 then return b end
+        end
+    end
+    local ok1, r1 = pcall(function() return game:HttpGet(u) end)
+    if ok1 and r1 and #r1 > 0 then return r1 end
+    local ok2, r2 = pcall(function() return game:HttpGet(u, true) end)
+    if ok2 and r2 and #r2 > 0 then return r2 end
+    return nil
+end
 
-if scriptData:match("Access Denied") then
+local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
+local scriptData = safeRequest(url)
+
+if not scriptData or scriptData:match("Access Denied") then
     game.Players.LocalPlayer:Kick("Eternity: You are not whitelisted.")
     return
 end
@@ -49,7 +74,7 @@ task.spawn(function()
     while true do
         task.wait(30)
         pcall(function()
-            game:HttpGet("https://zeneternity.vercel.app/api/ping?user=" .. username .. "&t=" .. tostring(tick()), true)
+            safeRequest("https://zeneternity.vercel.app/api/ping?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick()))
         end)
     end
 end)

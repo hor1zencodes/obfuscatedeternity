@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
             }
 
-            // Fetch live users active within the last 120 seconds
-            const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
+            // Fetch live users active within the last 300 seconds (5 minutes)
+            const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
 
             const { data: liveUsersData, error } = await supabase
                 .from('live_users')
                 .select('username, last_ping')
-                .gte('last_ping', twoMinutesAgo);
+                .gte('last_ping', fiveMinutesAgo);
 
             if (error) {
                 console.error(error);

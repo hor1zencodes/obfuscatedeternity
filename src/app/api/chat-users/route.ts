@@ -4,13 +4,13 @@ import { supabase } from '@/lib/supabase';
 export async function GET() {
     try {
         if (supabase) {
-            // Fetch live users active within the last 120 seconds (2 minutes)
-            const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
+            // Fetch live users active within the last 300 seconds (5 minutes)
+            const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
 
             const { data: liveUsersData, error } = await supabase
                 .from('live_users')
                 .select('username')
-                .gte('last_ping', twoMinutesAgo);
+                .gte('last_ping', fiveMinutesAgo);
 
             if (error) {
                 console.error("Supabase error in chat-users:", error);

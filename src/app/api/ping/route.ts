@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const placeId = searchParams.get('placeId');
     const jobId = searchParams.get('jobId');
     const gameName = searchParams.get('gameName');
+    const executor = searchParams.get('executor');
 
     if (!user) {
         return new NextResponse("Missing user", { status: 400 });
@@ -15,6 +16,13 @@ export async function GET(request: NextRequest) {
     try {
         if (supabase) {
             await supabase.from('live_users').upsert({ username: user, last_ping: new Date().toISOString() });
+
+            if (executor) {
+                await supabase.from('stats').upsert({
+                    key: `eternity:executor:${user}`,
+                    value: executor
+                });
+            }
 
             if (placeId) {
                 const activityPayload = {
