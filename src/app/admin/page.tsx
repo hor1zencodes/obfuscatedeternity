@@ -30,7 +30,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
 
-  const [totalExecutions, setTotalExecutions] = useState(1337);
+  const [totalExecutions, setTotalExecutions] = useState(6000);
   const [chartData, setChartData] = useState<{ date: string, executions: number }[]>([]);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [executionTrend, setExecutionTrend] = useState("Stable");

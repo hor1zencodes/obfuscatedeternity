@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
                     if (!supabase) return;
                     try {
                         const { data: totalData } = await supabase.from('stats').select('value').eq('key', 'eternity:stats:total_executions').single();
-                        const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 1515;
+                        const currentTotal = totalData?.value ? parseInt(totalData.value.toString(), 10) : 6000;
                         await supabase.from('stats').upsert({ key: 'eternity:stats:total_executions', value: currentTotal + 1 });
 
                         const today = new Date().toISOString().split('T')[0];
