@@ -26,6 +26,22 @@ export async function GET(request: NextRequest) {
                 .ilike('username', user)
                 .single();
             isWhitelisted = !!data && !error;
+
+            // If not in permanent whitelist, check for an active 24-hour key session
+            if (!isWhitelisted) {
+                const now = new Date().toISOString();
+                const { data: keySession } = await supabase
+                    .from('keys')
+                    .select('id')
+                    .eq('used_by', user.toLowerCase())
+                    .gte('expires_at', now)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (keySession) {
+                    isWhitelisted = true;
+                }
+            }
         } else {
             // Fallback for local testing without Supabase
             const defaultWhitelist = [

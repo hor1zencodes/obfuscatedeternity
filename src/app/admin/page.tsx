@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check, KeyRound, Plus } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 import { Globe } from "@/components/Globe";
@@ -25,7 +25,24 @@ export default function AdminDashboard() {
   }[]>([]);
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist" | "keys">("overview");
+
+  // Keys management state
+  const [keys, setKeys] = useState<{
+    id: string;
+    key: string;
+    createdAt: string;
+    expiresAt: string;
+    usedBy: string | null;
+    usedAt: string | null;
+    source: string;
+    status: string;
+  }[]>([]);
+  const [keyStats, setKeyStats] = useState({ totalKeys: 0, activeKeys: 0, usedKeys: 0, expiredKeys: 0 });
+  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [keySearchQuery, setKeySearchQuery] = useState("");
   const [logFilter, setLogFilter] = useState<"all" | "auth" | "whitelist" | "alerts">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
@@ -117,6 +134,16 @@ export default function AdminDashboard() {
           if (dataStats.locations) setLocations(dataStats.locations);
         }
       }
+
+      // Fetch keys data
+      const resKeys = await fetch("/api/admin/keys");
+      if (resKeys.ok) {
+        const dataKeys = await resKeys.json();
+        if (dataKeys.success) {
+          setKeys(dataKeys.keys);
+          if (dataKeys.stats) setKeyStats(dataKeys.stats);
+        }
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -204,6 +231,59 @@ export default function AdminDashboard() {
   const filteredWhitelist = whitelist.filter(user =>
     user.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const filteredKeys = keys.filter(k =>
+    k.key.toLowerCase().includes(keySearchQuery.toLowerCase()) ||
+    (k.usedBy && k.usedBy.toLowerCase().includes(keySearchQuery.toLowerCase())) ||
+    k.source.toLowerCase().includes(keySearchQuery.toLowerCase())
+  );
+
+  const handleGenerateKey = async () => {
+    if (isGeneratingKey) return;
+    setIsGeneratingKey(true);
+    setGeneratedKey(null);
+    try {
+      const res = await fetch("/api/admin/keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ durationHours: 24 })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGeneratedKey(data.key);
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsGeneratingKey(false);
+    }
+  };
+
+  const handleDeleteKey = async (keyId: string) => {
+    if (!confirm('Revoke this key?')) return;
+    try {
+      const res = await fetch("/api/admin/keys", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const copyKeyToClipboard = (key: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(key);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -330,6 +410,19 @@ export default function AdminDashboard() {
           >
             <Database size={20} />
             <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Access Control</span>
+          </button>
+
+          <button
+            className="dashboard-nav-item"
+            onClick={() => { setActiveTab("keys"); setIsSidebarOpen(false); }}
+            style={{
+              backgroundColor: activeTab === 'keys' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'keys' ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'keys' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
+            }}
+          >
+            <KeyRound size={20} />
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Key System</span>
           </button>
         </nav>
 
@@ -944,6 +1037,215 @@ export default function AdminDashboard() {
                                     title="Revoke Access"
                                   >
                                     <Trash2 size={18} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 4: KEYS MANAGEMENT */}
+            {activeTab === "keys" && (
+              <motion.div
+                key="keys"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}
+              >
+                {/* Key Stats */}
+                <div className="dashboard-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                  <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #a78bfa', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <KeyRound size={18} color="#a78bfa" />
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Total Keys</span>
+                    </div>
+                    <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#fff' }}>{keyStats.totalKeys}</div>
+                  </div>
+                  <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #27c93f', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <Activity size={18} color="#27c93f" />
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Active</span>
+                    </div>
+                    <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#27c93f' }}>{keyStats.activeKeys}</div>
+                  </div>
+                  <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #ffbd2e', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <Users size={18} color="#ffbd2e" />
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Used</span>
+                    </div>
+                    <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#ffbd2e' }}>{keyStats.usedKeys}</div>
+                  </div>
+                  <div className="hero-terminal-mono terminal-grid-bg terminal-card-body" style={{ borderTop: '3px solid #ff5f56', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <Clock size={18} color="#ff5f56" />
+                      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Expired</span>
+                    </div>
+                    <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'var(--font-fira-code)', color: '#ff5f56' }}>{keyStats.expiredKeys}</div>
+                  </div>
+                </div>
+
+                {/* Generate Key Card */}
+                <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
+                  <div className="hero-terminal-mono" style={{ borderRadius: '12px' }}>
+                    <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="terminal-dots-mono">
+                        <div className="dot-mono dot-mono-r"></div>
+                        <div className="dot-mono dot-mono-y"></div>
+                        <div className="dot-mono dot-mono-g"></div>
+                      </div>
+                      <div className="terminal-title">generate_key.exe</div>
+                      <div style={{ flex: 1 }}></div>
+                    </div>
+                    <div style={{ padding: '24px 30px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <button
+                          onClick={handleGenerateKey}
+                          disabled={isGeneratingKey}
+                          className="terminal-copy-btn-mono"
+                          style={{
+                            justifyContent: 'center',
+                            backgroundColor: 'rgba(167, 139, 250, 0.15)',
+                            border: '1px solid rgba(167, 139, 250, 0.3)',
+                            padding: '12px 24px',
+                            borderRadius: '10px',
+                            opacity: isGeneratingKey ? 0.6 : 1,
+                            color: '#a78bfa',
+                          }}
+                        >
+                          <Plus size={18} /> {isGeneratingKey ? 'Generating...' : 'Generate New Key (24h)'}
+                        </button>
+                      </div>
+                      {generatedKey && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          background: 'rgba(39, 201, 63, 0.08)',
+                          border: '1px solid rgba(39, 201, 63, 0.2)',
+                          borderRadius: '10px',
+                          padding: '14px 18px'
+                        }}>
+                          <span style={{ fontFamily: 'var(--font-fira-code)', color: '#27c93f', fontSize: '16px', fontWeight: 700, letterSpacing: '1px', flex: 1 }}>
+                            {generatedKey}
+                          </span>
+                          <button
+                            onClick={() => copyKeyToClipboard(generatedKey)}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: copiedKey === generatedKey ? '#27c93f' : 'rgba(255,255,255,0.5)', padding: '4px' }}
+                          >
+                            {copiedKey === generatedKey ? <Check size={18} /> : <Copy size={18} />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Keys Table */}
+                <div className="hero-terminal-wrapper-mono" style={{ margin: 0, maxWidth: 'none' }}>
+                  <div className="hero-terminal-mono" style={{ borderRadius: '12px', height: '500px', display: 'flex', flexDirection: 'column' }}>
+                    <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="terminal-dots-mono">
+                        <div className="dot-mono dot-mono-r"></div>
+                        <div className="dot-mono dot-mono-y"></div>
+                        <div className="dot-mono dot-mono-g"></div>
+                      </div>
+                      <div className="terminal-title">keys_database.db</div>
+                      <div style={{ flex: 1 }}></div>
+                    </div>
+
+                    <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                      <div style={{ position: 'relative' }}>
+                        <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgba(255,255,255,0.4)' }} />
+                        <input
+                          type="text"
+                          value={keySearchQuery}
+                          onChange={(e) => setKeySearchQuery(e.target.value)}
+                          placeholder="Search keys..."
+                          style={{
+                            width: '100%', backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.05)',
+                            borderRadius: '8px', padding: '12px 16px 12px 44px', color: '#fff', outline: 'none', fontSize: '14px'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+                        <thead style={{ position: 'sticky', top: 0, backgroundColor: 'rgba(10,10,10,0.95)', zIndex: 10 }}>
+                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Key</th>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Used By</th>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Source</th>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Expires</th>
+                            <th style={{ padding: '14px 18px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, textAlign: 'right' }}>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredKeys.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                                NO KEYS FOUND
+                              </td>
+                            </tr>
+                          ) : (
+                            filteredKeys.map((k) => (
+                              <tr key={k.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <td style={{ padding: '14px 18px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontFamily: 'var(--font-fira-code)', fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontSize: '13px' }}>{k.key}</span>
+                                    <button
+                                      onClick={() => copyKeyToClipboard(k.key)}
+                                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: copiedKey === k.key ? '#27c93f' : 'rgba(255,255,255,0.3)', padding: '2px' }}
+                                    >
+                                      {copiedKey === k.key ? <Check size={14} /> : <Copy size={14} />}
+                                    </button>
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 18px' }}>
+                                  <span style={{
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    background: k.status === 'active' ? 'rgba(39, 201, 63, 0.12)' : k.status === 'used' ? 'rgba(255, 189, 46, 0.12)' : 'rgba(255, 95, 86, 0.12)',
+                                    color: k.status === 'active' ? '#27c93f' : k.status === 'used' ? '#ffbd2e' : '#ff5f56',
+                                    border: `1px solid ${k.status === 'active' ? 'rgba(39, 201, 63, 0.25)' : k.status === 'used' ? 'rgba(255, 189, 46, 0.25)' : 'rgba(255, 95, 86, 0.25)'}`,
+                                  }}>
+                                    {k.status}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '14px 18px', fontFamily: 'var(--font-fira-code)', color: k.usedBy ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.2)', fontSize: '13px' }}>
+                                  {k.usedBy || '—'}
+                                </td>
+                                <td style={{ padding: '14px 18px', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textTransform: 'capitalize' }}>
+                                  {k.source}
+                                </td>
+                                <td style={{ padding: '14px 18px', color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontFamily: 'var(--font-fira-code)' }}>
+                                  {new Date(k.expiresAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </td>
+                                <td style={{ padding: '14px 18px', textAlign: 'right' }}>
+                                  <button
+                                    onClick={() => handleDeleteKey(k.id)}
+                                    style={{
+                                      color: 'rgba(255,95,86,0.7)', background: 'transparent', border: 'none', cursor: 'pointer',
+                                      padding: '8px', borderRadius: '8px', transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={(e) => { e.currentTarget.style.color = '#ff5f56'; e.currentTarget.style.backgroundColor = 'rgba(255,95,86,0.1)'; }}
+                                    onMouseOut={(e) => { e.currentTarget.style.color = 'rgba(255,95,86,0.7)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                    title="Revoke Key"
+                                  >
+                                    <Trash2 size={16} />
                                   </button>
                                 </td>
                               </tr>
