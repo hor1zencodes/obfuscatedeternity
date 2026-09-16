@@ -64,8 +64,14 @@ end
 local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
 local scriptData = safeRequest(url)
 
-if not scriptData or scriptData:match("Access Denied") then
-    game.Players.LocalPlayer:Kick("Eternity: You are not whitelisted.")
+if not scriptData or #scriptData < 50 or scriptData:match("Access Denied") then
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Eternity",
+            Text = "Failed to load script. Please try re-executing.",
+            Duration = 6
+        })
+    end)
     return
 end
 
