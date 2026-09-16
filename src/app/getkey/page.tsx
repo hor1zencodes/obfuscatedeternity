@@ -52,15 +52,13 @@ export default function GetKeyPage() {
         return;
       }
 
-      // 2. Check query params or referrer
-      if (stepParam === "complete" || stepParam === "3") {
+      // 2. Check query params and saved checkpoint progress
+      if (stepParam === "complete" || stepParam === "3" || (savedProgress === "3" && isFresh)) {
         advanceToStep(3);
-      } else if (stepParam === "2") {
+      } else if (stepParam === "2" || (savedProgress === "2" && isFresh)) {
         advanceToStep(2);
-      } else if (savedProgress && isFresh) {
-        const stepNum = parseInt(savedProgress, 10);
-        if (stepNum === 2) setCurrentStep(2);
-        if (stepNum === 3) advanceToStep(3);
+      } else {
+        advanceToStep(1);
       }
     } catch {
       // Fallback
