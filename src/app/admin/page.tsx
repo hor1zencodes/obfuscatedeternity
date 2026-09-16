@@ -261,7 +261,11 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteKey = async (keyId: string) => {
-    if (!confirm('Revoke this key?')) return;
+    if (!confirm('Are you sure you want to delete this key?')) return;
+    
+    // Optimistic UI update: remove key immediately from the table
+    setKeys(prev => prev.filter(k => k.id !== keyId && k.key !== keyId));
+    
     try {
       const res = await fetch("/api/admin/keys", {
         method: "DELETE",
@@ -269,11 +273,15 @@ export default function AdminDashboard() {
         body: JSON.stringify({ keyId })
       });
       const data = await res.json();
-      if (data.success) {
+      if (!data.success) {
+        alert("Failed to delete key: " + (data.error || "Server error"));
+        fetchData();
+      } else {
         fetchData();
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      alert("Error deleting key: " + (e?.message || "Network error"));
+      fetchData();
     }
   };
 

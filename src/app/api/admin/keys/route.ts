@@ -136,33 +136,43 @@ export async function DELETE(request: NextRequest) {
     }
 
     try {
-        const { keyId } = await request.json();
-        if (!keyId) {
-            return NextResponse.json({ success: false, error: 'Key ID required' }, { status: 400 });
+        const body = await request.json().catch(() => ({}));
+        const target = body.keyId || body.id || body.key;
+        if (!target) {
+            return NextResponse.json({ success: false, error: 'Key ID or Key string required' }, { status: 400 });
         }
 
         if (supabase) {
-            // Get key info before deleting for logging
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target);
+            
             const { data: keyData } = await supabase
                 .from('keys')
-                .select('key')
-                .eq('id', keyId)
-                .single();
+                .select('id, key')
+                .eq(isUuid ? 'id' : 'key', target)
+                .maybeSingle();
 
-            await supabase.from('keys').delete().eq('id', keyId);
+            const { error: delError } = await supabase
+                .from('keys')
+                .delete()
+                .eq(isUuid ? 'id' : 'key', target);
+
+            if (delError) {
+                console.error('Delete key error:', delError);
+                return NextResponse.json({ success: false, error: delError.message }, { status: 500 });
+            }
 
             await supabase.from('stats').upsert({
                 key: `eternity:log:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
                 value: JSON.stringify({
-                    text: `Admin revoked key: ${keyData?.key || keyId}`,
+                    text: `Admin deleted key: ${keyData?.key || target}`,
                     color: '#ffbd2e'
                 })
             });
         }
 
-        return NextResponse.json({ success: true, message: 'Key revoked' });
-    } catch (e) {
+        return NextResponse.json({ success: true, message: 'Key deleted successfully' });
+    } catch (e: any) {
         console.error('Admin key DELETE error:', e);
-        return NextResponse.json({ success: false, error: 'Server Error' }, { status: 500 });
+        return NextResponse.json({ success: false, error: e?.message || 'Server Error' }, { status: 500 });
     }
 }
