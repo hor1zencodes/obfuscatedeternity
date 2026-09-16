@@ -8,13 +8,14 @@ import {
   Check, 
   Clock, 
   ShieldCheck, 
+  ShieldAlert,
   Terminal, 
-  ExternalLink,
-  RefreshCw,
-  ArrowRight,
-  Lock,
-  Unlock,
-  CheckCircle2
+  ExternalLink, 
+  RefreshCw, 
+  ArrowRight, 
+  Lock, 
+  Unlock, 
+  CheckCircle2 
 } from "lucide-react";
 
 const CP1_URL = "https://link-center.net/9423908/Ueld4j1n6FoT";
@@ -27,64 +28,123 @@ export default function GetKeyPage() {
   const [key, setKey] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [loadingKey, setLoadingKey] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [startingCP, setStartingCP] = useState<1 | 2 | null>(null);
+  const [bypassWarning, setBypassWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Initialize and detect step from URL query or localStorage
+  // Initialize and verify checkpoint progression with server Anti-Bypass
   useEffect(() => {
     setMounted(true);
 
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const stepParam = params.get("step");
-      const savedKey = localStorage.getItem("etn_active_key");
-      const savedExpiry = localStorage.getItem("etn_key_expiry");
-      const savedProgress = localStorage.getItem("etn_cp_progress");
-      const progressTime = parseInt(localStorage.getItem("etn_cp_timestamp") || "0", 10);
-      const isFresh = Date.now() - progressTime < 2 * 60 * 60 * 1000; // 2 hours validity
+    const initFlow = async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const stepParam = params.get("step");
+        const savedKey = localStorage.getItem("etn_active_key");
+        const savedExpiry = localStorage.getItem("etn_key_expiry");
+        const storedToken = localStorage.getItem("etn_cp_token");
 
-      // 1. If user already has an active, non-expired key saved
-      if (savedKey && savedExpiry && new Date(savedExpiry) > new Date()) {
-        setKey(savedKey);
-        setExpiresAt(savedExpiry);
-        setCurrentStep(3);
-        return;
-      }
+        // 1. If user already has an active, non-expired key saved
+        if (savedKey && savedExpiry && new Date(savedExpiry) > new Date()) {
+          setKey(savedKey);
+          setExpiresAt(savedExpiry);
+          setCurrentStep(3);
+          return;
+        }
 
-      // 2. Check query params and saved checkpoint progress
-      if (stepParam === "complete" || stepParam === "3" || (savedProgress === "3" && isFresh)) {
-        advanceToStep(3);
-      } else if (stepParam === "2" || (savedProgress === "2" && isFresh)) {
-        advanceToStep(2);
-      } else {
-        advanceToStep(1);
+        // 2. Returning from Checkpoint 2 (Link #2 completes to ?step=complete)
+        if (stepParam === "complete" || stepParam === "3") {
+          setVerifying(true);
+          try {
+            const res = await fetch("/api/key/checkpoint", {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                ...(storedToken ? { "Authorization": `Bearer ${storedToken}` } : {})
+              },
+              body: JSON.stringify({ action: "verify_cp2", token: storedToken }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              if (data.token) {
+                try { localStorage.setItem("etn_cp_token", data.token); } catch {}
+              }
+              setCurrentStep(3);
+              await generateKey(data.token || storedToken);
+            } else {
+              // Direct access or bypass attempt: skipped Checkpoint 1
+              setBypassWarning(data.error || "Checkpoint sequence incomplete. You must complete Checkpoint 1 and Checkpoint 2 in order.");
+              setCurrentStep(1);
+            }
+          } catch {
+            setBypassWarning("Could not verify checkpoints. Please start from Checkpoint 1.");
+            setCurrentStep(1);
+          } finally {
+            setVerifying(false);
+          }
+          return;
+        }
+
+        // 3. Returning from Checkpoint 1 (Link #1 completes to ?step=2)
+        if (stepParam === "2") {
+          setVerifying(true);
+          try {
+            const res = await fetch("/api/key/checkpoint", {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                ...(storedToken ? { "Authorization": `Bearer ${storedToken}` } : {})
+              },
+              body: JSON.stringify({ action: "verify_cp1", token: storedToken }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              if (data.token) {
+                try { localStorage.setItem("etn_cp_token", data.token); } catch {}
+              }
+              setCurrentStep(2);
+            } else {
+              // Direct access to step 2 without starting CP1
+              setBypassWarning(data.error || "Checkpoint 1 was skipped. Please start from Checkpoint 1.");
+              setCurrentStep(1);
+            }
+          } catch {
+            setBypassWarning("Verification failed. Please start from Checkpoint 1.");
+            setCurrentStep(1);
+          } finally {
+            setVerifying(false);
+          }
+          return;
+        }
+
+        // 4. Default to step 1
+        setCurrentStep(1);
+      } catch {
+        setCurrentStep(1);
       }
-    } catch {
-      // Fallback
-    }
+    };
+
+    initFlow();
   }, []);
 
-  const advanceToStep = (step: 1 | 2 | 3) => {
-    setCurrentStep(step);
-    try {
-      localStorage.setItem("etn_cp_progress", step.toString());
-      localStorage.setItem("etn_cp_timestamp", Date.now().toString());
-    } catch {}
-
-    if (step === 3 && !key) {
-      generateKey();
-    }
-  };
-
-  const generateKey = async () => {
+  const generateKey = async (passedToken?: string | null) => {
     setLoadingKey(true);
     setError(null);
     try {
+      const tokenToUse = passedToken || (typeof window !== "undefined" ? localStorage.getItem("etn_cp_token") : null);
       const res = await fetch("/api/key/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "linkvertise_2cp" }),
+        headers: { 
+          "Content-Type": "application/json",
+          ...(tokenToUse ? { "Authorization": `Bearer ${tokenToUse}` } : {})
+        },
+        body: JSON.stringify({ 
+          source: "linkvertise_2cp",
+          token: tokenToUse 
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -93,9 +153,15 @@ export default function GetKeyPage() {
         try {
           localStorage.setItem("etn_active_key", data.key);
           localStorage.setItem("etn_key_expiry", data.expiresAt);
+          localStorage.removeItem("etn_cp_token");
         } catch {}
       } else {
-        setError(data.error || "Failed to generate key. Please retry.");
+        if (res.status === 403) {
+          setBypassWarning(data.error || "Checkpoint verification required. Please complete Checkpoint 1 and Checkpoint 2 in order.");
+          setCurrentStep(1);
+        } else {
+          setError(data.error || "Failed to generate key. Please retry.");
+        }
       }
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -104,19 +170,51 @@ export default function GetKeyPage() {
     }
   };
 
-  const handleStartCP1 = () => {
+  const handleStartCP1 = async () => {
+    setStartingCP(1);
+    setBypassWarning(null);
     try {
-      localStorage.setItem("etn_cp_progress", "2");
-      localStorage.setItem("etn_cp_timestamp", Date.now().toString());
-    } catch {}
+      const res = await fetch("/api/key/checkpoint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start_cp1" }),
+      });
+      const data = await res.json();
+      if (data?.token) {
+        try { localStorage.setItem("etn_cp_token", data.token); } catch {}
+      }
+    } catch (e) {
+      console.error("Failed to start checkpoint 1:", e);
+    }
     window.location.href = CP1_URL;
   };
 
-  const handleStartCP2 = () => {
+  const handleStartCP2 = async () => {
+    setStartingCP(2);
+    setBypassWarning(null);
+    const storedToken = typeof window !== "undefined" ? localStorage.getItem("etn_cp_token") : null;
     try {
-      localStorage.setItem("etn_cp_progress", "3");
-      localStorage.setItem("etn_cp_timestamp", Date.now().toString());
-    } catch {}
+      const res = await fetch("/api/key/checkpoint", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          ...(storedToken ? { "Authorization": `Bearer ${storedToken}` } : {})
+        },
+        body: JSON.stringify({ action: "start_cp2", token: storedToken }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setBypassWarning(data.error || "Checkpoint 1 must be completed before starting Checkpoint 2.");
+        setCurrentStep(1);
+        setStartingCP(null);
+        return;
+      }
+      if (data?.token) {
+        try { localStorage.setItem("etn_cp_token", data.token); } catch {}
+      }
+    } catch (e) {
+      console.error("Failed to start checkpoint 2:", e);
+    }
     window.location.href = CP2_URL;
   };
 
@@ -473,8 +571,85 @@ export default function GetKeyPage() {
           </div>
         </div>
 
+        {/* ANTI-BYPASS ALERT BANNER */}
+        {bypassWarning && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            style={{
+              background: "linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(20, 10, 12, 0.9) 100%)",
+              border: "1px solid rgba(239, 68, 68, 0.35)",
+              borderRadius: "16px",
+              padding: "18px 20px",
+              marginBottom: "22px",
+              textAlign: "left",
+              boxShadow: "0 10px 30px rgba(239, 68, 68, 0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+              <ShieldAlert size={16} color="#ef4444" />
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "#f87171", letterSpacing: "0.8px", textTransform: "uppercase" }}>
+                Anti-Bypass Protection
+              </span>
+            </div>
+            <p style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.8)", margin: "0 0 12px 0", lineHeight: "1.5" }}>
+              {bypassWarning}
+            </p>
+            <button
+              onClick={() => {
+                setBypassWarning(null);
+                setCurrentStep(1);
+                if (typeof window !== "undefined") {
+                  window.history.replaceState({}, document.title, "/getkey");
+                }
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 14px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                color: "#ffffff",
+                fontSize: "11.5px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <RefreshCw size={12} />
+              <span>Start from Checkpoint 1</span>
+            </button>
+          </motion.div>
+        )}
+
+        {/* VERIFYING SPINNER */}
+        {verifying && (
+          <div style={{ padding: "40px 0", textAlign: "center" }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 0.9, ease: "linear" }}
+              style={{
+                width: "38px",
+                height: "38px",
+                border: "3px solid rgba(255, 255, 255, 0.12)",
+                borderTopColor: "#ffffff",
+                borderRadius: "50%",
+                margin: "0 auto 16px",
+              }}
+            />
+            <p style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "13px", fontWeight: 600, letterSpacing: "0.3px", margin: 0 }}>
+              Verifying Checkpoint Integrity...
+            </p>
+            <p style={{ color: "rgba(255, 255, 255, 0.45)", fontSize: "11px", margin: "6px 0 0 0" }}>
+              Validating anti-bypass cryptographic signature
+            </p>
+          </div>
+        )}
+
         {/* STEP 1: CHECKPOINT 1 CONTENT */}
-        {currentStep === 1 && (
+        {!verifying && currentStep === 1 && (
           <motion.div
             key="step1"
             initial={{ opacity: 0, y: 10 }}
@@ -522,6 +697,7 @@ export default function GetKeyPage() {
               whileHover={{ scale: 1.02, translateY: -1 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleStartCP1}
+              disabled={startingCP === 1}
               style={{
                 width: "100%",
                 padding: "16px 20px",
@@ -532,23 +708,39 @@ export default function GetKeyPage() {
                 fontSize: "14px",
                 fontWeight: 800,
                 letterSpacing: "0.5px",
-                cursor: "pointer",
+                cursor: startingCP === 1 ? "wait" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
                 boxShadow: "0 10px 35px rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0,0,0,0.3)",
                 marginBottom: "20px",
+                opacity: startingCP === 1 ? 0.8 : 1,
               }}
             >
-              <span>Proceed to Checkpoint 1</span>
-              <ArrowRight size={17} strokeWidth={2.5} />
+              {startingCP === 1 ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                    style={{ display: "inline-flex" }}
+                  >
+                    <RefreshCw size={16} />
+                  </motion.div>
+                  <span>Connecting to Checkpoint 1...</span>
+                </>
+              ) : (
+                <>
+                  <span>Proceed to Checkpoint 1</span>
+                  <ArrowRight size={17} strokeWidth={2.5} />
+                </>
+              )}
             </motion.button>
           </motion.div>
         )}
 
         {/* STEP 2: CHECKPOINT 2 CONTENT */}
-        {currentStep === 2 && (
+        {!verifying && currentStep === 2 && (
           <motion.div
             key="step2"
             initial={{ opacity: 0, y: 10 }}
@@ -596,6 +788,7 @@ export default function GetKeyPage() {
               whileHover={{ scale: 1.02, translateY: -1 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleStartCP2}
+              disabled={startingCP === 2}
               style={{
                 width: "100%",
                 padding: "16px 20px",
@@ -606,23 +799,39 @@ export default function GetKeyPage() {
                 fontSize: "14px",
                 fontWeight: 800,
                 letterSpacing: "0.5px",
-                cursor: "pointer",
+                cursor: startingCP === 2 ? "wait" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
                 boxShadow: "0 10px 35px rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0,0,0,0.3)",
                 marginBottom: "20px",
+                opacity: startingCP === 2 ? 0.8 : 1,
               }}
             >
-              <span>Proceed to Checkpoint 2</span>
-              <ArrowRight size={17} strokeWidth={2.5} />
+              {startingCP === 2 ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                    style={{ display: "inline-flex" }}
+                  >
+                    <RefreshCw size={16} />
+                  </motion.div>
+                  <span>Connecting to Checkpoint 2...</span>
+                </>
+              ) : (
+                <>
+                  <span>Proceed to Checkpoint 2</span>
+                  <ArrowRight size={17} strokeWidth={2.5} />
+                </>
+              )}
             </motion.button>
           </motion.div>
         )}
 
         {/* STEP 3: KEY UNLOCKED (VAULT) */}
-        {currentStep === 3 && (
+        {!verifying && currentStep === 3 && (
           <motion.div
             key="step3"
             initial={{ opacity: 0, scale: 0.97 }}
@@ -663,7 +872,7 @@ export default function GetKeyPage() {
                   {error}
                 </p>
                 <button
-                  onClick={generateKey}
+                  onClick={() => generateKey()}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
