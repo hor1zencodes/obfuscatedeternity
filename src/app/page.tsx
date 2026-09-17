@@ -9,7 +9,7 @@ import { Zap, ShieldCheck, RefreshCw, Crown, Wrench, Key, ArrowRight, Check } fr
 import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'motion/react';
 import { DiscordProfile } from '@/components/DiscordProfile';
 import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
-import { Lightning } from '@/components/ui/Lightning';
+import LaserFlow from '@/components/LaserFlow';
 
 const supportedExecutors = [
   { name: 'Volt', platform: 'PC' },
@@ -646,6 +646,7 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showEnterPrompt, setShowEnterPrompt] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
+  const revealImgRef = useRef<HTMLDivElement>(null);
 
   const fullScript = 'loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()';
 
@@ -909,7 +910,6 @@ export default function Home() {
 
             <main className="saas-main">
               <section className="hero-section" style={{ position: 'relative' }}>
-                <Lightning intensity={0.4} speed={1.2} size={2.2} hue={0} />
 
                 <div className="hero-split-container">
                   {/* Left Column: Value Prop, Typography, CTAs & Telemetry */}
@@ -1009,7 +1009,7 @@ export default function Home() {
                     </motion.div>
                   </motion.div>
 
-                  {/* Right Column: 3D Interactive Console */}
+                  {/* Right Column: 3D Interactive Console with LaserFlow */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9, x: 40, rotateY: -8 }}
                     whileInView={{ opacity: 1, scale: 1, x: 0, rotateY: 0 }}
@@ -1018,76 +1018,118 @@ export default function Home() {
                     className="hero-content-right"
                     style={{ perspective: '1000px' }}
                   >
-                    <div className={`hero-console-card ${copied ? 'terminal-success-pulse' : ''}`}>
-                      <div className="hero-console-header">
-                        <div className="terminal-dots-mono">
-                          <span className="dot-mono dot-mono-r"></span>
-                          <span className="dot-mono dot-mono-y"></span>
-                          <span className="dot-mono dot-mono-g"></span>
-                        </div>
-                        <div className="hero-console-tabs">
-                          <div className="hero-console-tab">
-                            <span style={{ color: '#10b981', fontSize: '10px' }}>●</span>
-                            <span>project-eternity.lua</span>
-                          </div>
-                        </div>
-                      </div>
+                    <div
+                      className="hero-laser-terminal-box"
+                      onMouseMove={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const el = revealImgRef.current;
+                        if (el) {
+                          el.style.setProperty('--mx', `${x}px`);
+                          el.style.setProperty('--my', `${y + rect.height * 0.5}px`);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        const el = revealImgRef.current;
+                        if (el) {
+                          el.style.setProperty('--mx', '-9999px');
+                          el.style.setProperty('--my', '-9999px');
+                        }
+                      }}
+                    >
+                      <LaserFlow
+                        horizontalBeamOffset={0.1}
+                        verticalBeamOffset={0.0}
+                        color="#ffffff"
+                        backgroundColor="#120F17"
+                        horizontalSizing={0.56}
+                        verticalSizing={5}
+                        wispDensity={1.6}
+                        wispSpeed={15.5}
+                        wispIntensity={4.3}
+                        flowSpeed={1.13}
+                        flowStrength={0.34}
+                        fogIntensity={0.22}
+                        fogScale={0.43}
+                        fogFallSpeed={0.36}
+                        decay={1.85}
+                        falloffStart={1.4}
+                      />
 
-                      <div className="hero-console-body">
-                        <div className="hero-code-editor">
-                          <div className="hero-line-numbers">
-                            <span>01</span>
-                            <span>02</span>
+                      <div className="hero-laser-terminal-card-wrap">
+                        <div className={`hero-console-card ${copied ? 'terminal-success-pulse' : ''}`}>
+                          <div className="hero-console-header">
+                            <div className="terminal-dots-mono">
+                              <span className="dot-mono dot-mono-r"></span>
+                              <span className="dot-mono dot-mono-y"></span>
+                              <span className="dot-mono dot-mono-g"></span>
+                            </div>
+                            <div className="hero-console-tabs">
+                              <div className="hero-console-tab">
+                                <span style={{ color: '#10b981', fontSize: '10px' }}>●</span>
+                                <span>project-eternity.lua</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="hero-code-lines">
-                            <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
-                              -- Universal Loader & Execution Engine
+
+                          <div className="hero-console-body">
+                            <div className="hero-code-editor">
+                              <div className="hero-line-numbers">
+                                <span>01</span>
+                                <span>02</span>
+                              </div>
+                              <div className="hero-code-lines">
+                                <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                                  -- Universal Loader & Execution Engine
+                                </span>
+                                <span style={{ color: '#e5e7eb', marginTop: '4px' }}>
+                                  {typedChars > 0 && (
+                                    <>
+                                      <span style={{ color: '#93c5fd' }}>{fullScript.substring(0, Math.min(typedChars, 10))}</span>
+                                      {typedChars > 10 && (
+                                        <span style={{ color: '#cbd5e1' }}>{fullScript.substring(10, Math.min(typedChars, 25))}</span>
+                                      )}
+                                      {typedChars > 25 && (
+                                        <span style={{ color: '#86efac' }}>{fullScript.substring(25, Math.min(typedChars, 57))}</span>
+                                      )}
+                                      {typedChars > 57 && (
+                                        <span style={{ color: '#cbd5e1' }}>{fullScript.substring(57, Math.min(typedChars, fullScript.length))}</span>
+                                      )}
+                                    </>
+                                  )}
+                                  <span className="cursor-blink">|</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="hero-console-action-row">
+                              <div className="hero-shortcut-hint">
+                                <span className="hero-shortcut-key">Ctrl</span>
+                                <span>+</span>
+                                <span className="hero-shortcut-key">C</span>
+                                <span>to copy script</span>
+                              </div>
+
+                              <button
+                                className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
+                                onClick={copyScript}
+                                id="hero-copy-script-btn"
+                              >
+                                <img src="/copy.png" alt="copy" className="btn-icon" />
+                                {copied ? 'COPIED!' : 'COPY SCRIPT'}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="hero-console-footer">
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
+                              Hook: Ready to Execute
                             </span>
-                            <span style={{ color: '#e5e7eb', marginTop: '4px' }}>
-                              {typedChars > 0 && (
-                                <>
-                                  <span style={{ color: '#93c5fd' }}>{fullScript.substring(0, Math.min(typedChars, 10))}</span>
-                                  {typedChars > 10 && (
-                                    <span style={{ color: '#cbd5e1' }}>{fullScript.substring(10, Math.min(typedChars, 25))}</span>
-                                  )}
-                                  {typedChars > 25 && (
-                                    <span style={{ color: '#86efac' }}>{fullScript.substring(25, Math.min(typedChars, 57))}</span>
-                                  )}
-                                  {typedChars > 57 && (
-                                    <span style={{ color: '#cbd5e1' }}>{fullScript.substring(57, Math.min(typedChars, fullScript.length))}</span>
-                                  )}
-                                </>
-                              )}
-                              <span className="cursor-blink">|</span>
-                            </span>
+                            <span>Bypass: Active (Ring-0)</span>
                           </div>
                         </div>
-
-                        <div className="hero-console-action-row">
-                          <div className="hero-shortcut-hint">
-                            <span className="hero-shortcut-key">Ctrl</span>
-                            <span>+</span>
-                            <span className="hero-shortcut-key">C</span>
-                            <span>to copy script</span>
-                          </div>
-
-                          <button
-                            className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
-                            onClick={copyScript}
-                            id="hero-copy-script-btn"
-                          >
-                            <img src="/copy.png" alt="copy" className="btn-icon" />
-                            {copied ? 'COPIED!' : 'COPY SCRIPT'}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="hero-console-footer">
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
-                          Hook: Ready to Execute
-                        </span>
-                        <span>Bypass: Active (Ring-0)</span>
                       </div>
                     </div>
                   </motion.div>
