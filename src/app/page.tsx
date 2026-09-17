@@ -11,6 +11,23 @@ import { DiscordProfile } from '@/components/DiscordProfile';
 import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
 import { Lightning } from '@/components/ui/Lightning';
 
+const supportedExecutors = [
+  { name: 'Madium', platform: 'PC' },
+  { name: 'Potassium', platform: 'PC' },
+  { name: 'Real', platform: 'PC' },
+  { name: 'Delta', platform: 'Mobile / PC' },
+  { name: 'Synapse Z', platform: 'PC' },
+  { name: 'Wave', platform: 'PC' },
+  { name: 'Volt', platform: 'PC / Mobile' },
+  { name: 'Solara', platform: 'PC' },
+  { name: 'MacSploit', platform: 'macOS' },
+  { name: 'Hydrogen', platform: 'Mobile / Mac' },
+  { name: 'Celery', platform: 'PC' },
+  { name: 'Codex', platform: 'Mobile' },
+  { name: 'Fluxus', platform: 'Mobile' },
+  { name: 'And More', platform: 'Universal' },
+];
+
 /* =====================================
    SHADERS (ORIGINAL VERSIONS)
 ======================================== */
@@ -889,110 +906,222 @@ export default function Home() {
 
             <main className="saas-main">
               <section className="hero-section" style={{ position: 'relative' }}>
-                <Lightning intensity={0.5} speed={1.2} size={2.2} hue={0} />
-                <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="hero-title-container" initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.1, type: "spring", bounce: 0.4 }}>
-                  <div className="hero-badge-mono" style={{ margin: '0 auto 24px auto', width: 'fit-content' }}>
-                    <span className="pulse-dot-green"></span>
-                    Script Status: <strong style={{ color: '#10b981' }}>Operational</strong>
-                  </div>
-                  <div className="hero-title-wrapper">
-                    <motion.span
-                      className="hero-word"
-                      initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
-                      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                      viewport={{ once: false, margin: '-10%' }}
-                      transition={{ duration: 0.9, delay: 0.15, type: 'spring', bounce: 0.3 }}
-                    >
-                      Redefining
-                    </motion.span>
-                    <motion.span
-                      className="hero-word hero-word-accent"
-                      initial={{ opacity: 0, y: 60, filter: 'blur(20px)', scale: 0.9 }}
-                      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                      viewport={{ once: false, margin: '-10%' }}
-                      transition={{ duration: 0.9, delay: 0.38, type: 'spring', bounce: 0.3 }}
-                    >
-                      Execution
-                    </motion.span>
-                  </div>
-                  <motion.p initial={{ opacity: 0, x: -30, filter: 'blur(10px)' }} whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, delay: 0.4, type: "spring", bounce: 0.3 }} className="hero-subtitle" style={{ margin: '24px auto 0' }}>
-                    Lightning fast, completely undetected, and built for absolute dominance.<br />
-                    Eternity is the premier execution engine for modern scripters.
-                  </motion.p>
-                </motion.div>
+                <Lightning intensity={0.4} speed={1.2} size={2.2} hue={0} />
 
-                <motion.div initial={{ opacity: 0, scale: 0.9, y: 60, rotateX: 10 }} whileInView={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 1, delay: 0.5, type: "spring", bounce: 0.4 }} className="hero-terminal-wrapper-mono" style={{ perspective: '1000px' }}>
-
-                  {/* SVG Filters for Electrical Distortion (Removed) */}
-
-                  {/* Saber Lightning Overlays (Removed) */}
-
-                  <div className={`hero-terminal-mono ${copied ? 'terminal-success-pulse' : ''}`}>
-
-                    <div className="terminal-header-mono">
-                      <div className="terminal-dots-mono">
-                        <span className="dot-mono dot-mono-r"></span>
-                        <span className="dot-mono dot-mono-y"></span>
-                        <span className="dot-mono dot-mono-g"></span>
-                      </div>
-                      <div className="terminal-title">project-eternity.lua</div>
+                <div className="hero-split-container">
+                  {/* Left Column: Value Prop, Typography, CTAs & Telemetry */}
+                  <motion.div
+                    style={{ opacity: heroOpacity, scale: heroScale }}
+                    className="hero-content-left"
+                    initial={{ opacity: 0, x: -40, filter: 'blur(10px)' }}
+                    whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.8, delay: 0.1, type: "spring", bounce: 0.4 }}
+                  >
+                    <div className="hero-badge-mono">
+                      <span className="pulse-dot-green"></span>
+                      <span>Script Status: <strong style={{ color: '#10b981' }}>Operational</strong></span>
                     </div>
-                    <div className="terminal-body">
-                      <div className="script-text">
-                        <span className="prompt-icon">&gt;_</span>
-                        <span className="script-code">
-                          {typedChars > 0 && (
-                            <>
-                              {fullScript.substring(0, Math.min(typedChars, 25))}
-                              {typedChars > 25 && (
-                                <span className="script-url">
-                                  {fullScript.substring(25, Math.min(typedChars, 57))}
-                                </span>
-                              )}
-                              {typedChars > 57 && (
-                                fullScript.substring(57, Math.min(typedChars, fullScript.length))
-                              )}
-                            </>
-                          )}
-                          <span className="cursor-blink">|</span>
-                        </span>
-                      </div>
-                      <button
-                        className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
-                        onClick={copyScript}
+
+                    <div className="hero-title-wrapper">
+                      <motion.span
+                        className="hero-word"
+                        initial={{ opacity: 0, y: 40, filter: 'blur(20px)', scale: 0.9 }}
+                        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                        viewport={{ once: false, margin: '-10%' }}
+                        transition={{ duration: 0.8, delay: 0.15, type: 'spring', bounce: 0.3 }}
                       >
-                        <img src="/copy.png" alt="copy" className="btn-icon" />
-                        {copied ? 'COPIED!' : 'COPY'}
-                      </button>
+                        Redefining
+                      </motion.span>
+                      <motion.span
+                        className="hero-word hero-word-accent"
+                        initial={{ opacity: 0, y: 40, filter: 'blur(20px)', scale: 0.9 }}
+                        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                        viewport={{ once: false, margin: '-10%' }}
+                        transition={{ duration: 0.8, delay: 0.35, type: 'spring', bounce: 0.3 }}
+                      >
+                        Execution
+                      </motion.span>
+                    </div>
+
+                    <motion.p
+                      initial={{ opacity: 0, x: -20, filter: 'blur(8px)' }}
+                      whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                      viewport={{ once: false, margin: "-10%" }}
+                      transition={{ duration: 0.8, delay: 0.3, type: "spring", bounce: 0.3 }}
+                      className="hero-subtitle"
+                    >
+                      Lightning fast, completely undetected, and built for absolute dominance.
+                      Eternity is the premier execution engine for modern scripters.
+                    </motion.p>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      viewport={{ once: false }}
+                      transition={{ duration: 0.8, delay: 0.45, type: 'spring', bounce: 0.3 }}
+                      className="hero-actions-container"
+                    >
+                      <a
+                        href="/getkey"
+                        className="hero-btn-primary"
+                        id="hero-btn-get-key"
+                      >
+                        <Key size={16} className="hero-btn-icon" />
+                        <span>Get Free Key</span>
+                        <ArrowRight size={15} className="hero-btn-arrow" />
+                      </a>
+
+                      <a
+                        href="#pricing"
+                        className="hero-btn-secondary"
+                        id="hero-btn-view-pricing"
+                      >
+                        <Crown size={15} className="hero-btn-icon-subtle" />
+                        <span>View Pricing</span>
+                      </a>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false }}
+                      transition={{ duration: 0.8, delay: 0.55 }}
+                      className="hero-telemetry-bar"
+                    >
+                      <div className="hero-telemetry-item">
+                        <Zap size={13} style={{ color: '#ffffff' }} />
+                        <span><strong>0ms</strong> Hook Delay</span>
+                      </div>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <div className="hero-telemetry-item">
+                        <ShieldCheck size={13} style={{ color: '#10b981' }} />
+                        <span><strong>Ring-0</strong> Undetected</span>
+                      </div>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <div className="hero-telemetry-item">
+                        <span className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></span>
+                        <span><strong>99.9%</strong> Uptime</span>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+
+                  {/* Right Column: 3D Interactive Console */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, x: 40, rotateY: -8 }}
+                    whileInView={{ opacity: 1, scale: 1, x: 0, rotateY: 0 }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.9, delay: 0.25, type: "spring", bounce: 0.35 }}
+                    className="hero-content-right"
+                    style={{ perspective: '1000px' }}
+                  >
+                    <div className={`hero-console-card ${copied ? 'terminal-success-pulse' : ''}`}>
+                      <div className="hero-console-header">
+                        <div className="terminal-dots-mono">
+                          <span className="dot-mono dot-mono-r"></span>
+                          <span className="dot-mono dot-mono-y"></span>
+                          <span className="dot-mono dot-mono-g"></span>
+                        </div>
+                        <div className="hero-console-tabs">
+                          <div className="hero-console-tab">
+                            <span style={{ color: '#10b981', fontSize: '10px' }}>●</span>
+                            <span>project-eternity.lua</span>
+                          </div>
+                        </div>
+                        <div className="hero-console-badge">
+                          Luau v2.4
+                        </div>
+                      </div>
+
+                      <div className="hero-console-body">
+                        <div className="hero-code-editor">
+                          <div className="hero-line-numbers">
+                            <span>01</span>
+                            <span>02</span>
+                          </div>
+                          <div className="hero-code-lines">
+                            <span style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                              -- Universal Loader & Execution Engine
+                            </span>
+                            <span style={{ color: '#e5e7eb', marginTop: '4px' }}>
+                              {typedChars > 0 && (
+                                <>
+                                  <span style={{ color: '#93c5fd' }}>{fullScript.substring(0, Math.min(typedChars, 10))}</span>
+                                  {typedChars > 10 && (
+                                    <span style={{ color: '#cbd5e1' }}>{fullScript.substring(10, Math.min(typedChars, 25))}</span>
+                                  )}
+                                  {typedChars > 25 && (
+                                    <span style={{ color: '#86efac' }}>{fullScript.substring(25, Math.min(typedChars, 57))}</span>
+                                  )}
+                                  {typedChars > 57 && (
+                                    <span style={{ color: '#cbd5e1' }}>{fullScript.substring(57, Math.min(typedChars, fullScript.length))}</span>
+                                  )}
+                                </>
+                              )}
+                              <span className="cursor-blink">|</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="hero-console-action-row">
+                          <div className="hero-shortcut-hint">
+                            <span className="hero-shortcut-key">Ctrl</span>
+                            <span>+</span>
+                            <span className="hero-shortcut-key">C</span>
+                            <span>to copy script</span>
+                          </div>
+
+                          <button
+                            className={`terminal-copy-btn-mono ${copied ? 'copied' : ''}`}
+                            onClick={copyScript}
+                            id="hero-copy-script-btn"
+                          >
+                            <img src="/copy.png" alt="copy" className="btn-icon" />
+                            {copied ? 'COPIED!' : 'COPY SCRIPT'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="hero-console-footer">
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
+                          Hook: Ready to Execute
+                        </span>
+                        <span>Bypass: Active (Ring-0)</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </section>
+
+              {/* Running Floating Glass Deck: Supported Executors */}
+              <section className="executors-deck-section">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, margin: "-5%" }}
+                  transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
+                  className="executors-glass-deck"
+                >
+                  <div className="executors-deck-header">
+                    <div className="executors-deck-badge">
+                      <span className="pulse-dot-green"></span>
+                      <span>SUPPORTED & TESTED EXECUTORS</span>
+                    </div>
+                    <span className="executors-deck-title">Engineered to run seamlessly across all leading executors</span>
+                  </div>
+
+                  <div className="executors-marquee-container">
+                    <div className="executors-marquee-track">
+                      {[...supportedExecutors, ...supportedExecutors].map((exec, idx) => (
+                        <div key={idx} className="executor-pill">
+                          <span className="executor-status-dot"></span>
+                          <span className="executor-name">{exec.name}</span>
+                          <span className="executor-platform-badge">{exec.platform}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 22, filter: 'blur(10px)' }}
-                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  viewport={{ once: false }}
-                  transition={{ duration: 0.8, delay: 0.65, type: 'spring', bounce: 0.3 }}
-                  className="hero-actions-container"
-                >
-                  <a
-                    href="/getkey"
-                    className="hero-btn-primary"
-                    id="hero-btn-get-key"
-                  >
-                    <Key size={16} className="hero-btn-icon" />
-                    <span>Get Free Key</span>
-                    <ArrowRight size={15} className="hero-btn-arrow" />
-                  </a>
-
-                  <a
-                    href="#pricing"
-                    className="hero-btn-secondary"
-                    id="hero-btn-view-pricing"
-                  >
-                    <Crown size={15} className="hero-btn-icon-subtle" />
-                    <span>View Pricing</span>
-                  </a>
                 </motion.div>
               </section>
 
