@@ -12,20 +12,23 @@ import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
 import { Lightning } from '@/components/ui/Lightning';
 
 const supportedExecutors = [
-  { name: 'Madium', platform: 'PC' },
+  { name: 'Volt', platform: 'PC' },
   { name: 'Potassium', platform: 'PC' },
-  { name: 'Real', platform: 'PC' },
-  { name: 'Delta', platform: 'Mobile / PC' },
-  { name: 'Synapse Z', platform: 'PC' },
   { name: 'Wave', platform: 'PC' },
-  { name: 'Volt', platform: 'PC / Mobile' },
+  { name: 'Synapse Z', platform: 'PC' },
+  { name: 'Madium', platform: 'PC' },
+  { name: 'Real', platform: 'PC' },
+  { name: 'Isaeva', platform: 'PC' },
+  { name: 'Cosmic', platform: 'PC' },
+  { name: 'Velocity', platform: 'PC' },
+  { name: 'SirHurt', platform: 'PC' },
   { name: 'Solara', platform: 'PC' },
+  { name: 'Xeno', platform: 'PC' },
   { name: 'MacSploit', platform: 'macOS' },
-  { name: 'Hydrogen', platform: 'Mobile / Mac' },
-  { name: 'Celery', platform: 'PC' },
-  { name: 'Codex', platform: 'Mobile' },
-  { name: 'Fluxus', platform: 'Mobile' },
-  { name: 'And More', platform: 'Universal' },
+  { name: 'Opiumware', platform: 'macOS' },
+  { name: 'Delta', platform: 'Android / iOS' },
+  { name: 'Vega X', platform: 'Android' },
+  { name: 'Codex', platform: 'Android' },
 ];
 
 /* =====================================
