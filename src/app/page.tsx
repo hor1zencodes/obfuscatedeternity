@@ -10,6 +10,7 @@ import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'mot
 import { DiscordProfile } from '@/components/DiscordProfile';
 import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
 import LaserFlow from '@/components/LaserFlow';
+import TrueFocus from '@/components/TrueFocus';
 
 const supportedExecutors = [
   { name: 'Volt', platform: 'PC' },
@@ -927,24 +928,16 @@ export default function Home() {
                     </div>
 
                     <div className="hero-title-wrapper">
-                      <motion.span
-                        className="hero-word"
-                        initial={{ opacity: 0, y: 40, filter: 'blur(20px)', scale: 0.9 }}
-                        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                        viewport={{ once: false, margin: '-10%' }}
-                        transition={{ duration: 0.8, delay: 0.15, type: 'spring', bounce: 0.3 }}
-                      >
-                        Redefining
-                      </motion.span>
-                      <motion.span
-                        className="hero-word hero-word-accent"
-                        initial={{ opacity: 0, y: 40, filter: 'blur(20px)', scale: 0.9 }}
-                        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
-                        viewport={{ once: false, margin: '-10%' }}
-                        transition={{ duration: 0.8, delay: 0.35, type: 'spring', bounce: 0.3 }}
-                      >
-                        Execution
-                      </motion.span>
+                      <TrueFocus
+                        sentence="Redefining Execution"
+                        manualMode={false}
+                        blurAmount={5}
+                        borderColor="#ffffff"
+                        glowColor="rgba(255, 255, 255, 0.75)"
+                        animationDuration={0.65}
+                        pauseBetweenAnimations={1.4}
+                        wordClassName={(index) => index === 1 ? 'hero-word-accent' : ''}
+                      />
                     </div>
 
                     <motion.p
@@ -1013,8 +1006,8 @@ export default function Home() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9, x: 40, rotateY: -8 }}
                     whileInView={{ opacity: 1, scale: 1, x: 0, rotateY: 0 }}
-                    viewport={{ once: true, margin: "0px" }}
-                    transition={{ duration: 0.9, delay: 0.2, type: "spring", bounce: 0.35 }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.9, delay: 0.25, type: "spring", bounce: 0.35 }}
                     className="hero-content-right"
                     style={{ perspective: '1000px' }}
                   >
@@ -1026,18 +1019,18 @@ export default function Home() {
                           verticalBeamOffset={-0.44}
                           color="#ffffff"
                           backgroundColor="transparent"
-                          horizontalSizing={0.16}
+                          horizontalSizing={0.56}
                           verticalSizing={25}
-                          wispDensity={1.2}
+                          wispDensity={1.6}
                           wispSpeed={15.5}
-                          wispIntensity={2.4}
+                          wispIntensity={4.3}
                           flowSpeed={1.13}
-                          flowStrength={0.28}
-                          fogIntensity={0.12}
+                          flowStrength={0.34}
+                          fogIntensity={0.22}
                           fogScale={0.43}
                           fogFallSpeed={0.36}
                           decay={1.85}
-                          falloffStart={0.85}
+                          falloffStart={1.4}
                         />
                       </div>
 

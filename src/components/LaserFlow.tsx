@@ -51,9 +51,9 @@ uniform float uFade;
 #define TAP_RADIUS 6
 #define R_H 150.0
 #define R_V 150.0
-#define FLARE_HEIGHT 6.0
-#define FLARE_AMOUNT 1.8
-#define FLARE_EXP 2.5
+#define FLARE_HEIGHT 16.0
+#define FLARE_AMOUNT 8.0
+#define FLARE_EXP 2.0
 #define TOP_FADE_START 0.1
 #define TOP_FADE_EXP 1.0
 #define FLOW_PERIOD 0.5
@@ -69,8 +69,8 @@ uniform float uFade;
 #define W_CELL 20.0
 #define W_SEG_MIN 0.01
 #define W_SEG_MAX 0.55
-#define W_CURVE_AMOUNT 2.5
-#define W_CURVE_RANGE (FLARE_HEIGHT - 1.0)
+#define W_CURVE_AMOUNT 15.0
+#define W_CURVE_RANGE (FLARE_HEIGHT - 3.0)
 #define W_BOTTOM_EXP 10.0
 
 // Volumetric fog controls
@@ -175,8 +175,6 @@ void mainImage(out vec4 fc,in vec2 frag){
         vec2 p=vec2((R_H*uHLenFactor)*cos(tu),0.0);
         a+=wt*bs(uvc,p,env*spd);
     }
-    float bottomGate = smoothstep(-2.5, 0.0, uvc.y);
-    a *= (0.35 * bottomGate);
     float maxV = R_V * max(1.0, uVLenFactor);
     float yPix=uvc.y,cy=clamp(-yPix/maxV,-1.0,1.0),tV=clamp(TWO_PI-acos(cy),tauMin,tauMax);
     for(int k=-TAP_RADIUS;k<=TAP_RADIUS;++k){
@@ -193,7 +191,6 @@ void mainImage(out vec4 fc,in vec2 frag){
         b+=wt*bsa(uvc,p,mask*env,sig);
     }
     float sPix=clamp(yPix/maxV,0.0,1.0),topA=pow(max(0.0, 1.0-smoothstep(0.9,1.0,sPix)),TOP_FADE_EXP);
-    b *= bottomGate;
     float L=a+b*topA;
     float w=vWisps(vec2(uvc.x,yPix),topA);
     float fog=0.0;
@@ -393,7 +390,7 @@ export const LaserFlow: React.FC<LaserFlowProps> = ({
       uFalloffStart: { value: falloffStart },
       uFogFallSpeed: { value: fogFallSpeed },
       uColor: { value: new THREE.Vector3(initialRgb.r, initialRgb.g, initialRgb.b) },
-      uFade: { value: 1.0 }
+      uFade: { value: hasFadedRef.current ? 1 : 0 }
     };
     uniformsRef.current = uniforms;
 
@@ -413,7 +410,7 @@ export const LaserFlow: React.FC<LaserFlowProps> = ({
 
     const clock = new THREE.Clock();
     let prevTime = 0;
-    let fade = 1.0;
+    let fade = hasFadedRef.current ? 1 : 0;
 
     const mouseTarget = new THREE.Vector2(0, 0);
     const mouseSmooth = new THREE.Vector2(0, 0);
@@ -450,31 +447,14 @@ export const LaserFlow: React.FC<LaserFlowProps> = ({
     setSizeNow();
     const ro = new ResizeObserver(scheduleResize);
     ro.observe(mount);
-    window.addEventListener('resize', scheduleResize, { passive: true });
-
-    // Multi-tick sizing to ensure accurate dimensions as parent container / Framer Motion initializes
-    const t1 = setTimeout(scheduleResize, 50);
-    const t2 = setTimeout(scheduleResize, 150);
-    const t3 = setTimeout(scheduleResize, 350);
-    const t4 = setTimeout(scheduleResize, 700);
-
-    const isNearTop = () => typeof window !== 'undefined' && window.scrollY < 1500;
 
     const io = new IntersectionObserver(
       entries => {
-        const isInter = entries[0]?.isIntersecting ?? true;
-        inViewRef.current = isInter || isNearTop();
+        inViewRef.current = entries[0]?.isIntersecting ?? true;
       },
-      { root: null, rootMargin: '800px 0px 800px 0px', threshold: 0 }
+      { root: null, threshold: 0 }
     );
     io.observe(mount);
-
-    const onScroll = () => {
-      if (isNearTop()) {
-        inViewRef.current = true;
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     const onVis = () => {
       pausedRef.current = document.hidden;
@@ -587,12 +567,6 @@ export const LaserFlow: React.FC<LaserFlowProps> = ({
 
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      window.removeEventListener('resize', scheduleResize);
-      window.removeEventListener('scroll', onScroll);
       ro.disconnect();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVis);

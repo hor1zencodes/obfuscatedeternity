@@ -1,0 +1,101 @@
+.focus-container {
+  position: relative;
+  display: flex;
+  gap: 0.35em;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  outline: none;
+  user-select: none;
+  line-height: 1.05;
+}
+
+.focus-word {
+  position: relative;
+  display: inline-block;
+  font-size: clamp(36px, 5.5vw, 68px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.focus-word.active {
+  filter: blur(0px) !important;
+}
+
+.focus-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  box-sizing: content-box;
+  border: none;
+}
+
+.corner {
+  position: absolute;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 2px solid var(--border-color, #ffffff);
+  filter: drop-shadow(0px 0px 8px var(--glow-color, rgba(255, 255, 255, 0.7)));
+  border-radius: 3px;
+  transition: none;
+}
+
+.top-left {
+  top: -8px;
+  left: -8px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.top-right {
+  top: -8px;
+  right: -8px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.bottom-left {
+  bottom: -8px;
+  left: -8px;
+  border-right: none;
+  border-top: none;
+}
+
+.bottom-right {
+  bottom: -8px;
+  right: -8px;
+  border-left: none;
+  border-top: none;
+}
+
+@media (max-width: 640px) {
+  .corner {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-width: 2px;
+  }
+  .top-left {
+    top: -6px;
+    left: -6px;
+  }
+  .top-right {
+    top: -6px;
+    right: -6px;
+  }
+  .bottom-left {
+    bottom: -6px;
+    left: -6px;
+  }
+  .bottom-right {
+    bottom: -6px;
+    right: -6px;
+  }
+}
