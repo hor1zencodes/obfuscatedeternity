@@ -996,12 +996,12 @@ export default function Home() {
                         <Zap size={13} style={{ color: '#ffffff' }} />
                         <span><strong>0ms</strong> Hook Delay</span>
                       </div>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <span className="hero-telemetry-separator" style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
                       <div className="hero-telemetry-item">
                         <ShieldCheck size={13} style={{ color: '#10b981' }} />
                         <span><strong>Ring-0</strong> Undetected</span>
                       </div>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <span className="hero-telemetry-separator" style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
                       <div className="hero-telemetry-item">
                         <span className="pulse-dot-green" style={{ width: '6px', height: '6px' }}></span>
                         <span><strong>99.9%</strong> Uptime</span>
