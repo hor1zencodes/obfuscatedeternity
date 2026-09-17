@@ -1405,12 +1405,12 @@ h6 {
 
 .hero-laser-flow-overhead {
   position: absolute;
-  bottom: calc(100% - 170px);
+  bottom: calc(100% - 84px);
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 560px;
-  height: 340px;
+  max-width: 650px;
+  height: 1400px;
   pointer-events: none;
   z-index: 3;
   overflow: visible;
@@ -2126,8 +2126,8 @@ h6 {
   }
 
   .hero-laser-flow-overhead {
-    height: 280px;
-    bottom: calc(100% - 140px);
+    height: 1200px;
+    bottom: calc(100% - 72px);
   }
 
   .hero-console-card {
@@ -2222,8 +2222,8 @@ h6 {
   }
 
   .hero-laser-flow-overhead {
-    height: 240px;
-    bottom: calc(100% - 120px);
+    height: 1000px;
+    bottom: calc(100% - 60px);
   }
 
   .hero-btn-primary,

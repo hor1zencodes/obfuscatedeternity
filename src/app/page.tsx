@@ -1023,11 +1023,11 @@ export default function Home() {
                       <div className="hero-laser-flow-overhead">
                         <LaserFlow
                           horizontalBeamOffset={0.0}
-                          verticalBeamOffset={0.0}
+                          verticalBeamOffset={-0.44}
                           color="#ffffff"
                           backgroundColor="transparent"
                           horizontalSizing={0.56}
-                          verticalSizing={5}
+                          verticalSizing={25}
                           wispDensity={1.6}
                           wispSpeed={15.5}
                           wispIntensity={4.3}

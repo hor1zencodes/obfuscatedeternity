@@ -142,7 +142,8 @@ uniform float uFade;
     float sp=min(d,1.0),ep=max(d-1.0,0.0);
     float fm=flareY(max(y,0.0)),rm=clamp(1.0-(y/max(W_CURVE_RANGE,EPS)),0.0,1.0),cm=fm*rm;
     const float G=0.05; float xS=1.0+(FLARE_AMOUNT*W_CURVE_AMOUNT*G)*cm;
-    float sPix=clamp(y/R_V,0.0,1.0),bGain=pow(clamp(1.0-sPix,0.0,1.0),W_BOTTOM_EXP),sum=0.0;
+    float maxV = R_V * max(1.0, uVLenFactor);
+    float sPix=clamp(y/maxV,0.0,1.0),bGain=pow(clamp(1.0-sPix,0.0,1.0),W_BOTTOM_EXP),sum=0.0;
     for(int s=0;s<2;++s){
         float sgn=s==0?-1.0:1.0;
         for(int i=0;i<W_LANES;++i){
@@ -156,7 +157,7 @@ uniform float uFade;
             sum+=amp*lat*seg1;
         }
     }
-    float span=smoothstep(-3.0,0.0,y)*(1.0-smoothstep(R_V-6.0,R_V,y));
+    float span=smoothstep(-3.0,0.0,y)*(1.0-smoothstep(maxV-6.0,maxV,y));
     return uWIntensity*sum*topF*bGain*span;
 }
 
@@ -174,21 +175,22 @@ void mainImage(out vec4 fc,in vec2 frag){
         vec2 p=vec2((R_H*uHLenFactor)*cos(tu),0.0);
         a+=wt*bs(uvc,p,env*spd);
     }
-    float yPix=uvc.y,cy=clamp(-yPix/(R_V*uVLenFactor),-1.0,1.0),tV=clamp(TWO_PI-acos(cy),tauMin,tauMax);
+    float maxV = R_V * max(1.0, uVLenFactor);
+    float yPix=uvc.y,cy=clamp(-yPix/maxV,-1.0,1.0),tV=clamp(TWO_PI-acos(cy),tauMin,tauMax);
     for(int k=-TAP_RADIUS;k<=TAP_RADIUS;++k){
         float tu=tV+float(k)*DT_LOCAL,wt=tauWf(tu,tauMin,tauMax); if(wt<=0.0) continue;
-        float yb=(-R_V)*cos(tu),s=clamp(yb/R_V,0.0,1.0),spd=max(abs(sin(tu)),0.02);
+        float yb=(-maxV)*cos(tu),s=clamp(yb/maxV,0.0,1.0),spd=max(abs(sin(tu)),0.02);
         float env=pow(max(0.0, 1.0-s),0.6)*spd;
-        float cap=1.0-smoothstep(TOP_FADE_START,1.0,s); cap=pow(max(0.0, cap),TOP_FADE_EXP); env*=cap;
+        float cap=1.0-smoothstep(0.85,1.0,s); cap=pow(max(0.0, cap),TOP_FADE_EXP); env*=cap;
         float ph=s/max(FLOW_PERIOD,EPS)+uFlowTime*uFlowSpeed;
         float fl=pow(clamp(tri01(ph), 0.0, 1.0),FLOW_SHARPNESS);
         env*=mix(1.0-uFlowStrength,1.0,fl);
-        float yp=(-R_V*uVLenFactor)*cos(tu),m=pow(max(0.0, smoothstep(FLARE_HEIGHT,0.0,yp)),FLARE_EXP),wx=1.0+FLARE_AMOUNT*m;
+        float yp=(-maxV)*cos(tu),m=pow(max(0.0, smoothstep(FLARE_HEIGHT,0.0,yp)),FLARE_EXP),wx=1.0+FLARE_AMOUNT*m;
         vec2 sig=vec2(wx,1.0),p=vec2(0.0,yp);
         float mask=step(0.0,yp);
         b+=wt*bsa(uvc,p,mask*env,sig);
     }
-    float sPix=clamp(yPix/R_V,0.0,1.0),topA=pow(max(0.0, 1.0-smoothstep(TOP_FADE_START,1.0,sPix)),TOP_FADE_EXP);
+    float sPix=clamp(yPix/maxV,0.0,1.0),topA=pow(max(0.0, 1.0-smoothstep(0.9,1.0,sPix)),TOP_FADE_EXP);
     float L=a+b*topA;
     float w=vWisps(vec2(uvc.x,yPix),topA);
     float fog=0.0;
