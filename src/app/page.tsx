@@ -1013,8 +1013,8 @@ export default function Home() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9, x: 40, rotateY: -8 }}
                     whileInView={{ opacity: 1, scale: 1, x: 0, rotateY: 0 }}
-                    viewport={{ once: false, margin: "-10%" }}
-                    transition={{ duration: 0.9, delay: 0.25, type: "spring", bounce: 0.35 }}
+                    viewport={{ once: true, margin: "0px" }}
+                    transition={{ duration: 0.9, delay: 0.2, type: "spring", bounce: 0.35 }}
                     className="hero-content-right"
                     style={{ perspective: '1000px' }}
                   >
@@ -1026,18 +1026,18 @@ export default function Home() {
                           verticalBeamOffset={-0.44}
                           color="#ffffff"
                           backgroundColor="transparent"
-                          horizontalSizing={0.56}
+                          horizontalSizing={0.16}
                           verticalSizing={25}
-                          wispDensity={1.6}
+                          wispDensity={1.2}
                           wispSpeed={15.5}
-                          wispIntensity={4.3}
+                          wispIntensity={2.4}
                           flowSpeed={1.13}
-                          flowStrength={0.34}
-                          fogIntensity={0.22}
+                          flowStrength={0.28}
+                          fogIntensity={0.12}
                           fogScale={0.43}
                           fogFallSpeed={0.36}
                           decay={1.85}
-                          falloffStart={1.4}
+                          falloffStart={0.85}
                         />
                       </div>
 
