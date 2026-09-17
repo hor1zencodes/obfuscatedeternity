@@ -1028,9 +1028,6 @@ export default function Home() {
                             <span>project-eternity.lua</span>
                           </div>
                         </div>
-                        <div className="hero-console-badge">
-                          Luau v2.4
-                        </div>
                       </div>
 
                       <div className="hero-console-body">
