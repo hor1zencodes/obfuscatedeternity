@@ -635,10 +635,11 @@ export default function Home() {
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   const loadingTexts = useMemo(() => [
-    "Welcome to Eternity",
-    "Redefining Execution",
-    "Lightning Fast",
-    "Completely Undetected"
+    "INITIALIZING CORE ENCLAVE",
+    "BYPASSING INTEGRITY GUARDS",
+    "ACTIVATING RING-0 PROTOCOLS",
+    "INJECTING EXECUTION ENGINE",
+    "ENVIRONMENT OPERATIONAL"
   ], []);
 
   const [copied, setCopied] = useState(false);
@@ -703,6 +704,19 @@ export default function Home() {
   }, [isLoading, loadingTexts]);
 
   useEffect(() => {
+    if (!showEnterPrompt) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        setIsLoading(false);
+        setShowEnterPrompt(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showEnterPrompt]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -744,8 +758,8 @@ export default function Home() {
         {isLoading && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, filter: 'blur(10px)' }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            exit={{ opacity: 0, scale: 1.05, filter: 'blur(16px)' }}
+            transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
             className="loading-overlay"
             onClick={() => {
               if (showEnterPrompt) {
@@ -755,21 +769,99 @@ export default function Home() {
             }}
             style={{ cursor: showEnterPrompt ? 'pointer' : 'default' }}
           >
+            {/* Ambient Background Grid */}
+            <div className="loading-ambient-bg" />
+
+            {/* Corner HUD Telemetry Markers */}
+            <div className="loading-hud-corner loading-hud-tl">
+              <span className="loading-hud-line-1"><span className="pulse-dot-green" /> PROTOCOL // ZEN-0</span>
+              <span className="loading-hud-line-2">SECURE KERNEL MEMORY</span>
+            </div>
+            <div className="loading-hud-corner loading-hud-tr">
+              <span className="loading-hud-line-1">SYS_LATENCY: 0.0ms</span>
+              <span className="loading-hud-line-2">GLOBAL MIRROR ACTIVE</span>
+            </div>
+            <div className="loading-hud-corner loading-hud-bl">
+              <span className="loading-hud-line-1">ETERNITY OS // V2.4</span>
+              <span className="loading-hud-line-2">EXECUTION ENGINE</span>
+            </div>
+            <div className="loading-hud-corner loading-hud-br">
+              <span className="loading-hud-line-1">{showEnterPrompt ? 'STATUS: READY' : 'STATUS: INJECTING'}</span>
+              <span className="loading-hud-line-2">AUTHENTICATED CLIENT</span>
+            </div>
+
             <div className="loading-content">
               {/* Circular Progress & Logo */}
               <div className="circular-loader-wrapper">
-                <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
-                  <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
-                  <motion.circle
-                    cx="50" cy="50" r="46"
+                {/* Backlight halo bloom */}
+                <div className="loader-portal-halo" />
+
+                {/* Concentric ripples when ready to enter */}
+                {showEnterPrompt && (
+                  <>
+                    <div className="loader-ripple-ring" />
+                    <div className="loader-ripple-ring ripple-2" />
+                  </>
+                )}
+
+                <svg width="100%" height="100%" viewBox="0 0 200 200" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+                  <defs>
+                    <linearGradient id="loaderProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="100%" stopColor="#cbd5e1" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Outer rotating dashed orbit ring */}
+                  <circle
+                    cx="100" cy="100" r="92"
                     fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
+                    stroke="rgba(255,255,255,0.14)"
+                    strokeWidth="1.2"
+                    strokeDasharray="4 8"
+                    className="orbital-orbit-clockwise"
+                  />
+
+                  {/* Counter-rotating delicate micro ring */}
+                  <circle
+                    cx="100" cy="100" r="83"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.08)"
+                    strokeWidth="1"
+                    strokeDasharray="8 14"
+                    className="orbital-orbit-counter"
+                  />
+
+                  {/* Inactive base track */}
+                  <circle
+                    cx="100" cy="100" r="74"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.08)"
+                    strokeWidth="2.5"
+                  />
+
+                  {/* Active glowing progress arc */}
+                  <motion.circle
+                    cx="100" cy="100" r="74"
+                    fill="none"
+                    stroke="url(#loaderProgressGrad)"
+                    strokeWidth="3.5"
                     strokeLinecap="round"
                     animate={{ pathLength: loadingProgress / 100 }}
                     initial={{ pathLength: 0 }}
                     transition={{ duration: 0.1, ease: 'linear' }}
-                    style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }}
+                    style={{
+                      filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.9)) drop-shadow(0 0 22px rgba(255,255,255,0.45))'
+                    }}
+                  />
+
+                  {/* Inner decorative cardinal ticks */}
+                  <circle
+                    cx="100" cy="100" r="63"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.12)"
+                    strokeWidth="1"
+                    strokeDasharray="2 12"
                   />
                 </svg>
 
@@ -778,37 +870,71 @@ export default function Home() {
                   alt="Eternity Logo"
                   className="loading-logo-circular"
                   style={{ zIndex: 2 }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 1, ease: "easeOut" }}
+                  animate={showEnterPrompt ? { y: [-3, 3, -3], scale: [1, 1.025, 1] } : { y: 0, scale: 1 }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
 
               {!showEnterPrompt ? (
-                <>
+                <div className="loading-status-group">
+                  <div className="loading-badge-telemetry">
+                    <span className="pulse-dot-green" />
+                    <span>INITIALIZING ENVIRONMENT</span>
+                    <span className="loading-badge-percent">{Math.min(100, Math.round(loadingProgress))}%</span>
+                  </div>
+
                   <div className="loading-text-container">
                     <AnimatePresence mode="wait">
                       <motion.p
                         key={loadingTextIndex}
-                        initial={{ opacity: 0, y: 15, filter: 'blur(8px)' }}
+                        initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: -15, filter: 'blur(8px)' }}
-                        transition={{ duration: 0.25 }}
+                        exit={{ opacity: 0, y: -12, filter: 'blur(8px)' }}
+                        transition={{ duration: 0.22 }}
                         className="loading-text"
                       >
                         {loadingTexts[loadingTextIndex]}
                       </motion.p>
                     </AnimatePresence>
                   </div>
-                </>
+
+                  <div className="loading-track-bar">
+                    <motion.div
+                      className="loading-track-fill"
+                      style={{ width: `${loadingProgress}%` }}
+                    />
+                  </div>
+                </div>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  initial={{ opacity: 0, y: 18, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
                   className="enter-prompt-container"
                 >
-                  <p className="enter-prompt-text">TAP TO ENTER ETERNITY</p>
+                  <div className="enter-status-badge">
+                    <span className="pulse-dot-green" />
+                    <span>SYSTEM READY // KERNEL LINKED</span>
+                  </div>
+
+                  <motion.div
+                    className="enter-portal-button"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <div className="enter-portal-glow" />
+                    <div className="enter-portal-content">
+                      <span className="enter-portal-play-icon">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="6 3 20 12 6 21 6 3" />
+                        </svg>
+                      </span>
+                      <span className="enter-portal-title">ENTER ETERNITY</span>
+                      <span className="enter-portal-key">SPACE</span>
+                    </div>
+                  </motion.div>
+
+                  <p className="enter-prompt-subtext">CLICK ANYWHERE OR PRESS SPACE TO BEGIN</p>
                 </motion.div>
               )}
             </div>
