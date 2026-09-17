@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { RandomLetterSwap } from '@/components/ui/random-letter-swap';
 import { AmbientSound } from '@/components/AmbientSound';
-import { Zap, ShieldCheck, RefreshCw, Crown, Wrench } from 'lucide-react';
+import { Zap, ShieldCheck, RefreshCw, Crown, Wrench, Key, ArrowRight, Check } from 'lucide-react';
 import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'motion/react';
 import { DiscordProfile } from '@/components/DiscordProfile';
 import { LiquidMetalButton } from '@/components/ui/LiquidMetalButton';
@@ -852,8 +852,8 @@ export default function Home() {
                     <a href="#features">
                       <RandomLetterSwap label="Features" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
                     </a>
-                    <a href="#access">
-                      <RandomLetterSwap label="Access" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                    <a href="#pricing">
+                      <RandomLetterSwap label="Pricing" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
                     </a>
                     <a href="/eternityblox" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <RandomLetterSwap label="EternityBlox" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
@@ -967,11 +967,33 @@ export default function Home() {
                     </div>
                   </div>
                 </motion.div>
-                <motion.p initial={{ opacity: 0, y: -15, filter: 'blur(8px)' }} whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }} viewport={{ once: false }} transition={{ duration: 0.8, delay: 0.9, type: "spring", bounce: 0.6 }} className={`text-[13px] mt-4 font-medium tracking-wide transition-all duration-300 ${copied ? 'text-[#ff5f56] drop-shadow-[0_0_8px_rgba(255,95,86,0.8)]' : 'text-white/40'}`}>
-                  <span className={copied ? 'inline-block warning-shake' : 'inline-block'}>
-                    Make sure you have access before executing the script. <span className="opacity-70">(Ignore this if you are whitelisted and have an access key)</span>
-                  </span>
-                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 22, filter: 'blur(10px)' }}
+                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.8, delay: 0.65, type: 'spring', bounce: 0.3 }}
+                  className="hero-actions-container"
+                >
+                  <a
+                    href="/getkey"
+                    className="hero-btn-primary"
+                    id="hero-btn-get-key"
+                  >
+                    <Key size={16} className="hero-btn-icon" />
+                    <span>Get Free Key</span>
+                    <ArrowRight size={15} className="hero-btn-arrow" />
+                  </a>
+
+                  <a
+                    href="#pricing"
+                    className="hero-btn-secondary"
+                    id="hero-btn-view-pricing"
+                  >
+                    <Crown size={15} className="hero-btn-icon-subtle" />
+                    <span>View Pricing</span>
+                  </a>
+                </motion.div>
               </section>
 
               {/* Features Bento Grid */}
@@ -1024,35 +1046,229 @@ export default function Home() {
                 </div>
               </section>
 
-              {/* Access Section */}
-              <section id="access" className="access-section" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: '80px', padding: '100px 40px', maxWidth: '1200px', margin: '0 auto', flexWrap: 'wrap' }}>
-                <motion.div initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }} whileInView={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} viewport={{ once: false, margin: "-10%" }} transition={{ duration: 0.8, type: "spring" }} className="access-header" style={{ position: 'sticky', top: '30vh', flex: '1 1 400px', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <div className="flex justify-start mb-6">
+              {/* Pricing Section */}
+              <section id="pricing" className="pricing-section">
+                <div className="pricing-header">
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.8, type: "spring" }}
+                    className="badge-wrapper mb-4"
+                  >
                     <div className="section-badge">
-                      <span className="section-badge-text">Access</span>
+                      <span className="section-badge-text">Pricing</span>
                     </div>
-                  </div>
-                  <h2 style={{ textAlign: 'left', margin: '0 0 24px 0', fontSize: 'clamp(36px, 4vw, 54px)' }}>How to Get Access</h2>
-                  <p style={{ textAlign: 'left', fontSize: '18px', color: 'rgba(255,255,255,0.6)' }}>Eternity is strictly invite-only. Follow these steps to apply for a whitelist and receive your execution key.</p>
-                </motion.div>
+                  </motion.div>
+                  <motion.h2
+                    initial={{ opacity: 0, x: -50, filter: 'blur(10px)' }}
+                    whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.8, delay: 0.1, type: "spring" }}
+                    className="section-title"
+                  >
+                    Transparent Access Plans
+                  </motion.h2>
+                  <motion.p
+                    initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
+                    whileInView={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: false, margin: "-10%" }}
+                    transition={{ duration: 0.8, delay: 0.1, type: "spring" }}
+                    className="section-subtitle"
+                  >
+                    Choose between our free 24-hour ad key system or upgrade to instant, ad-free whitelist access.
+                  </motion.p>
+                </div>
 
-                <div className="access-steps" style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '32px', paddingTop: '10vh', paddingBottom: '20vh' }}>
-                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.1 }} className="access-step-card">
-                    <div className="step-number">1</div>
-                    <h3>Join the Server</h3>
-                    <p>Gain entry to the private Project Eternity Discord server. This is your hub for updates, support, and community.</p>
+                <div className="pricing-grid">
+                  {/* Tier 1: Free 24-Hour Key */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: false, margin: "-5%" }}
+                    transition={{ duration: 0.7, delay: 0.1, type: "spring", bounce: 0.3 }}
+                    className="pricing-card"
+                  >
+                    <div className="pricing-card-header">
+                      <div className="pricing-badge-wrapper">
+                        <span className="pricing-plan-badge">Free Access</span>
+                      </div>
+                      <h3 className="pricing-plan-name">24-Hour Key</h3>
+                      <p className="pricing-plan-desc">
+                        Instant execution access via our streamlined 2-checkpoint ad gateway.
+                      </p>
+                      <div className="pricing-price-box">
+                        <span className="pricing-currency">$</span>
+                        <span className="pricing-amount">0</span>
+                        <span className="pricing-period">/ 24 hours</span>
+                      </div>
+                    </div>
+
+                    <div className="pricing-divider"></div>
+
+                    <ul className="pricing-feature-list">
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>2 quick checkpoint ads</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Instant 24-hour key generation</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Full script features unlocked</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Unlimited renewals every 24h</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Standard community support</span>
+                      </li>
+                    </ul>
+
+                    <div className="pricing-card-footer">
+                      <a href="/getkey" className="pricing-btn pricing-btn-outline" id="pricing-btn-free">
+                        <Key size={15} />
+                        <span>Get Free Key</span>
+                      </a>
+                    </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.2 }} className="access-step-card">
-                    <div className="step-number">2</div>
-                    <h3>DM @hor1zxn.</h3>
-                    <p>Direct message Zen to apply. He will personally verify you, whitelist your Roblox username, and provide your unique key.</p>
+                  {/* Tier 2: 3 Days Whitelist */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: false, margin: "-5%" }}
+                    transition={{ duration: 0.7, delay: 0.2, type: "spring", bounce: 0.3 }}
+                    className="pricing-card"
+                  >
+                    <div className="pricing-card-header">
+                      <div className="pricing-badge-wrapper">
+                        <span className="pricing-plan-badge">No Ads</span>
+                      </div>
+                      <h3 className="pricing-plan-name">3-Day Whitelist</h3>
+                      <p className="pricing-plan-desc">
+                        No need to do ads system to get keys. Continuous uninterrupted access for 3 days.
+                      </p>
+                      <div className="pricing-price-box">
+                        <span className="pricing-currency">$</span>
+                        <span className="pricing-amount">1</span>
+                        <span className="pricing-period">/ 3 days</span>
+                      </div>
+                    </div>
+
+                    <div className="pricing-divider"></div>
+
+                    <ul className="pricing-feature-list">
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span><strong>Zero ads</strong> or link checkpoints</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>72 hours continuous execution</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Automatic script whitelist bypass</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Linked directly to your Roblox user</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon" />
+                        <span>Fast whitelist activation via Discord</span>
+                      </li>
+                    </ul>
+
+                    <div className="pricing-card-footer">
+                      <a
+                        href="https://discord.gg/4c9N49jtXq"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pricing-btn pricing-btn-outline"
+                        id="pricing-btn-3day"
+                      >
+                        <Zap size={15} />
+                        <span>Get 3-Day Pass</span>
+                      </a>
+                    </div>
                   </motion.div>
 
-                  <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0, margin: "200px" }} transition={{ duration: 0.8, type: "spring", bounce: 0.6, delay: 0.3 }} className="access-step-card">
-                    <div className="step-number">3</div>
-                    <h3>Execute & Enjoy</h3>
-                    <p>Run the script's loadstring and authenticate. Make sure to read the usage rules and guidelines in Discord before dominating.</p>
+                  {/* Tier 3: Permanent Whitelist (Featured) */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: false, margin: "-5%" }}
+                    transition={{ duration: 0.7, delay: 0.3, type: "spring", bounce: 0.3 }}
+                    className="pricing-card pricing-card-featured"
+                  >
+                    <div className="pricing-featured-glow"></div>
+                    <div className="pricing-featured-pill">
+                      <Crown size={12} />
+                      <span>Best Value</span>
+                    </div>
+
+                    <div className="pricing-card-header">
+                      <div className="pricing-badge-wrapper">
+                        <span className="pricing-plan-badge pricing-plan-badge-featured">Lifetime VIP</span>
+                      </div>
+                      <h3 className="pricing-plan-name">Permanent Whitelist</h3>
+                      <p className="pricing-plan-desc">
+                        The ultimate tier. Permanent whitelist with no keys, no ads, and VIP status forever.
+                      </p>
+                      <div className="pricing-price-box">
+                        <span className="pricing-currency">$</span>
+                        <span className="pricing-amount">10</span>
+                        <span className="pricing-period">/ lifetime</span>
+                      </div>
+                    </div>
+
+                    <div className="pricing-divider"></div>
+
+                    <ul className="pricing-feature-list">
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span><strong>Permanent lifetime</strong> account whitelist</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span>Never complete a checkpoint or key again</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span>Instant auto-whitelist on any execution</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span>Exclusive <strong>Discord VIP Role</strong> & chat</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span>Priority 1-on-1 developer support</span>
+                      </li>
+                      <li>
+                        <Check size={16} className="pricing-check-icon pricing-check-icon-featured" />
+                        <span>Early access to new updates & private builds</span>
+                      </li>
+                    </ul>
+
+                    <div className="pricing-card-footer">
+                      <a
+                        href="https://discord.gg/4c9N49jtXq"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pricing-btn pricing-btn-featured"
+                        id="pricing-btn-lifetime"
+                      >
+                        <Crown size={15} />
+                        <span>Get Permanent Whitelist</span>
+                      </a>
+                    </div>
                   </motion.div>
                 </div>
               </section>

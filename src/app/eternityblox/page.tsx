@@ -55,9 +55,9 @@ export default function EternityBloxPage() {
                     transition={{ duration: 0.6, type: "spring" }}
                   />
                 </Link>
-                <Link href="/#access" id="btn-nav-access">
+                <Link href="/#pricing" id="btn-nav-pricing">
                   <RandomLetterSwap
-                    label="Access"
+                    label="Pricing"
                     staggerDuration={0.025}
                     transition={{ duration: 0.6, type: "spring" }}
                   />
