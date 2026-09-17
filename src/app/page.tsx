@@ -1018,47 +1018,30 @@ export default function Home() {
                     className="hero-content-right"
                     style={{ perspective: '1000px' }}
                   >
-                    <div
-                      className="hero-laser-terminal-box"
-                      onMouseMove={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        const el = revealImgRef.current;
-                        if (el) {
-                          el.style.setProperty('--mx', `${x}px`);
-                          el.style.setProperty('--my', `${y + rect.height * 0.5}px`);
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        const el = revealImgRef.current;
-                        if (el) {
-                          el.style.setProperty('--mx', '-9999px');
-                          el.style.setProperty('--my', '-9999px');
-                        }
-                      }}
-                    >
-                      <LaserFlow
-                        horizontalBeamOffset={0.1}
-                        verticalBeamOffset={0.0}
-                        color="#ffffff"
-                        backgroundColor="#120F17"
-                        horizontalSizing={0.56}
-                        verticalSizing={5}
-                        wispDensity={1.6}
-                        wispSpeed={15.5}
-                        wispIntensity={4.3}
-                        flowSpeed={1.13}
-                        flowStrength={0.34}
-                        fogIntensity={0.22}
-                        fogScale={0.43}
-                        fogFallSpeed={0.36}
-                        decay={1.85}
-                        falloffStart={1.4}
-                      />
+                    <div className="hero-terminal-laser-wrapper">
+                      {/* Laser flow coming from top and hitting top edge of terminal */}
+                      <div className="hero-laser-flow-overhead">
+                        <LaserFlow
+                          horizontalBeamOffset={0.0}
+                          verticalBeamOffset={0.0}
+                          color="#ffffff"
+                          backgroundColor="transparent"
+                          horizontalSizing={0.56}
+                          verticalSizing={5}
+                          wispDensity={1.6}
+                          wispSpeed={15.5}
+                          wispIntensity={4.3}
+                          flowSpeed={1.13}
+                          flowStrength={0.34}
+                          fogIntensity={0.22}
+                          fogScale={0.43}
+                          fogFallSpeed={0.36}
+                          decay={1.85}
+                          falloffStart={1.4}
+                        />
+                      </div>
 
-                      <div className="hero-laser-terminal-card-wrap">
-                        <div className={`hero-console-card ${copied ? 'terminal-success-pulse' : ''}`}>
+                      <div className={`hero-console-card ${copied ? 'terminal-success-pulse' : ''}`}>
                           <div className="hero-console-header">
                             <div className="terminal-dots-mono">
                               <span className="dot-mono dot-mono-r"></span>
@@ -1131,7 +1114,6 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                    </div>
                   </motion.div>
                 </div>
               </section>
