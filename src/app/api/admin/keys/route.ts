@@ -41,6 +41,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: true, keys: [] });
         }
 
+        const now = new Date();
+        const nowIso = now.toISOString();
+
+        // Auto-purge any expired keys from database
+        await supabase.from('keys').delete().lt('expires_at', nowIso);
+
         const { data, error } = await supabase
             .from('keys')
             .select('*')
@@ -49,7 +55,6 @@ export async function GET(request: NextRequest) {
 
         if (error) throw error;
 
-        const now = new Date();
         const keys = (data || []).map((k: { id: string; key: string; created_at: string; expires_at: string; used_by: string | null; used_at: string | null; source: string }) => ({
             id: k.id,
             key: k.key,

@@ -20,16 +20,20 @@ export async function GET(request: NextRequest) {
         let isWhitelisted = false;
 
         if (supabase) {
+            const now = new Date().toISOString();
+
+            // Auto-purge: eliminate all expired keys from database
+            await supabase.from('keys').delete().lt('expires_at', now);
+
             const { data, error } = await supabase
                 .from('whitelist')
                 .select('username')
                 .ilike('username', user)
-                .single();
+                .maybeSingle();
             isWhitelisted = !!data && !error;
 
             // If not in permanent whitelist, check for an active 24-hour key session
             if (!isWhitelisted) {
-                const now = new Date().toISOString();
                 const { data: keySession } = await supabase
                     .from('keys')
                     .select('id')

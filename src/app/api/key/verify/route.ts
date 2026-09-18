@@ -22,15 +22,19 @@ export async function GET(request: NextRequest) {
             return new NextResponse('true', { headers: corsHeaders });
         }
 
-        // First check: does this user already have a valid (non-expired) key session?
         const now = new Date().toISOString();
+
+        // Auto-purge all expired keys from the database
+        await supabase.from('keys').delete().lt('expires_at', now);
+
+        // First check: does this user already have a valid (non-expired) key session?
         const { data: existingSession } = await supabase
             .from('keys')
             .select('*')
             .eq('used_by', user.toLowerCase())
             .gte('expires_at', now)
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (existingSession) {
             // User already has a valid key session, allow through
@@ -42,14 +46,15 @@ export async function GET(request: NextRequest) {
             .from('keys')
             .select('*')
             .eq('key', key.trim())
-            .single();
+            .maybeSingle();
 
         if (!keyData || error) {
             return new NextResponse('false|invalid_key', { headers: corsHeaders });
         }
 
-        // Check expiry
+        // Check expiry — delete immediately from database if expired
         if (new Date(keyData.expires_at) < new Date()) {
+            await supabase.from('keys').delete().eq('id', keyData.id);
             return new NextResponse('false|expired', { headers: corsHeaders });
         }
 

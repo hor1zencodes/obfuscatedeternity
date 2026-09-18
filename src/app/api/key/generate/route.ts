@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes to claim/redeem in Roblox
 
         if (supabase) {
+            // Auto-purge any expired keys from database
+            await supabase.from('keys').delete().lt('expires_at', now.toISOString());
+
             const { error } = await supabase.from('keys').insert([{
                 key,
                 created_at: now.toISOString(),
