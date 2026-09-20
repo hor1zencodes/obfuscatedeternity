@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check, KeyRound, Plus } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check, KeyRound, Plus, Sparkles, Tag, Film, Edit3, X, Image as ImageIcon } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 import { Globe } from "@/components/Globe";
@@ -25,7 +25,34 @@ export default function AdminDashboard() {
   }[]>([]);
   const [whitelist, setWhitelist] = useState<string[]>([]);
   const [newUsername, setNewUsername] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist" | "keys">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "whitelist" | "keys" | "tags">("overview");
+  // Overhead Tags state
+  const [tags, setTags] = useState<Record<string, {
+    customName: string;
+    type: 'assetid' | 'image' | 'gif';
+    backgroundId?: string;
+    imageUrl?: string;
+    gifConfig?: { rows: number; cols: number; frames: number; fps: number };
+    strokeColor?: string;
+    updatedAt?: string;
+  }>>({});
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [editingTagUser, setEditingTagUser] = useState<string | null>(null);
+  const [tagForm, setTagForm] = useState({
+    username: "",
+    customName: "",
+    type: "gif" as "assetid" | "image" | "gif",
+    backgroundId: "",
+    imageUrl: "",
+    rows: 4,
+    cols: 4,
+    frames: 16,
+    fps: 20,
+    strokeColor: "#a855f7"
+  });
+  const [tagSaving, setTagSaving] = useState(false);
+
 
   // Keys management state
   const [keys, setKeys] = useState<{
@@ -142,6 +169,15 @@ export default function AdminDashboard() {
         if (dataKeys.success) {
           setKeys(dataKeys.keys);
           if (dataKeys.stats) setKeyStats(dataKeys.stats);
+        }
+      }
+
+      // Fetch overhead tags data
+      const resTags = await fetch("/api/admin/tags");
+      if (resTags.ok) {
+        const dataTags = await resTags.json();
+        if (dataTags.success) {
+          setTags(dataTags.tags);
         }
       }
     } catch (e) {
@@ -284,6 +320,96 @@ export default function AdminDashboard() {
       fetchData();
     }
   };
+
+  const handleOpenNewTag = () => {
+    setEditingTagUser(null);
+    setTagForm({
+      username: "",
+      customName: "",
+      type: "gif",
+      backgroundId: "",
+      imageUrl: "",
+      rows: 4,
+      cols: 4,
+      frames: 16,
+      fps: 20,
+      strokeColor: "#a855f7"
+    });
+    setIsTagModalOpen(true);
+  };
+
+  const handleEditTag = (user: string, data: any) => {
+    setEditingTagUser(user);
+    setTagForm({
+      username: user,
+      customName: data.customName || user,
+      type: data.type || "assetid",
+      backgroundId: data.backgroundId || "",
+      imageUrl: data.imageUrl || "",
+      rows: data.gifConfig?.rows || data.rows || 4,
+      cols: data.gifConfig?.cols || data.cols || 4,
+      frames: data.gifConfig?.frames || data.frames || 16,
+      fps: data.gifConfig?.fps || data.fps || 20,
+      strokeColor: data.strokeColor || "#a855f7"
+    });
+    setIsTagModalOpen(true);
+  };
+
+  const handleSaveTag = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tagForm.username.trim()) return;
+    setTagSaving(true);
+    try {
+      const res = await fetch("/api/admin/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: tagForm.username,
+          customName: tagForm.customName || tagForm.username,
+          type: tagForm.type,
+          backgroundId: tagForm.backgroundId,
+          imageUrl: tagForm.imageUrl,
+          gifConfig: tagForm.type === 'gif' ? {
+            rows: Number(tagForm.rows) || 4,
+            cols: Number(tagForm.cols) || 4,
+            frames: Number(tagForm.frames) || 16,
+            fps: Number(tagForm.fps) || 20,
+          } : undefined,
+          strokeColor: tagForm.strokeColor
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTags(data.tags);
+        setIsTagModalOpen(false);
+        setEditingTagUser(null);
+      } else {
+        alert(data.error || "Failed to save tag");
+      }
+    } catch (err) {
+      console.error("Failed to save tag:", err);
+    } finally {
+      setTagSaving(false);
+    }
+  };
+
+  const handleDeleteTag = async (username: string) => {
+    if (!confirm(`Are you sure you want to remove the overhead tag for '${username}'?`)) return;
+    try {
+      const res = await fetch(`/api/admin/tags?username=${encodeURIComponent(username)}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTags(data.tags);
+      } else {
+        alert(data.error || "Failed to delete tag");
+      }
+    } catch (err) {
+      console.error("Failed to delete tag:", err);
+    }
+  };
+
 
   const copyKeyToClipboard = (key: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -431,6 +557,28 @@ export default function AdminDashboard() {
           >
             <KeyRound size={20} />
             <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Key System</span>
+          </button>
+
+          <button
+            className="dashboard-nav-item"
+            onClick={() => { setActiveTab("tags"); setIsSidebarOpen(false); }}
+            style={{
+              backgroundColor: activeTab === 'tags' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'tags' ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'tags' ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent'
+            }}
+          >
+            <Sparkles size={20} color={activeTab === 'tags' ? '#a855f7' : 'currentColor'} />
+            <span className="dashboard-sidebar-text" style={{ fontSize: '14px', fontWeight: 600 }}>Overhead Tags</span>
+            {Object.keys(tags).length > 0 && (
+              <span style={{
+                marginLeft: 'auto', fontSize: '11px', padding: '2px 8px', borderRadius: '10px',
+                backgroundColor: 'rgba(168, 85, 247, 0.15)', color: '#c084fc',
+                border: '1px solid rgba(168, 85, 247, 0.25)'
+              }}>
+                {Object.keys(tags).length}
+              </span>
+            )}
           </button>
         </nav>
 
@@ -1266,6 +1414,543 @@ export default function AdminDashboard() {
                 </div>
               </motion.div>
             )}
+
+            {activeTab === "tags" && (
+              <motion.div
+                key="tags"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
+              >
+                {/* Header Card */}
+                <div className="glass-card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Sparkles size={22} color="#a855f7" /> Overhead Tags & Badges
+                    </h2>
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>
+                      Assign custom titles, web images, and animated GIFs to players. Served instantly via Cloudflare Edge.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleOpenNewTag}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '10px 18px', borderRadius: '12px',
+                      backgroundColor: '#a855f7', color: '#fff',
+                      border: 'none', fontWeight: 600, fontSize: '13px',
+                      cursor: 'pointer', boxShadow: '0 4px 14px rgba(168, 85, 247, 0.35)',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <Plus size={16} /> Add Overhead Tag
+                  </button>
+                </div>
+
+                {/* Stats Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  <div className="glass-card" style={{ padding: '18px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>Total Custom Tags</div>
+                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#fff', marginTop: '6px' }}>{Object.keys(tags).length}</div>
+                  </div>
+                  <div className="glass-card" style={{ padding: '18px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Film size={14} color="#c084fc" /> Animated GIFs
+                    </div>
+                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#c084fc', marginTop: '6px' }}>
+                      {Object.values(tags).filter((t: any) => t.type === 'gif').length}
+                    </div>
+                  </div>
+                  <div className="glass-card" style={{ padding: '18px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ImageIcon size={14} color="#38bdf8" /> Web Images
+                    </div>
+                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#38bdf8', marginTop: '6px' }}>
+                      {Object.values(tags).filter((t: any) => t.type === 'image').length}
+                    </div>
+                  </div>
+                  <div className="glass-card" style={{ padding: '18px' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Tag size={14} color="#f59e0b" /> Roblox Assets
+                    </div>
+                    <div style={{ fontSize: '26px', fontWeight: 700, color: '#f59e0b', marginTop: '6px' }}>
+                      {Object.values(tags).filter((t: any) => t.type === 'assetid').length}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Search Bar */}
+                <div style={{ position: 'relative' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+                  <input
+                    type="text"
+                    value={tagSearchQuery}
+                    onChange={(e) => setTagSearchQuery(e.target.value)}
+                    placeholder="Search tags by player username or title..."
+                    style={{
+                      width: '100%', padding: '12px 16px 12px 46px',
+                      borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#fff', fontSize: '14px', outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Tags Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
+                  {Object.entries(tags)
+                    .filter(([user, data]: any) => {
+                      const q = tagSearchQuery.toLowerCase();
+                      return user.toLowerCase().includes(q) || (data.customName && data.customName.toLowerCase().includes(q));
+                    })
+                    .map(([user, data]: any) => {
+                      const stroke = data.strokeColor || '#a855f7';
+                      return (
+                        <div
+                          key={user}
+                          className="glass-card"
+                          style={{
+                            padding: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '16px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            border: `1px solid rgba(255,255,255,0.08)`
+                          }}
+                        >
+                          {/* Top row */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                              <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>@{user}</div>
+                              <span style={{
+                                fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '8px',
+                                display: 'inline-block', marginTop: '4px',
+                                backgroundColor: data.type === 'gif' ? 'rgba(168, 85, 247, 0.15)' : data.type === 'image' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                                color: data.type === 'gif' ? '#c084fc' : data.type === 'image' ? '#38bdf8' : '#fbbf24',
+                                border: `1px solid ${data.type === 'gif' ? 'rgba(168, 85, 247, 0.3)' : data.type === 'image' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
+                              }}>
+                                {data.type === 'gif' ? '✨ GIF Animated' : data.type === 'image' ? '🖼️ Web Image' : '🆔 Asset ID'}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={() => handleEditTag(user, data)}
+                                style={{
+                                  padding: '8px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)',
+                                  border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer'
+                                }}
+                                title="Edit Tag"
+                              >
+                                <Edit3 size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTag(user)}
+                                style={{
+                                  padding: '8px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)',
+                                  border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', cursor: 'pointer'
+                                }}
+                                title="Delete Tag"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* In-Game Roblox Overhead Card Simulation */}
+                          <div style={{
+                            background: '#0a0a0a',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px dashed rgba(255,255,255,0.1)',
+                            position: 'relative'
+                          }}>
+                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                              IN-GAME OVERHEAD PREVIEW
+                            </span>
+                            
+                            {/* The Simulated Billboard Card */}
+                            <div style={{
+                              width: '180px',
+                              height: '76px',
+                              backgroundColor: 'rgba(15, 15, 15, 0.88)',
+                              borderRadius: '16px',
+                              border: `3px solid ${stroke}`,
+                              boxShadow: `0 0 16px ${stroke}44`,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              position: 'relative',
+                              overflow: 'hidden'
+                            }}>
+                              {/* Background Image / Sprite */}
+                              {data.imageUrl && (
+                                <img
+                                  src={data.imageUrl}
+                                  alt="tag bg"
+                                  style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    opacity: 0.35,
+                                    zIndex: 1
+                                  }}
+                                />
+                              )}
+                              {/* Title Text */}
+                              <div style={{
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                color: '#ffffff',
+                                textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
+                                zIndex: 2,
+                                textAlign: 'center',
+                                letterSpacing: '0.5px'
+                              }}>
+                                {data.customName || 'VIP'}
+                              </div>
+                              {/* Username Text */}
+                              <div style={{
+                                fontSize: '11px',
+                                fontWeight: 500,
+                                color: 'rgba(255,255,255,0.75)',
+                                textShadow: '0 1px 3px #000',
+                                zIndex: 2,
+                                marginTop: '2px'
+                              }}>
+                                @{user}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Info Footer */}
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Title: <strong>{data.customName}</strong></span>
+                            {data.type === 'gif' && data.gifConfig && (
+                              <span>{data.gifConfig.frames || 16} frames @ {data.gifConfig.fps || 20}fps</span>
+                            )}
+                            {data.type === 'assetid' && (
+                              <span>ID: {data.backgroundId}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* CREATE / EDIT TAG MODAL */}
+            {isTagModalOpen && (
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 100,
+                backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+              }}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="glass-card"
+                  style={{
+                    width: '100%', maxWidth: '540px', maxHeight: '90vh', overflowY: 'auto',
+                    backgroundColor: '#121216', border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: '20px', padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Sparkles size={18} color="#a855f7" /> {editingTagUser ? `Edit Tag for @${editingTagUser}` : "Create New Overhead Tag"}
+                    </h3>
+                    <button
+                      onClick={() => setIsTagModalOpen(false)}
+                      style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveTag} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Username */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Roblox Username
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        disabled={!!editingTagUser}
+                        value={tagForm.username}
+                        onChange={(e) => setTagForm({ ...tagForm, username: e.target.value })}
+                        placeholder="e.g. horize1n"
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: '10px',
+                          backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '14px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Display Title */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Overhead Title
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={tagForm.customName}
+                        onChange={(e) => setTagForm({ ...tagForm, customName: e.target.value })}
+                        placeholder="e.g. ZEN | ADMIN or VIP"
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: '10px',
+                          backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '14px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Tag Type Selector */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '8px' }}>
+                        Tag Type
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                        {(['gif', 'image', 'assetid'] as const).map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setTagForm({ ...tagForm, type: t })}
+                            style={{
+                              padding: '10px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 600,
+                              cursor: 'pointer', transition: 'all 0.2s',
+                              backgroundColor: tagForm.type === t ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255,255,255,0.04)',
+                              color: tagForm.type === t ? '#c084fc' : 'rgba(255,255,255,0.6)',
+                              border: tagForm.type === t ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid rgba(255,255,255,0.08)'
+                            }}
+                          >
+                            {t === 'gif' ? '✨ Animated GIF' : t === 'image' ? '🖼️ Web Image' : '🆔 Asset ID'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* GIF Configuration */}
+                    {tagForm.type === 'gif' && (
+                      <div style={{ backgroundColor: 'rgba(168, 85, 247, 0.06)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                          <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '4px' }}>
+                            GIF Spritesheet URL
+                          </label>
+                          <input
+                            type="url"
+                            required
+                            value={tagForm.imageUrl}
+                            onChange={(e) => setTagForm({ ...tagForm, imageUrl: e.target.value })}
+                            placeholder="https://i.imgur.com/example_sprite.png"
+                            style={{
+                              width: '100%', padding: '10px 12px', borderRadius: '8px',
+                              backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                              color: '#fff', fontSize: '13px', outline: 'none'
+                            }}
+                          />
+                          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+                            Tip: Convert any GIF on <a href="https://ezgif.com/sprite-cutter" target="_blank" rel="noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>ezgif.com/sprite-cutter</a> to a PNG spritesheet, then paste its link here.
+                          </p>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Cols</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="16"
+                              value={tagForm.cols}
+                              onChange={(e) => setTagForm({ ...tagForm, cols: parseInt(e.target.value) || 4 })}
+                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Rows</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="16"
+                              value={tagForm.rows}
+                              onChange={(e) => setTagForm({ ...tagForm, rows: parseInt(e.target.value) || 4 })}
+                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Frames</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="256"
+                              value={tagForm.frames}
+                              onChange={(e) => setTagForm({ ...tagForm, frames: parseInt(e.target.value) || 16 })}
+                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>FPS</span>
+                            <input
+                              type="number"
+                              min="5"
+                              max="60"
+                              value={tagForm.fps}
+                              onChange={(e) => setTagForm({ ...tagForm, fps: parseInt(e.target.value) || 20 })}
+                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Web Image URL */}
+                    {tagForm.type === 'image' && (
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8', display: 'block', marginBottom: '6px' }}>
+                          Direct Image URL (PNG, JPG, WebP)
+                        </label>
+                        <input
+                          type="url"
+                          required
+                          value={tagForm.imageUrl}
+                          onChange={(e) => setTagForm({ ...tagForm, imageUrl: e.target.value })}
+                          placeholder="https://i.imgur.com/example.png"
+                          style={{
+                            width: '100%', padding: '10px 14px', borderRadius: '10px',
+                            backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(56, 189, 248, 0.3)',
+                            color: '#fff', fontSize: '14px', outline: 'none'
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Roblox Asset ID */}
+                    {tagForm.type === 'assetid' && (
+                      <div>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#fbbf24', display: 'block', marginBottom: '6px' }}>
+                          Roblox Asset / Decal ID
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={tagForm.backgroundId}
+                          onChange={(e) => setTagForm({ ...tagForm, backgroundId: e.target.value })}
+                          placeholder="e.g. 94569112529077"
+                          style={{
+                            width: '100%', padding: '10px 14px', borderRadius: '10px',
+                            backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(245, 158, 11, 0.3)',
+                            color: '#fff', fontSize: '14px', outline: 'none'
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Border & Glow Color */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Accent & Glow Color
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        {['#a855f7', '#3b82f6', '#22c55e', '#eab308', '#ef4444', '#ec4899', '#06b6d4'].map((col) => (
+                          <div
+                            key={col}
+                            onClick={() => setTagForm({ ...tagForm, strokeColor: col })}
+                            style={{
+                              width: '28px', height: '28px', borderRadius: '50%',
+                              backgroundColor: col, cursor: 'pointer',
+                              border: tagForm.strokeColor === col ? '2px solid #fff' : '2px solid transparent',
+                              boxShadow: tagForm.strokeColor === col ? `0 0 10px ${col}` : 'none'
+                            }}
+                          />
+                        ))}
+                        <input
+                          type="color"
+                          value={tagForm.strokeColor}
+                          onChange={(e) => setTagForm({ ...tagForm, strokeColor: e.target.value })}
+                          style={{ width: '32px', height: '32px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'transparent' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Live Preview Box in Modal */}
+                    <div style={{
+                      backgroundColor: '#0a0a0a', borderRadius: '12px', padding: '16px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      border: '1px dashed rgba(255,255,255,0.1)'
+                    }}>
+                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}>
+                        LIVE IN-GAME PREVIEW
+                      </span>
+                      <div style={{
+                        width: '180px', height: '76px',
+                        backgroundColor: 'rgba(15, 15, 15, 0.88)',
+                        borderRadius: '16px',
+                        border: `3px solid ${tagForm.strokeColor || '#a855f7'}`,
+                        boxShadow: `0 0 16px ${tagForm.strokeColor || '#a855f7'}44`,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        position: 'relative', overflow: 'hidden'
+                      }}>
+                        {tagForm.imageUrl && (
+                          <img
+                            src={tagForm.imageUrl}
+                            alt="preview"
+                            style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, zIndex: 1 }}
+                          />
+                        )}
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000', zIndex: 2 }}>
+                          {tagForm.customName || 'TITLE'}
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(255,255,255,0.75)', textShadow: '0 1px 3px #000', zIndex: 2, marginTop: '2px' }}>
+                          @{tagForm.username || 'username'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setIsTagModalOpen(false)}
+                        style={{
+                          padding: '10px 16px', borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '13px', cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={tagSaving}
+                        style={{
+                          padding: '10px 20px', borderRadius: '10px',
+                          backgroundColor: '#a855f7', color: '#fff',
+                          border: 'none', fontWeight: 600, fontSize: '13px',
+                          cursor: 'pointer', opacity: tagSaving ? 0.6 : 1
+                        }}
+                      >
+                        {tagSaving ? "Saving..." : editingTagUser ? "Update Tag" : "Create Tag"}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+
           </AnimatePresence>
         </div>
       </main>

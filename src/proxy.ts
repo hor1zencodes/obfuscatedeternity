@@ -78,9 +78,9 @@ end
 -- Start Heartbeat Ping Loop
 task.spawn(function()
     while true do
-        task.wait(30)
+        task.wait(60)
         pcall(function()
-            safeRequest("https://zeneternity.vercel.app/api/ping?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick()))
+            safeRequest("https://eternity-api.cr7hd-q.workers.dev/api/ping?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")))
         end)
     end
 end)
