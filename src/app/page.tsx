@@ -650,7 +650,7 @@ export default function Home() {
   const [isAtBottom, setIsAtBottom] = useState(false);
   const revealImgRef = useRef<HTMLDivElement>(null);
 
-  const fullScript = 'loadstring(game:HttpGet("https://zeneternity.vercel.app", true))()';
+  const fullScript = 'loadstring(game:HttpGet("https://zeternity.online", true))()';
 
   const { scrollYProgress } = useScroll();
   const scaleY = useSpring(scrollYProgress, {
@@ -1193,10 +1193,10 @@ export default function Home() {
                                         <span style={{ color: '#cbd5e1' }}>{fullScript.substring(10, Math.min(typedChars, 25))}</span>
                                       )}
                                       {typedChars > 25 && (
-                                        <span style={{ color: '#86efac' }}>{fullScript.substring(25, Math.min(typedChars, 57))}</span>
+                                        <span style={{ color: '#86efac' }}>{fullScript.substring(25, Math.min(typedChars, 49))}</span>
                                       )}
-                                      {typedChars > 57 && (
-                                        <span style={{ color: '#cbd5e1' }}>{fullScript.substring(57, Math.min(typedChars, fullScript.length))}</span>
+                                      {typedChars > 49 && (
+                                        <span style={{ color: '#cbd5e1' }}>{fullScript.substring(49, Math.min(typedChars, fullScript.length))}</span>
                                       )}
                                     </>
                                   )}
