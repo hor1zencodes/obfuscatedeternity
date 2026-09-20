@@ -3303,3 +3303,32 @@ h6 {
 }
 
 
+/* Overhead Tag Title Animations */
+@keyframes titleShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes titlePulse {
+  0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px rgba(255,255,255,0.8)); }
+  50% { opacity: 0.25; transform: scale(0.96); filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)); }
+}
+@keyframes titleGlitch {
+  0%, 100% { transform: translate(0); text-shadow: 0 0 4px rgba(0,0,0,0.9); }
+  20% { transform: translate(-2px, 1px); text-shadow: -2px 0 #06b6d4, 2px 0 #ec4899; }
+  40% { transform: translate(2px, -1px); text-shadow: 2px 0 #a855f7, -2px 0 #22c55e; }
+  60% { transform: translate(-1px, -1px); text-shadow: -1px 0 #eab308; }
+  80% { transform: translate(1px, 2px); text-shadow: 1px 0 #ef4444, -1px 0 #3b82f6; }
+}
+.title-anim-shimmer {
+  background: linear-gradient(90deg, #c084fc 0%, #ffffff 50%, #c084fc 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleShimmer 2.2s linear infinite;
+}
+.title-anim-pulse {
+  animation: titlePulse 1.4s ease-in-out infinite;
+}
+.title-anim-glitch {
+  animation: titleGlitch 0.5s ease-in-out infinite;
+}

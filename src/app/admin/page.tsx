@@ -34,6 +34,7 @@ export default function AdminDashboard() {
     imageUrl?: string;
     gifConfig?: { rows: number; cols: number; frames: number; fps: number };
     strokeColor?: string;
+    textAnimation?: 'none' | 'shimmer' | 'pulse' | 'glitch';
     updatedAt?: string;
   }>>({});
   const [tagSearchQuery, setTagSearchQuery] = useState("");
@@ -49,7 +50,8 @@ export default function AdminDashboard() {
     cols: 4,
     frames: 16,
     fps: 20,
-    strokeColor: "#a855f7"
+    strokeColor: "#a855f7",
+    textAnimation: "none" as "none" | "shimmer" | "pulse" | "glitch"
   });
   const [tagSaving, setTagSaving] = useState(false);
 
@@ -333,7 +335,8 @@ export default function AdminDashboard() {
       cols: 4,
       frames: 16,
       fps: 20,
-      strokeColor: "#a855f7"
+      strokeColor: "#a855f7",
+      textAnimation: "none"
     });
     setIsTagModalOpen(true);
   };
@@ -350,7 +353,8 @@ export default function AdminDashboard() {
       cols: data.gifConfig?.cols || data.cols || 4,
       frames: data.gifConfig?.frames || data.frames || 16,
       fps: data.gifConfig?.fps || data.fps || 20,
-      strokeColor: data.strokeColor || "#a855f7"
+      strokeColor: data.strokeColor || "#a855f7",
+      textAnimation: data.textAnimation || "none"
     });
     setIsTagModalOpen(true);
   };
@@ -375,7 +379,8 @@ export default function AdminDashboard() {
             frames: Number(tagForm.frames) || 16,
             fps: Number(tagForm.fps) || 20,
           } : undefined,
-          strokeColor: tagForm.strokeColor
+          strokeColor: tagForm.strokeColor,
+          textAnimation: tagForm.textAnimation || 'none'
         })
       });
       const data = await res.json();
@@ -1416,6 +1421,7 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === "tags" && (
+
               <motion.div
                 key="tags"
                 initial={{ opacity: 0, y: 15 }}
@@ -1608,15 +1614,22 @@ export default function AdminDashboard() {
                                 />
                               )}
                               {/* Title Text */}
-                              <div style={{
-                                fontSize: '13px',
-                                fontWeight: 800,
-                                color: '#ffffff',
-                                textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
-                                zIndex: 2,
-                                textAlign: 'center',
-                                letterSpacing: '0.5px'
-                              }}>
+                              <div
+                                className={
+                                  data.textAnimation === 'shimmer' ? 'title-anim-shimmer' :
+                                  data.textAnimation === 'pulse' ? 'title-anim-pulse' :
+                                  data.textAnimation === 'glitch' ? 'title-anim-glitch' : ''
+                                }
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 800,
+                                  color: data.textAnimation === 'shimmer' ? undefined : '#ffffff',
+                                  textShadow: data.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
+                                  zIndex: 2,
+                                  textAlign: 'center',
+                                  letterSpacing: '0.5px'
+                                }}
+                              >
                                 {data.customName || 'VIP'}
                               </div>
                               {/* Username Text */}
@@ -1886,6 +1899,36 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
+                    {/* Title Text Animation */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '8px' }}>
+                        Title Text Animation
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                        {[
+                          { id: 'none', label: 'None (Static)' },
+                          { id: 'shimmer', label: '✨ Shimmer' },
+                          { id: 'pulse', label: '⚡ Pulse' },
+                          { id: 'glitch', label: '👾 Glitch' }
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setTagForm({ ...tagForm, textAnimation: item.id as any })}
+                            style={{
+                              padding: '8px 6px', borderRadius: '10px', fontSize: '11px', fontWeight: 600,
+                              cursor: 'pointer', transition: 'all 0.2s',
+                              backgroundColor: tagForm.textAnimation === item.id ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255,255,255,0.04)',
+                              color: tagForm.textAnimation === item.id ? '#c084fc' : 'rgba(255,255,255,0.6)',
+                              border: tagForm.textAnimation === item.id ? '1px solid rgba(168, 85, 247, 0.4)' : '1px solid rgba(255,255,255,0.08)'
+                            }}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Live Preview Box in Modal */}
                     <div style={{
                       backgroundColor: '#0a0a0a', borderRadius: '12px', padding: '16px',
@@ -1911,7 +1954,19 @@ export default function AdminDashboard() {
                             style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, zIndex: 1 }}
                           />
                         )}
-                        <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000', zIndex: 2 }}>
+                        <div
+                          className={
+                            tagForm.textAnimation === 'shimmer' ? 'title-anim-shimmer' :
+                            tagForm.textAnimation === 'pulse' ? 'title-anim-pulse' :
+                            tagForm.textAnimation === 'glitch' ? 'title-anim-glitch' : ''
+                          }
+                          style={{
+                            fontSize: '13px', fontWeight: 800,
+                            color: tagForm.textAnimation === 'shimmer' ? undefined : '#fff',
+                            textShadow: tagForm.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
+                            zIndex: 2, letterSpacing: '0.5px'
+                          }}
+                        >
                           {tagForm.customName || 'TITLE'}
                         </div>
                         <div style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(255,255,255,0.75)', textShadow: '0 1px 3px #000', zIndex: 2, marginTop: '2px' }}>
