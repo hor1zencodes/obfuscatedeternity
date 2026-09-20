@@ -1794,7 +1794,7 @@ export default function AdminDashboard() {
                             }}
                           />
                           <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
-                            Tip: Convert any GIF on <a href="https://ezgif.com/sprite-cutter" target="_blank" rel="noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>ezgif.com/sprite-cutter</a> to a PNG spritesheet, then paste its link here.
+                            Tip: Convert your GIF at <a href="https://ezgif.com/gif-to-sprite" target="_blank" rel="noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>ezgif.com/gif-to-sprite</a> into a PNG spritesheet grid, upload the PNG (Imgur/ImgBB/Discord), and paste the link here.
                           </p>
                         </div>
 
