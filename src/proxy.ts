@@ -85,6 +85,18 @@ task.spawn(function()
     end
 end)
 
+-- 5-Minute Inactivity Auto-Kick: If user sits idle without completing load within 5 minutes, disconnect to save resources
+task.delay(300, function()
+    if not getgenv().EternityLoaderSuccess then
+        pcall(function()
+            local p = game:GetService("Players").LocalPlayer
+            if p then
+                p:Kick("Eternity: Disconnected due to 5+ minutes of inactivity.")
+            end
+        end)
+    end
+end)
+
 -- Execute Premium Script
 local fn, compileErr = loadstring(scriptData)
 if not fn then

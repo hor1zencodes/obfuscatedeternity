@@ -81,7 +81,19 @@ export async function GET(request: NextRequest) {
                 };
             });
 
-            return NextResponse.json({ success: true, liveUsers });
+            // Auto-clean: Purge any user who has had no game data for more than 5 minutes
+            const activeUsers = liveUsers.filter(u => {
+                if (!u.placeId) {
+                    const isIdleTooLong = (Date.now() - u.timestamp) > 300000;
+                    if (isIdleTooLong && supabase) {
+                        supabase.from('live_users').delete().eq('username', u.user).then(() => {});
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            return NextResponse.json({ success: true, liveUsers: activeUsers });
         } else {
             // For local development without Supabase
             return NextResponse.json({
