@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-  // 1. Cache the lowercase user-agent for faster checking
+  // 1. Cache the lowercase user-agent and accept header
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
+  const accept = (request.headers.get('accept') || '').toLowerCase();
+  const secFetchDest = (request.headers.get('sec-fetch-dest') || '').toLowerCase();
 
-  // 2. Check if the request is from a Roblox executor
-  if (
+  // 2. Check if the request is from a Roblox executor or Lua HttpGet
+  const isRoblox =
     userAgent.includes('roblox') ||
     userAgent.includes('synapse') ||
     userAgent.includes('krnl') ||
@@ -23,12 +25,15 @@ export function proxy(request: NextRequest) {
     userAgent.includes('hydrogen') ||
     userAgent.includes('appleware') ||
     userAgent.includes('vega') ||
-    userAgent.includes('xeno')
-  ) {
-    // 3. SECURE LOADER: 
-    // If they hit the root URL, we give them the Loader Script, not the full script.
-    if (request.nextUrl.pathname === '/') {
-      const loaderScript = `
+    userAgent.includes('xeno') ||
+    userAgent.includes('wininet');
+
+  const isBrowser = accept.includes('text/html') && (secFetchDest === 'document' || (userAgent.includes('mozilla') && !isRoblox));
+
+  // 3. SECURE LOADER:
+  // If they hit the root URL and it's Roblox (or not a regular browser document navigation), serve loader
+  if (request.nextUrl.pathname === '/' && (isRoblox || !isBrowser)) {
+    const loaderScript = `
 local Players = game:GetService("Players")
 while not Players.LocalPlayer or Players.LocalPlayer.Name == "" do 
     task.wait(0.1) 
@@ -65,14 +70,20 @@ local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username 
 local scriptData = safeRequest(url)
 
 if not scriptData or #scriptData < 50 or scriptData:match("Access Denied") then
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Eternity",
-            Text = "Failed to load script. Please try re-executing.",
-            Duration = 6
-        })
-    end)
-    return
+    -- Fallback to GitHub raw build if authenticate has a transient issue
+    local ok, gh = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/hor1zencodes/obfuscatedeternity/main/hizen.lua")
+    if ok and gh and #gh > 5000 then
+        scriptData = gh
+    else
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Eternity",
+                Text = "Failed to load script. Please try re-executing.",
+                Duration = 6
+            })
+        end)
+        return
+    end
 end
 
 -- Start Heartbeat Ping Loop
@@ -121,21 +132,20 @@ if not ok then
     end)
 end
 `;
-      return new NextResponse(loaderScript, {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-          'Pragma': 'no-cache',
-        },
-      });
-    }
+    return new NextResponse(loaderScript, {
+      headers: {
+        'Content-Type': 'text/plain',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      },
+    });
   }
 
-  // 3. If it's a normal web browser, proceed to render the React page
+  // 4. If it's a normal web browser, proceed to render the React page
   return NextResponse.next();
 }
 
-// 4. MAXIMUM SPEED: Only run middleware on actual page routes. 
+// 5. MAXIMUM SPEED: Only run proxy on actual page routes.
 // Skip all static assets (.mp3, .png, _next) so the server doesn't waste time checking them.
 export const config = {
   matcher: [
