@@ -35,6 +35,8 @@ export default function AdminDashboard() {
     gifConfig?: { rows: number; cols: number; frames: number; fps: number };
     strokeColor?: string;
     textAnimation?: 'none' | 'shimmer' | 'pulse' | 'glitch';
+    titleColor?: string;
+    titleColor2?: string;
     updatedAt?: string;
   }>>({});
   const [tagSearchQuery, setTagSearchQuery] = useState("");
@@ -51,7 +53,9 @@ export default function AdminDashboard() {
     frames: 16,
     fps: 20,
     strokeColor: "#a855f7",
-    textAnimation: "none" as "none" | "shimmer" | "pulse" | "glitch"
+    textAnimation: "none" as "none" | "shimmer" | "pulse" | "glitch",
+    titleColor: "#ffffff",
+    titleColor2: "#c084fc"
   });
   const [tagSaving, setTagSaving] = useState(false);
 
@@ -336,7 +340,9 @@ export default function AdminDashboard() {
       frames: 16,
       fps: 20,
       strokeColor: "#a855f7",
-      textAnimation: "none"
+      textAnimation: "none",
+      titleColor: "#ffffff",
+      titleColor2: "#c084fc"
     });
     setIsTagModalOpen(true);
   };
@@ -354,7 +360,9 @@ export default function AdminDashboard() {
       frames: data.gifConfig?.frames || data.frames || 16,
       fps: data.gifConfig?.fps || data.fps || 20,
       strokeColor: data.strokeColor || "#a855f7",
-      textAnimation: data.textAnimation || "none"
+      textAnimation: data.textAnimation || "none",
+      titleColor: data.titleColor || "#ffffff",
+      titleColor2: data.titleColor2 || "#c084fc"
     });
     setIsTagModalOpen(true);
   };
@@ -380,7 +388,9 @@ export default function AdminDashboard() {
             fps: Number(tagForm.fps) || 20,
           } : undefined,
           strokeColor: tagForm.strokeColor,
-          textAnimation: tagForm.textAnimation || 'none'
+          textAnimation: tagForm.textAnimation || 'none',
+          titleColor: tagForm.titleColor || '#ffffff',
+          titleColor2: tagForm.titleColor2 || '#c084fc'
         })
       });
       const data = await res.json();
@@ -1623,7 +1633,11 @@ export default function AdminDashboard() {
                                 style={{
                                   fontSize: '13px',
                                   fontWeight: 800,
-                                  color: data.textAnimation === 'shimmer' ? undefined : '#ffffff',
+                                  color: data.textAnimation === 'shimmer' ? undefined : (data.titleColor || '#ffffff'),
+                                  background: data.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${data.titleColor || '#ffffff'} 0%, ${data.titleColor2 || '#c084fc'} 50%, ${data.titleColor || '#ffffff'} 100%)` : undefined,
+                                  backgroundSize: data.textAnimation === 'shimmer' ? '200% auto' : undefined,
+                                  WebkitBackgroundClip: data.textAnimation === 'shimmer' ? 'text' : undefined,
+                                  WebkitTextFillColor: data.textAnimation === 'shimmer' ? 'transparent' : undefined,
                                   textShadow: data.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
                                   zIndex: 2,
                                   textAlign: 'center',
@@ -1929,6 +1943,64 @@ export default function AdminDashboard() {
                       </div>
                     </div>
 
+                    {/* Title Base Color */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Title Base Color {tagForm.textAnimation === 'shimmer' && '(Gradient Start & End)'}
+                      </label>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        {['#ffffff', '#f59e0b', '#c084fc', '#38bdf8', '#22c55e', '#ef4444', '#ec4899'].map((col) => (
+                          <div
+                            key={col}
+                            onClick={() => setTagForm({ ...tagForm, titleColor: col })}
+                            style={{
+                              width: '28px', height: '28px', borderRadius: '50%',
+                              backgroundColor: col, cursor: 'pointer',
+                              border: tagForm.titleColor === col ? '2px solid #fff' : '2px solid transparent',
+                              boxShadow: tagForm.titleColor === col ? `0 0 10px ${col}` : 'none'
+                            }}
+                          />
+                        ))}
+                        <input
+                          type="color"
+                          value={tagForm.titleColor || '#ffffff'}
+                          onChange={(e) => setTagForm({ ...tagForm, titleColor: e.target.value })}
+                          style={{ width: '32px', height: '32px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'transparent' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Secondary / Shimmer Beam Color */}
+                    {tagForm.textAnimation !== 'none' && (
+                      <div style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '6px' }}>
+                          {tagForm.textAnimation === 'shimmer' ? '✨ Shimmer Beam Color (Gradient Center)' :
+                           tagForm.textAnimation === 'pulse' ? '⚡ Pulse Glow Target Color' :
+                           '👾 Glitch Accent Flash Color'}
+                        </label>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {['#ffffff', '#eab308', '#06b6d4', '#ec4899', '#a855f7', '#84cc16', '#f97316'].map((col) => (
+                            <div
+                              key={col}
+                              onClick={() => setTagForm({ ...tagForm, titleColor2: col })}
+                              style={{
+                                width: '28px', height: '28px', borderRadius: '50%',
+                                backgroundColor: col, cursor: 'pointer',
+                                border: tagForm.titleColor2 === col ? '2px solid #fff' : '2px solid transparent',
+                                boxShadow: tagForm.titleColor2 === col ? `0 0 10px ${col}` : 'none'
+                              }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            value={tagForm.titleColor2 || '#c084fc'}
+                            onChange={(e) => setTagForm({ ...tagForm, titleColor2: e.target.value })}
+                            style={{ width: '32px', height: '32px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: 'transparent' }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {/* Live Preview Box in Modal */}
                     <div style={{
                       backgroundColor: '#0a0a0a', borderRadius: '12px', padding: '16px',
@@ -1962,7 +2034,11 @@ export default function AdminDashboard() {
                           }
                           style={{
                             fontSize: '13px', fontWeight: 800,
-                            color: tagForm.textAnimation === 'shimmer' ? undefined : '#fff',
+                            color: tagForm.textAnimation === 'shimmer' ? undefined : (tagForm.titleColor || '#fff'),
+                            background: tagForm.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${tagForm.titleColor || '#ffffff'} 0%, ${tagForm.titleColor2 || '#c084fc'} 50%, ${tagForm.titleColor || '#ffffff'} 100%)` : undefined,
+                            backgroundSize: tagForm.textAnimation === 'shimmer' ? '200% auto' : undefined,
+                            WebkitBackgroundClip: tagForm.textAnimation === 'shimmer' ? 'text' : undefined,
+                            WebkitTextFillColor: tagForm.textAnimation === 'shimmer' ? 'transparent' : undefined,
                             textShadow: tagForm.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
                             zIndex: 2, letterSpacing: '0.5px'
                           }}

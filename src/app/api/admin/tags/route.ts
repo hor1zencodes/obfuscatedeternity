@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { username, customName, type, backgroundId, imageUrl, gifConfig, strokeColor, textAnimation } = body;
+        const { username, customName, type, backgroundId, imageUrl, gifConfig, strokeColor, textAnimation, titleColor, titleColor2 } = body;
 
         if (!username || typeof username !== 'string' || !username.trim()) {
             return NextResponse.json({ success: false, error: "Username is required" }, { status: 400 });
@@ -127,6 +127,8 @@ export async function POST(request: NextRequest) {
             gifConfig: gifConfig || undefined,
             strokeColor: strokeColor || '#a855f7',
             textAnimation: textAnimation || 'none',
+            titleColor: titleColor || '#ffffff',
+            titleColor2: titleColor2 || '#ffffff',
             updatedAt: new Date().toISOString()
         };
 
