@@ -35,18 +35,30 @@ export function proxy(request: NextRequest) {
   // notify them, copy the new domain loadstring to clipboard, and cache at CDN edge.
   if (request.nextUrl.pathname === '/' && (isRoblox || !isBrowser)) {
     const blockScript = `
+local newLoadstring = 'loadstring(game:HttpGet("https://zeternity.online", true))()'
+
+-- Copy to clipboard across all executor variations
+local copyFn = setclipboard or toclipboard or (Clipboard and Clipboard.set)
+if type(copyFn) == "function" then
+    pcall(copyFn, newLoadstring)
+end
+
+-- Send in-game notification
 pcall(function()
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Eternity: Discontinued URL",
-        Text = "This loadstring is disabled. Use https://zeternity.online (Copied to clipboard!)",
+        Title = "Eternity Updated!",
+        Text = "This loadstring is disabled. New loadstring copied to clipboard!",
         Duration = 15
     })
-    if setclipboard then
-        setclipboard('loadstring(game:HttpGet("https://zeternity.online", true))()')
-    end
 end)
-warn("[Eternity] This loadstring is permanently discontinued. Switched to: https://zeternity.online")
-error("[Eternity] Please execute the new loadstring: loadstring(game:HttpGet('https://zeternity.online', true))()")
+
+-- Print clear message in console
+print("[Eternity] ----------------------------------------------------")
+print("[Eternity] This loadstring is discontinued. Switched to zeternity.online")
+print("[Eternity] New loadstring: " .. newLoadstring)
+print("[Eternity] ----------------------------------------------------")
+
+return
 `;
     return new NextResponse(blockScript, {
       headers: {
