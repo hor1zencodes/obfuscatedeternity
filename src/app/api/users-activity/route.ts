@@ -111,8 +111,7 @@ export async function GET(request: NextRequest) {
             { success: true, users },
             {
                 headers: {
-                    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                    'Pragma': 'no-cache',
+                    'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=40',
                 }
             }
         );

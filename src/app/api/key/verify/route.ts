@@ -24,8 +24,10 @@ export async function GET(request: NextRequest) {
 
         const now = new Date().toISOString();
 
-        // Auto-purge all expired keys from the database
-        await supabase.from('keys').delete().lt('expires_at', now);
+        // Occasional background purge: eliminate expired keys without blocking every single request
+        if (Math.random() < 0.05) {
+            supabase.from('keys').delete().lt('expires_at', now).then(() => {});
+        }
 
         // First check: does this user already have a valid (non-expired) key session?
         const { data: existingSession } = await supabase

@@ -24,8 +24,7 @@ export async function GET() {
                 { success: true, liveUsers },
                 {
                     headers: {
-                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                        'Pragma': 'no-cache',
+                        'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=40',
                     },
                 }
             );
@@ -35,8 +34,7 @@ export async function GET() {
                 { success: true, liveUsers: [] },
                 {
                     headers: {
-                        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                        'Pragma': 'no-cache',
+                        'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=40',
                     },
                 }
             );

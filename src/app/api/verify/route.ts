@@ -22,8 +22,10 @@ export async function GET(request: NextRequest) {
         if (supabase) {
             const now = new Date().toISOString();
 
-            // Auto-purge: eliminate all expired keys from database
-            await supabase.from('keys').delete().lt('expires_at', now);
+            // Occasional background purge: eliminate expired keys without blocking every single request
+            if (Math.random() < 0.05) {
+                supabase.from('keys').delete().lt('expires_at', now).then(() => {});
+            }
 
             const { data, error } = await supabase
                 .from('whitelist')
