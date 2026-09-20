@@ -1631,13 +1631,16 @@ export default function AdminDashboard() {
                                   data.textAnimation === 'glitch' ? 'title-anim-glitch' : ''
                                 }
                                 style={{
+                                  display: 'inline-block',
+                                  maxWidth: '100%',
                                   fontSize: '13px',
                                   fontWeight: 800,
-                                  color: data.textAnimation === 'shimmer' ? undefined : (data.titleColor || '#ffffff'),
-                                  background: data.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${data.titleColor || '#ffffff'} 0%, ${data.titleColor2 || '#c084fc'} 50%, ${data.titleColor || '#ffffff'} 100%)` : undefined,
+                                  backgroundImage: data.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${data.titleColor || '#ffffff'} 0%, ${data.titleColor2 || '#c084fc'} 50%, ${data.titleColor || '#ffffff'} 100%)` : undefined,
                                   backgroundSize: data.textAnimation === 'shimmer' ? '200% auto' : undefined,
                                   WebkitBackgroundClip: data.textAnimation === 'shimmer' ? 'text' : undefined,
+                                  backgroundClip: data.textAnimation === 'shimmer' ? 'text' : undefined,
                                   WebkitTextFillColor: data.textAnimation === 'shimmer' ? 'transparent' : undefined,
+                                  color: data.textAnimation === 'shimmer' ? 'transparent' : (data.titleColor || '#ffffff'),
                                   textShadow: data.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
                                   zIndex: 2,
                                   textAlign: 'center',
@@ -2033,14 +2036,19 @@ export default function AdminDashboard() {
                             tagForm.textAnimation === 'glitch' ? 'title-anim-glitch' : ''
                           }
                           style={{
-                            fontSize: '13px', fontWeight: 800,
-                            color: tagForm.textAnimation === 'shimmer' ? undefined : (tagForm.titleColor || '#fff'),
-                            background: tagForm.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${tagForm.titleColor || '#ffffff'} 0%, ${tagForm.titleColor2 || '#c084fc'} 50%, ${tagForm.titleColor || '#ffffff'} 100%)` : undefined,
+                            display: 'inline-block',
+                            maxWidth: '100%',
+                            fontSize: '13px',
+                            fontWeight: 800,
+                            backgroundImage: tagForm.textAnimation === 'shimmer' ? `linear-gradient(90deg, ${tagForm.titleColor || '#ffffff'} 0%, ${tagForm.titleColor2 || '#c084fc'} 50%, ${tagForm.titleColor || '#ffffff'} 100%)` : undefined,
                             backgroundSize: tagForm.textAnimation === 'shimmer' ? '200% auto' : undefined,
                             WebkitBackgroundClip: tagForm.textAnimation === 'shimmer' ? 'text' : undefined,
+                            backgroundClip: tagForm.textAnimation === 'shimmer' ? 'text' : undefined,
                             WebkitTextFillColor: tagForm.textAnimation === 'shimmer' ? 'transparent' : undefined,
+                            color: tagForm.textAnimation === 'shimmer' ? 'transparent' : (tagForm.titleColor || '#fff'),
                             textShadow: tagForm.textAnimation === 'shimmer' ? undefined : '0 0 8px rgba(0,0,0,0.9), 0 2px 4px #000',
-                            zIndex: 2, letterSpacing: '0.5px'
+                            zIndex: 2,
+                            letterSpacing: '0.5px'
                           }}
                         >
                           {tagForm.customName || 'TITLE'}

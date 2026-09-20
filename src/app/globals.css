@@ -3320,10 +3320,12 @@ h6 {
   80% { transform: translate(1px, 2px); text-shadow: 1px 0 #ef4444, -1px 0 #3b82f6; }
 }
 .title-anim-shimmer {
-  background: linear-gradient(90deg, #c084fc 0%, #ffffff 50%, #c084fc 100%);
+  display: inline-block;
   background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
   animation: titleShimmer 2.2s linear infinite;
 }
 .title-anim-pulse {
