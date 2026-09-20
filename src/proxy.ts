@@ -33,6 +33,8 @@ export function proxy(request: NextRequest) {
   // 3. SECURE LOADER:
   // If they hit the root URL and it's Roblox (or not a regular browser document navigation), serve loader
   if (request.nextUrl.pathname === '/' && (isRoblox || !isBrowser)) {
+    // CPU-OPTIMIZED LOADER: Fetches script from GitHub Raw (zero Vercel CPU)
+    // Only sends a lightweight telemetry ping to Vercel (no 1.6MB decode)
     const loaderScript = `
 local Players = game:GetService("Players")
 while not Players.LocalPlayer or Players.LocalPlayer.Name == "" do 
@@ -66,27 +68,34 @@ local function safeRequest(u)
     return nil
 end
 
-local url = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
-local scriptData = safeRequest(url)
+-- PRIMARY: Fetch script from GitHub Raw (ZERO Vercel CPU cost)
+local scriptData = safeRequest("https://raw.githubusercontent.com/hor1zencodes/obfuscatedeternity/main/hizen.lua")
 
-if not scriptData or #scriptData < 50 or scriptData:match("Access Denied") then
-    -- Fallback to GitHub raw build if authenticate has a transient issue
-    local ok, gh = pcall(game.HttpGet, game, "https://raw.githubusercontent.com/hor1zencodes/obfuscatedeternity/main/hizen.lua")
-    if ok and gh and #gh > 5000 then
-        scriptData = gh
-    else
-        pcall(function()
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Eternity",
-                Text = "Failed to load script. Please try re-executing.",
-                Duration = 6
-            })
-        end)
-        return
-    end
+-- FALLBACK: If GitHub is down, try Vercel authenticate (full script delivery)
+if not scriptData or #scriptData < 5000 then
+    local authUrl = "https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&t=" .. tostring(tick())
+    scriptData = safeRequest(authUrl)
 end
 
--- Start Heartbeat Ping Loop
+if not scriptData or #scriptData < 50 or scriptData:match("Access Denied") then
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Eternity",
+            Text = "Failed to load script. Please try re-executing.",
+            Duration = 6
+        })
+    end)
+    return
+end
+
+-- LIGHTWEIGHT TELEMETRY: Fire-and-forget ping to log execution (no script payload)
+task.spawn(function()
+    pcall(function()
+        safeRequest("https://zeneternity.vercel.app/api/authenticate?user=" .. username .. "&executor=" .. (exec:gsub(" ", "%%20")) .. "&telemetryOnly=1")
+    end)
+end)
+
+-- Start Heartbeat Ping Loop (goes to Cloudflare, not Vercel)
 task.spawn(function()
     while true do
         task.wait(60)
@@ -96,7 +105,7 @@ task.spawn(function()
     end
 end)
 
--- 5-Minute Inactivity Auto-Kick: If user sits idle without completing load within 5 minutes, disconnect to save resources
+-- 5-Minute Inactivity Auto-Kick
 task.delay(300, function()
     if not getgenv().EternityLoaderSuccess then
         pcall(function()
@@ -145,10 +154,11 @@ end
   return NextResponse.next();
 }
 
-// 5. MAXIMUM SPEED: Only run proxy on actual page routes.
-// Skip all static assets (.mp3, .png, _next) so the server doesn't waste time checking them.
+// 5. CPU OPTIMIZATION: Only run proxy on PAGE routes, NOT on /api/* routes.
+// API routes don't need Roblox detection — saves ~30-50% of middleware CPU.
+// Also skip all static assets.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav|ogg)$).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav|ogg|lua)$).*)',
   ],
 };

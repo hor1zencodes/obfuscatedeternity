@@ -37,8 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Fetch the premium script (which contains the built-in Key System & Whitelist verification)
-        const scriptText = premiumScript;
+        const telemetryOnly = searchParams.get('telemetryOnly') === '1';
 
         // Process telemetry in parallel to speed up execution
         if (supabase) {
@@ -85,6 +84,19 @@ export async function GET(request: NextRequest) {
                 }
             });
         }
+
+        // CPU OPTIMIZATION: If telemetryOnly, skip the 1.6MB script payload entirely
+        if (telemetryOnly) {
+            return new NextResponse("OK", {
+                headers: {
+                    'Content-Type': 'text/plain',
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                },
+            });
+        }
+
+        // Full script delivery (only used as fallback when GitHub is down)
+        const scriptText = premiumScript;
 
         return new NextResponse(scriptText, {
             headers: {

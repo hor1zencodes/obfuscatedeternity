@@ -41,8 +41,7 @@ export async function GET(request: NextRequest) {
         }
         return new NextResponse("OK", {
             headers: {
-                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                'Pragma': 'no-cache',
+                'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
             },
         });
     } catch (e) {
