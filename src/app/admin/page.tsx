@@ -1804,9 +1804,9 @@ export default function AdminDashboard() {
                             <input
                               type="number"
                               min="1"
-                              max="16"
+                              max="512"
                               value={tagForm.cols}
-                              onChange={(e) => setTagForm({ ...tagForm, cols: parseInt(e.target.value) || 4 })}
+                              onChange={(e) => setTagForm({ ...tagForm, cols: parseInt(e.target.value) || 1 })}
                               style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
                             />
                           </div>
@@ -1815,9 +1815,9 @@ export default function AdminDashboard() {
                             <input
                               type="number"
                               min="1"
-                              max="16"
+                              max="512"
                               value={tagForm.rows}
-                              onChange={(e) => setTagForm({ ...tagForm, rows: parseInt(e.target.value) || 4 })}
+                              onChange={(e) => setTagForm({ ...tagForm, rows: parseInt(e.target.value) || 1 })}
                               style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
                             />
                           </div>
@@ -1826,7 +1826,7 @@ export default function AdminDashboard() {
                             <input
                               type="number"
                               min="1"
-                              max="256"
+                              max="1024"
                               value={tagForm.frames}
                               onChange={(e) => setTagForm({ ...tagForm, frames: parseInt(e.target.value) || 16 })}
                               style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
