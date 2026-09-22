@@ -3326,7 +3326,7 @@ h6 {
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
-  animation: titleShimmer 1.4s ease-in-out infinite;
+  animation: titleShimmer 2.7s ease-in-out infinite;
 }
 .title-anim-pulse {
   animation: titlePulse 0.9s ease-in-out infinite;
