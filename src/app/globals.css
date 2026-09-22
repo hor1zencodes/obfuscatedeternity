@@ -3309,8 +3309,14 @@ h6 {
   100% { background-position: 200% 0; }
 }
 @keyframes titlePulse {
-  0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px rgba(255,255,255,0.8)); }
-  50% { opacity: 0.25; transform: scale(0.96); filter: drop-shadow(0 0 1px rgba(255,255,255,0.2)); }
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
+  }
+  32% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 14px currentColor) drop-shadow(0 0 5px #fff);
+  }
 }
 @keyframes titleGlitch {
   0%, 100% { transform: translate(0); text-shadow: 0 0 4px rgba(0,0,0,0.9); }
@@ -3329,7 +3335,8 @@ h6 {
   animation: titleShimmer 2.7s ease-in-out infinite;
 }
 .title-anim-pulse {
-  animation: titlePulse 0.9s ease-in-out infinite;
+  display: inline-block;
+  animation: titlePulse 1.05s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 .title-anim-glitch {
   animation: titleGlitch 0.4s ease-in-out infinite;
