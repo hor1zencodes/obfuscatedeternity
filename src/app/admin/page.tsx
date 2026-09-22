@@ -46,11 +46,12 @@ export default function AdminDashboard() {
     username: "",
     customName: "",
     type: "gif" as "assetid" | "image" | "gif",
+    gifMode: "frames" as "frames" | "spritesheet",
     backgroundId: "",
     imageUrl: "",
     rows: 4,
     cols: 4,
-    frames: 16,
+    frames: 24,
     fps: 20,
     strokeColor: "#a855f7",
     textAnimation: "none" as "none" | "shimmer" | "pulse" | "glitch",
@@ -333,11 +334,12 @@ export default function AdminDashboard() {
       username: "",
       customName: "",
       type: "gif",
+      gifMode: "frames",
       backgroundId: "",
       imageUrl: "",
       rows: 4,
       cols: 4,
-      frames: 16,
+      frames: 24,
       fps: 20,
       strokeColor: "#a855f7",
       textAnimation: "none",
@@ -353,11 +355,12 @@ export default function AdminDashboard() {
       username: user,
       customName: data.customName || user,
       type: data.type || "assetid",
+      gifMode: data.gifConfig?.mode || "frames",
       backgroundId: data.backgroundId || "",
       imageUrl: data.imageUrl || "",
       rows: data.gifConfig?.rows || data.rows || 4,
       cols: data.gifConfig?.cols || data.cols || 4,
-      frames: data.gifConfig?.frames || data.frames || 16,
+      frames: data.gifConfig?.frames || data.frames || 24,
       fps: data.gifConfig?.fps || data.fps || 20,
       strokeColor: data.strokeColor || "#a855f7",
       textAnimation: data.textAnimation || "none",
@@ -382,9 +385,11 @@ export default function AdminDashboard() {
           backgroundId: tagForm.backgroundId,
           imageUrl: tagForm.imageUrl,
           gifConfig: tagForm.type === 'gif' ? {
+            mode: tagForm.gifMode || 'frames',
+            baseUrl: tagForm.imageUrl,
             rows: Number(tagForm.rows) || 4,
             cols: Number(tagForm.cols) || 4,
-            frames: Number(tagForm.frames) || 16,
+            frames: Number(tagForm.frames) || 24,
             fps: Number(tagForm.fps) || 20,
           } : undefined,
           strokeColor: tagForm.strokeColor,
@@ -1778,72 +1783,157 @@ export default function AdminDashboard() {
                     {tagForm.type === 'gif' && (
                       <div style={{ backgroundColor: 'rgba(168, 85, 247, 0.06)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div>
-                          <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '4px' }}>
-                            GIF Spritesheet URL
+                          <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '6px' }}>
+                            Animation Engine
                           </label>
-                          <input
-                            type="url"
-                            required
-                            value={tagForm.imageUrl}
-                            onChange={(e) => setTagForm({ ...tagForm, imageUrl: e.target.value })}
-                            placeholder="https://i.imgur.com/example_sprite.png"
-                            style={{
-                              width: '100%', padding: '10px 12px', borderRadius: '8px',
-                              backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(168, 85, 247, 0.3)',
-                              color: '#fff', fontSize: '13px', outline: 'none'
-                            }}
-                          />
-                          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
-                            Tip: Convert your GIF at <a href="https://ezgif.com/gif-to-sprite" target="_blank" rel="noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>ezgif.com/gif-to-sprite</a> into a PNG spritesheet grid, upload the PNG (Imgur/ImgBB/Discord), and paste the link here.
-                          </p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setTagForm({ ...tagForm, gifMode: 'frames' })}
+                              style={{
+                                padding: '8px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                                cursor: 'pointer', transition: 'all 0.2s',
+                                backgroundColor: (tagForm.gifMode || 'frames') === 'frames' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255,255,255,0.04)',
+                                color: (tagForm.gifMode || 'frames') === 'frames' ? '#fff' : 'rgba(255,255,255,0.6)',
+                                border: (tagForm.gifMode || 'frames') === 'frames' ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)'
+                              }}
+                            >
+                              🎞️ Per-Frame PNGs (Smooth & Crisp)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTagForm({ ...tagForm, gifMode: 'spritesheet' })}
+                              style={{
+                                padding: '8px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                                cursor: 'pointer', transition: 'all 0.2s',
+                                backgroundColor: tagForm.gifMode === 'spritesheet' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255,255,255,0.04)',
+                                color: tagForm.gifMode === 'spritesheet' ? '#fff' : 'rgba(255,255,255,0.6)',
+                                border: tagForm.gifMode === 'spritesheet' ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)'
+                              }}
+                            >
+                              🗺️ Spritesheet (Grid)
+                            </button>
+                          </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                          <div>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Cols</span>
-                            <input
-                              type="number"
-                              min="1"
-                              max="512"
-                              value={tagForm.cols}
-                              onChange={(e) => setTagForm({ ...tagForm, cols: parseInt(e.target.value) || 1 })}
-                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
-                            />
-                          </div>
-                          <div>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Rows</span>
-                            <input
-                              type="number"
-                              min="1"
-                              max="512"
-                              value={tagForm.rows}
-                              onChange={(e) => setTagForm({ ...tagForm, rows: parseInt(e.target.value) || 1 })}
-                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
-                            />
-                          </div>
-                          <div>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Frames</span>
-                            <input
-                              type="number"
-                              min="1"
-                              max="1024"
-                              value={tagForm.frames}
-                              onChange={(e) => setTagForm({ ...tagForm, frames: parseInt(e.target.value) || 16 })}
-                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
-                            />
-                          </div>
-                          <div>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>FPS</span>
-                            <input
-                              type="number"
-                              min="5"
-                              max="60"
-                              value={tagForm.fps}
-                              onChange={(e) => setTagForm({ ...tagForm, fps: parseInt(e.target.value) || 20 })}
-                              style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
-                            />
-                          </div>
-                        </div>
+                        {(tagForm.gifMode || 'frames') === 'frames' ? (
+                          <>
+                            <div>
+                              <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '4px' }}>
+                                PNG Frames Folder or Pattern URL
+                              </label>
+                              <input
+                                type="url"
+                                required
+                                value={tagForm.imageUrl}
+                                onChange={(e) => setTagForm({ ...tagForm, imageUrl: e.target.value })}
+                                placeholder="https://raw.githubusercontent.com/user/repo/main/banner_frames/"
+                                style={{
+                                  width: '100%', padding: '10px 12px', borderRadius: '8px',
+                                  backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                                  color: '#fff', fontSize: '13px', outline: 'none'
+                                }}
+                              />
+                              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', lineHeight: '1.4' }}>
+                                💡 <strong>Per-Frame Mode:</strong> Export GIF frames on <a href="https://ezgif.com/split" target="_blank" rel="noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>ezgif.com/split</a> (frame_0.png, frame_1.png...), upload them to a GitHub folder or image host, and paste the folder URL here.
+                              </p>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>Total Frames</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="500"
+                                  value={tagForm.frames}
+                                  onChange={(e) => setTagForm({ ...tagForm, frames: parseInt(e.target.value) || 24 })}
+                                  placeholder="e.g. 25"
+                                  style={{ width: '100%', marginTop: '4px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>FPS / Speed</span>
+                                <input
+                                  type="number"
+                                  min="5"
+                                  max="60"
+                                  value={tagForm.fps}
+                                  onChange={(e) => setTagForm({ ...tagForm, fps: parseInt(e.target.value) || 20 })}
+                                  placeholder="e.g. 20 (0.05s) or 25 (0.04s)"
+                                  style={{ width: '100%', marginTop: '4px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <label style={{ fontSize: '12px', fontWeight: 600, color: '#c084fc', display: 'block', marginBottom: '4px' }}>
+                                GIF Spritesheet URL
+                              </label>
+                              <input
+                                type="url"
+                                required
+                                value={tagForm.imageUrl}
+                                onChange={(e) => setTagForm({ ...tagForm, imageUrl: e.target.value })}
+                                placeholder="https://i.imgur.com/example_sprite.png"
+                                style={{
+                                  width: '100%', padding: '10px 12px', borderRadius: '8px',
+                                  backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(168, 85, 247, 0.3)',
+                                  color: '#fff', fontSize: '13px', outline: 'none'
+                                }}
+                              />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Cols</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="512"
+                                  value={tagForm.cols}
+                                  onChange={(e) => setTagForm({ ...tagForm, cols: parseInt(e.target.value) || 1 })}
+                                  style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Rows</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="512"
+                                  value={tagForm.rows}
+                                  onChange={(e) => setTagForm({ ...tagForm, rows: parseInt(e.target.value) || 1 })}
+                                  style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Frames</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="1024"
+                                  value={tagForm.frames}
+                                  onChange={(e) => setTagForm({ ...tagForm, frames: parseInt(e.target.value) || 16 })}
+                                  style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>FPS</span>
+                                <input
+                                  type="number"
+                                  min="5"
+                                  max="60"
+                                  value={tagForm.fps}
+                                  onChange={(e) => setTagForm({ ...tagForm, fps: parseInt(e.target.value) || 20 })}
+                                  style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' }}
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
 
