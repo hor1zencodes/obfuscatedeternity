@@ -3326,11 +3326,11 @@ h6 {
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
-  animation: titleShimmer 3.8s ease-in-out infinite;
+  animation: titleShimmer 1.4s ease-in-out infinite;
 }
 .title-anim-pulse {
-  animation: titlePulse 1.4s ease-in-out infinite;
+  animation: titlePulse 0.9s ease-in-out infinite;
 }
 .title-anim-glitch {
-  animation: titleGlitch 0.5s ease-in-out infinite;
+  animation: titleGlitch 0.4s ease-in-out infinite;
 }
