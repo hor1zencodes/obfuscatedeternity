@@ -328,6 +328,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const normalizeGitHubUrl = (url?: string) => {
+    if (!url) return "";
+    let clean = url.trim();
+    if (clean.includes("github.com")) {
+      clean = clean
+        .replace("https://github.com/", "https://raw.githubusercontent.com/")
+        .replace("http://github.com/", "https://raw.githubusercontent.com/")
+        .replace("/tree/", "/")
+        .replace("/blob/", "/")
+        .replace("/raw/", "/");
+    }
+    return clean;
+  };
+
+  const getPreviewImageUrl = (url?: string, type?: string) => {
+    if (!url) return "";
+    let clean = normalizeGitHubUrl(url);
+    if (type === 'gif' && (clean.endsWith('/') || !clean.match(/\.(png|jpe?g|webp|gif)$/i))) {
+      clean = clean.replace(/\/+$/, "") + "/frame_0.png";
+    }
+    return clean;
+  };
+
   const handleOpenNewTag = () => {
     setEditingTagUser(null);
     setTagForm({
@@ -374,6 +397,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!tagForm.username.trim()) return;
     setTagSaving(true);
+    const cleanImageUrl = normalizeGitHubUrl(tagForm.imageUrl);
     try {
       const res = await fetch("/api/admin/tags", {
         method: "POST",
@@ -383,10 +407,10 @@ export default function AdminDashboard() {
           customName: tagForm.customName || tagForm.username,
           type: tagForm.type,
           backgroundId: tagForm.backgroundId,
-          imageUrl: tagForm.imageUrl,
+          imageUrl: cleanImageUrl,
           gifConfig: tagForm.type === 'gif' ? {
             mode: tagForm.gifMode || 'frames',
-            baseUrl: tagForm.imageUrl,
+            baseUrl: cleanImageUrl,
             rows: Number(tagForm.rows) || 4,
             cols: Number(tagForm.cols) || 4,
             frames: Number(tagForm.frames) || 24,
@@ -1616,7 +1640,7 @@ export default function AdminDashboard() {
                               {/* Background Image / Sprite */}
                               {data.imageUrl && (
                                 <img
-                                  src={data.imageUrl}
+                                  src={getPreviewImageUrl(data.imageUrl, data.type)}
                                   alt="tag bg"
                                   style={{
                                     position: 'absolute',
@@ -2114,7 +2138,7 @@ export default function AdminDashboard() {
                       }}>
                         {tagForm.imageUrl && (
                           <img
-                            src={tagForm.imageUrl}
+                            src={getPreviewImageUrl(tagForm.imageUrl, tagForm.type)}
                             alt="preview"
                             style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, zIndex: 1 }}
                           />
