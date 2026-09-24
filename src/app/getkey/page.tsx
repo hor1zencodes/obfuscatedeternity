@@ -37,6 +37,10 @@ export default function GetKeyPage() {
 
   // Initialize and verify checkpoint progression with server Anti-Bypass
   useEffect(() => {
+    if (typeof window !== "undefined" && !window.location.hostname.includes("zeternity.online")) {
+      window.location.replace(`https://zeternity.online/getkey${window.location.search}`);
+      return;
+    }
     setMounted(true);
 
     const initFlow = async () => {

@@ -11,7 +11,10 @@ export default function GetKeyPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const generateKey = async () => {
+    if (typeof window !== "undefined") {
+      window.location.replace(`https://zeternity.online/getkey${window.location.search}`);
+      return;
+    }
       try {
         const res = await fetch("/api/key/generate", {
           method: "POST",
