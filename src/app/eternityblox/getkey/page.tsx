@@ -13,29 +13,7 @@ export default function GetKeyPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.location.replace(`https://zeternity.online/getkey${window.location.search}`);
-      return;
     }
-      try {
-        const res = await fetch("/api/key/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ source: "linkvertise" }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          setKey(data.key);
-          setExpiresAt(data.expiresAt);
-        } else {
-          setError(data.error || "Failed to generate key");
-        }
-      } catch (e) {
-        setError("Network error. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    generateKey();
   }, []);
 
   const handleCopy = () => {
