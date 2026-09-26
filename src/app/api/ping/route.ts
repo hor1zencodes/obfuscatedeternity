@@ -15,6 +15,21 @@ export async function GET(request: NextRequest) {
 
     try {
         if (supabase) {
+            // Check if kicked
+            const { data: kickRecord } = await supabase
+                .from('stats')
+                .select('value')
+                .eq('key', `eternity:kick:${user.toLowerCase()}`)
+                .maybeSingle();
+
+            if (kickRecord && kickRecord.value) {
+                await supabase.from('live_users').delete().ilike('username', user);
+                return new NextResponse(JSON.stringify({ kicked: true }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+                });
+            }
+
             await supabase.from('live_users').upsert({ username: user, last_ping: new Date().toISOString() });
 
             if (executor) {

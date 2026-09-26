@@ -16,6 +16,42 @@ export async function GET(request: NextRequest) {
 
         // If user is reporting their activity / presence:
         if (user && placeId) {
+            const lowerUser = user.toLowerCase();
+
+            // Check if user has an active kick order
+            const { data: kickRecord } = await supabase
+                .from('stats')
+                .select('value')
+                .eq('key', `eternity:kick:${lowerUser}`)
+                .maybeSingle();
+
+            if (kickRecord && kickRecord.value) {
+                let kickInfo: any = {};
+                try {
+                    kickInfo = typeof kickRecord.value === 'string' ? JSON.parse(kickRecord.value) : kickRecord.value;
+                } catch {
+                    kickInfo = { reason: "Kicked by an Eternity Admin." };
+                }
+
+                // Delete from live_users if present
+                await supabase.from('live_users').delete().ilike('username', user);
+
+                return NextResponse.json(
+                    {
+                        success: false,
+                        kicked: true,
+                        reason: kickInfo.reason || "Kicked by an Eternity Admin."
+                    },
+                    {
+                        status: 200,
+                        headers: {
+                            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+                            'Pragma': 'no-cache',
+                        }
+                    }
+                );
+            }
+
             const now = new Date().toISOString();
             
             // 1. Update live_users ping

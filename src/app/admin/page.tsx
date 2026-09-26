@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check, KeyRound, Plus, Sparkles, Tag, Film, Edit3, X, Image as ImageIcon } from "lucide-react";
+import { Lock, Users, Activity, Shield, UserPlus, Trash2, Database, Search, Cpu, LayoutDashboard, LogOut, RefreshCw, Menu, Clock, Gamepad2, ExternalLink, Copy, Check, KeyRound, Plus, Sparkles, Tag, Film, Edit3, X, Image as ImageIcon, UserX, ShieldAlert, AlertTriangle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 import { Globe } from "@/components/Globe";
@@ -80,6 +80,35 @@ export default function AdminDashboard() {
   const [logFilter, setLogFilter] = useState<"all" | "auth" | "whitelist" | "alerts">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
+
+  // Remote Kick feature state
+  const [kickedUsers, setKickedUsers] = useState<{
+    username: string;
+    reason: string;
+    kickedAt: number;
+    kickedBy: string;
+  }[]>([]);
+  const [isKickModalOpen, setIsKickModalOpen] = useState(false);
+  const [kickTargetUser, setKickTargetUser] = useState<{
+    user: string;
+    gameName?: string | null;
+    placeId?: number | string | null;
+    jobId?: string;
+    executor?: string;
+  } | null>(null);
+  const [kickReason, setKickReason] = useState("Kicked by an Eternity Admin.");
+  const [kickRemoveWhitelist, setKickRemoveWhitelist] = useState(false);
+  const [kickSubmitting, setKickSubmitting] = useState(false);
+  const [isManualKickOpen, setIsManualKickOpen] = useState(false);
+  const [manualKickUsername, setManualKickUsername] = useState("");
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => {
+      setToastMessage(prev => (prev?.text === text ? null : prev));
+    }, 4500);
+  };
 
   const [totalExecutions, setTotalExecutions] = useState(6000);
   const [chartData, setChartData] = useState<{ date: string, executions: number }[]>([]);
@@ -187,6 +216,15 @@ export default function AdminDashboard() {
           setTags(dataTags.tags);
         }
       }
+
+      // Fetch active kick orders
+      const resKicks = await fetch("/api/admin/kick");
+      if (resKicks.ok) {
+        const dataKicks = await resKicks.json();
+        if (dataKicks.success && dataKicks.kickedUsers) {
+          setKickedUsers(dataKicks.kickedUsers);
+        }
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -268,6 +306,111 @@ export default function AdminDashboard() {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleOpenKickModal = (user: {
+    user: string;
+    gameName?: string | null;
+    placeId?: number | string | null;
+    jobId?: string;
+    executor?: string;
+  }) => {
+    setKickTargetUser(user);
+    setKickReason("Kicked by an Eternity Admin.");
+    setKickRemoveWhitelist(false);
+    setIsKickModalOpen(true);
+  };
+
+  const handleConfirmKick = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!kickTargetUser?.user) return;
+    setKickSubmitting(true);
+
+    try {
+      const res = await fetch("/api/admin/kick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: kickTargetUser.user,
+          reason: kickReason.trim() || "Kicked by an Eternity Admin.",
+          removeWhitelist: kickRemoveWhitelist
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Kick command executed for @${kickTargetUser.user}!`, "success");
+        setLiveUsers(prev => prev.filter(u => u.user.toLowerCase() !== kickTargetUser.user.toLowerCase()));
+        if (kickRemoveWhitelist) {
+          setWhitelist(prev => prev.filter(w => w.toLowerCase() !== kickTargetUser.user.toLowerCase()));
+        }
+        setIsKickModalOpen(false);
+        setKickTargetUser(null);
+        fetchData(false);
+      } else {
+        showToast(data.error || "Failed to kick user", "error");
+      }
+    } catch (err: any) {
+      showToast(err?.message || "Network error while issuing kick", "error");
+    } finally {
+      setKickSubmitting(false);
+    }
+  };
+
+  const handleManualKickSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualKickUsername.trim()) return;
+    setKickSubmitting(true);
+
+    try {
+      const res = await fetch("/api/admin/kick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: manualKickUsername.trim(),
+          reason: kickReason.trim() || "Kicked by an Eternity Admin.",
+          removeWhitelist: kickRemoveWhitelist
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Kick command executed for @${manualKickUsername.trim()}!`, "success");
+        setLiveUsers(prev => prev.filter(u => u.user.toLowerCase() !== manualKickUsername.trim().toLowerCase()));
+        if (kickRemoveWhitelist) {
+          setWhitelist(prev => prev.filter(w => w.toLowerCase() !== manualKickUsername.trim().toLowerCase()));
+        }
+        setIsManualKickOpen(false);
+        setManualKickUsername("");
+        fetchData(false);
+      } else {
+        showToast(data.error || "Failed to kick user", "error");
+      }
+    } catch (err: any) {
+      showToast(err?.message || "Network error while issuing kick", "error");
+    } finally {
+      setKickSubmitting(false);
+    }
+  };
+
+  const handleRevokeKick = async (username: string) => {
+    if (!confirm(`Are you sure you want to revoke the kick for @${username}?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/kick?username=${encodeURIComponent(username)}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Kick revoked for @${username}`, "info");
+        setKickedUsers(prev => prev.filter(k => k.username.toLowerCase() !== username.toLowerCase()));
+        fetchData(false);
+      } else {
+        showToast(data.error || "Failed to revoke kick", "error");
+      }
+    } catch (err: any) {
+      showToast(err?.message || "Network error while revoking kick", "error");
     }
   };
 
@@ -943,6 +1086,33 @@ export default function AdminDashboard() {
                       <span>{liveUsers.filter(u => !u.isPlaying).length} Idle</span>
                     </div>
                     <button
+                      onClick={() => {
+                        setManualKickUsername("");
+                        setKickReason("Kicked by an Eternity Admin.");
+                        setKickRemoveWhitelist(false);
+                        setIsManualKickOpen(true);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: '8px',
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-fira-code)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      title="Kick any user from game directly by username"
+                    >
+                      <UserX size={13} />
+                      <span>Kick User</span>
+                    </button>
+                    <button
                       onClick={() => fetchData(false)}
                       disabled={isRefreshing}
                       style={{
@@ -989,6 +1159,7 @@ export default function AdminDashboard() {
                             <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Executor</th>
                             <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Status</th>
                             <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Last Ping</th>
+                            <th style={{ padding: '18px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, textAlign: 'right' }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1007,7 +1178,7 @@ export default function AdminDashboard() {
                             if (filteredUsers.length === 0) {
                               return (
                                 <tr>
-                                  <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                                  <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                                     {searchQuery ? "NO MATCHING USERS OR GAMES FOUND" : "NO ACTIVE EXECUTIONS DETECTED"}
                                   </td>
                                 </tr>
@@ -1105,6 +1276,44 @@ export default function AdminDashboard() {
                                 <td style={{ padding: '18px 20px', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontFamily: 'var(--font-fira-code)' }}>
                                   {new Date(user.timestamp).toLocaleTimeString()}
                                 </td>
+
+                                {/* Kick Action */}
+                                <td style={{ padding: '18px 20px', textAlign: 'right' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenKickModal(user)}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      padding: '6px 14px',
+                                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                      border: '1px solid rgba(239, 68, 68, 0.28)',
+                                      borderRadius: '6px',
+                                      color: '#ef4444',
+                                      fontSize: '12px',
+                                      fontWeight: 600,
+                                      fontFamily: 'var(--font-fira-code)',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.12)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.22)';
+                                      e.currentTarget.style.borderColor = '#ef4444';
+                                      e.currentTarget.style.transform = 'translateY(-1px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.28)';
+                                      e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                    title={`Kick @${user.user} from active Roblox session`}
+                                  >
+                                    <UserX size={13} />
+                                    <span>Kick</span>
+                                  </button>
+                                </td>
                               </tr>
                             ));
                           })()}
@@ -1113,6 +1322,82 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Active Kicks Registry */}
+                {kickedUsers.length > 0 && (
+                  <div className="hero-terminal-wrapper-mono" style={{ width: '100%', maxWidth: 'none', margin: 0 }}>
+                    <div className="hero-terminal-mono" style={{ borderRadius: '12px', overflow: 'hidden', borderTop: '3px solid #ef4444' }}>
+                      <div className="terminal-header-mono" style={{ padding: '16px 20px', backgroundColor: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ShieldAlert size={16} color="#ef4444" />
+                          <div className="terminal-title" style={{ color: '#ef4444' }}>kicked_users_registry.sys</div>
+                        </div>
+                        <div style={{ flex: 1 }}></div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontFamily: 'var(--font-fira-code)' }}>
+                          Active Kicks: {kickedUsers.length}
+                        </div>
+                      </div>
+                      <div style={{ overflowX: 'auto', padding: '0' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                              <th style={{ padding: '14px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Username</th>
+                              <th style={{ padding: '14px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Kick Reason</th>
+                              <th style={{ padding: '14px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Issued At</th>
+                              <th style={{ padding: '14px 20px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, textAlign: 'right' }}>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {kickedUsers.map((k, idx) => (
+                              <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <td style={{ padding: '14px 20px', fontFamily: 'var(--font-fira-code)', fontWeight: 500, color: '#fff' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <img src={`/api/admin/avatar?username=${k.username}`} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', objectFit: 'cover' }} />
+                                    <span>{k.username}</span>
+                                  </div>
+                                </td>
+                                <td style={{ padding: '14px 20px', color: 'rgba(255,255,255,0.8)', fontSize: '13px' }}>
+                                  <span style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', color: '#fca5a5' }}>
+                                    {k.reason}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '14px 20px', color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontFamily: 'var(--font-fira-code)' }}>
+                                  {new Date(k.kickedAt).toLocaleString()}
+                                </td>
+                                <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                                  <button
+                                    onClick={() => handleRevokeKick(k.username)}
+                                    style={{
+                                      padding: '5px 12px',
+                                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                                      borderRadius: '6px',
+                                      color: '#60a5fa',
+                                      fontSize: '11px',
+                                      fontWeight: 600,
+                                      fontFamily: 'var(--font-fira-code)',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                    }}
+                                    title="Revoke kick order so player can rejoin"
+                                  >
+                                    Pardon / Revoke
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -2202,6 +2487,374 @@ export default function AdminDashboard() {
                   </form>
                 </motion.div>
               </div>
+            )}
+
+            {/* KICK CONFIRMATION MODAL */}
+            {isKickModalOpen && kickTargetUser && (
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 120,
+                backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+              }}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="glass-card"
+                  style={{
+                    width: '100%', maxWidth: '480px',
+                    backgroundColor: '#121216', border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '20px', padding: '24px', boxShadow: '0 25px 50px -12px rgba(239, 68, 68, 0.2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(239,68,68,0.3)' }}>
+                        <UserX size={18} color="#ef4444" />
+                      </div>
+                      Kick Player from Game
+                    </h3>
+                    <button
+                      onClick={() => { setIsKickModalOpen(false); setKickTargetUser(null); }}
+                      style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  {/* Target User Info Card */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '14px',
+                    padding: '14px', borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                    marginBottom: '18px'
+                  }}>
+                    <img
+                      src={`/api/admin/avatar?username=${kickTargetUser.user}`}
+                      alt="Avatar"
+                      style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', objectFit: 'cover' }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-fira-code)' }}>
+                        @{kickTargetUser.user}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        {kickTargetUser.gameName && (
+                          <span style={{ fontSize: '11px', color: '#27c93f', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Gamepad2 size={12} />
+                            {kickTargetUser.gameName}
+                          </span>
+                        )}
+                        {kickTargetUser.executor && (
+                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '4px' }}>
+                            {kickTargetUser.executor}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleConfirmKick} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Quick Reason Presets */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '8px' }}>
+                        Quick Preset Reasons
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {[
+                          "Rule Violation",
+                          "Exploiting / Cheating",
+                          "Admin Discretion",
+                          "Harassment / Toxicity",
+                          "Script Abuse"
+                        ].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setKickReason(preset)}
+                            style={{
+                              padding: '5px 10px', borderRadius: '6px', fontSize: '11px',
+                              cursor: 'pointer', transition: 'all 0.15s',
+                              backgroundColor: kickReason === preset ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.04)',
+                              color: kickReason === preset ? '#fca5a5' : 'rgba(255,255,255,0.6)',
+                              border: kickReason === preset ? '1px solid rgba(239,68,68,0.4)' : '1px solid rgba(255,255,255,0.08)'
+                            }}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Reason */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Kick Message (Shown to player in game)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={kickReason}
+                        onChange={(e) => setKickReason(e.target.value)}
+                        placeholder="e.g. Kicked by an Eternity Admin."
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: '10px',
+                          backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '13px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Revoke Whitelist Option */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 14px', borderRadius: '10px',
+                      backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)'
+                    }}>
+                      <input
+                        type="checkbox"
+                        id="kickRevokeWhitelist"
+                        checked={kickRemoveWhitelist}
+                        onChange={(e) => setKickRemoveWhitelist(e.target.checked)}
+                        style={{ accentColor: '#ef4444', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="kickRevokeWhitelist" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', cursor: 'pointer', fontWeight: 500 }}>
+                        Also revoke user&apos;s Whitelist access
+                      </label>
+                    </div>
+
+                    {/* Caution note */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '11px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
+                      <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span>The player&apos;s Roblox client will immediately receive the kick command, destroy the Eternity GUI, and disconnect them from the game server.</span>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setIsKickModalOpen(false); setKickTargetUser(null); }}
+                        style={{
+                          padding: '10px 16px', borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '13px', cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={kickSubmitting}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px',
+                          padding: '10px 20px', borderRadius: '10px',
+                          backgroundColor: '#ef4444', color: '#fff',
+                          border: 'none', fontWeight: 600, fontSize: '13px',
+                          cursor: 'pointer', opacity: kickSubmitting ? 0.6 : 1,
+                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+                        }}
+                      >
+                        <UserX size={15} />
+                        <span>{kickSubmitting ? "Issuing Kick..." : "Kick Player"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+
+            {/* MANUAL DIRECT KICK MODAL */}
+            {isManualKickOpen && (
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 120,
+                backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+              }}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="glass-card"
+                  style={{
+                    width: '100%', maxWidth: '460px',
+                    backgroundColor: '#121216', border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '20px', padding: '24px', boxShadow: '0 25px 50px -12px rgba(239, 68, 68, 0.2)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(239,68,68,0.3)' }}>
+                        <UserX size={18} color="#ef4444" />
+                      </div>
+                      Direct Kick Command
+                    </h3>
+                    <button
+                      onClick={() => setIsManualKickOpen(false)}
+                      style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleManualKickSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {/* Username Input */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Target Roblox Username
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={manualKickUsername}
+                        onChange={(e) => setManualKickUsername(e.target.value)}
+                        placeholder="e.g. BadUser123"
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: '10px',
+                          backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '14px', fontFamily: 'var(--font-fira-code)', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Quick Reason Presets */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '8px' }}>
+                        Quick Preset Reasons
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {[
+                          "Rule Violation",
+                          "Exploiting / Cheating",
+                          "Admin Discretion",
+                          "Harassment / Toxicity",
+                          "Script Abuse"
+                        ].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setKickReason(preset)}
+                            style={{
+                              padding: '5px 10px', borderRadius: '6px', fontSize: '11px',
+                              cursor: 'pointer', transition: 'all 0.15s',
+                              backgroundColor: kickReason === preset ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.04)',
+                              color: kickReason === preset ? '#fca5a5' : 'rgba(255,255,255,0.6)',
+                              border: kickReason === preset ? '1px solid rgba(239,68,68,0.4)' : '1px solid rgba(255,255,255,0.08)'
+                            }}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Reason */}
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '6px' }}>
+                        Kick Message (Shown to player)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={kickReason}
+                        onChange={(e) => setKickReason(e.target.value)}
+                        placeholder="e.g. Kicked by an Eternity Admin."
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: '10px',
+                          backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '13px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Revoke Whitelist Option */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '10px 14px', borderRadius: '10px',
+                      backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.15)'
+                    }}>
+                      <input
+                        type="checkbox"
+                        id="manualKickRevokeWhitelist"
+                        checked={kickRemoveWhitelist}
+                        onChange={(e) => setKickRemoveWhitelist(e.target.checked)}
+                        style={{ accentColor: '#ef4444', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="manualKickRevokeWhitelist" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', cursor: 'pointer', fontWeight: 500 }}>
+                        Also revoke user&apos;s Whitelist access
+                      </label>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setIsManualKickOpen(false)}
+                        style={{
+                          padding: '10px 16px', borderRadius: '10px',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff', fontSize: '13px', cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={kickSubmitting || !manualKickUsername.trim()}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '6px',
+                          padding: '10px 20px', borderRadius: '10px',
+                          backgroundColor: '#ef4444', color: '#fff',
+                          border: 'none', fontWeight: 600, fontSize: '13px',
+                          cursor: 'pointer', opacity: (kickSubmitting || !manualKickUsername.trim()) ? 0.6 : 1,
+                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+                        }}
+                      >
+                        <UserX size={15} />
+                        <span>{kickSubmitting ? "Sending..." : "Execute Kick"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+
+            {/* FLOATING TOAST NOTIFICATION */}
+            {toastMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+                style={{
+                  position: 'fixed',
+                  bottom: '24px',
+                  right: '24px',
+                  zIndex: 200,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  backgroundColor: toastMessage.type === 'error' ? '#1f0d0d' : toastMessage.type === 'info' ? '#0b162c' : '#0d1f12',
+                  border: `1px solid ${toastMessage.type === 'error' ? '#ef4444' : toastMessage.type === 'info' ? '#3b82f6' : '#22c55e'}`,
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  fontFamily: 'var(--font-fira-code)'
+                }}
+              >
+                {toastMessage.type === 'error' ? (
+                  <AlertTriangle size={16} color="#ef4444" />
+                ) : toastMessage.type === 'info' ? (
+                  <ShieldAlert size={16} color="#3b82f6" />
+                ) : (
+                  <Check size={16} color="#22c55e" />
+                )}
+                <span>{toastMessage.text}</span>
+              </motion.div>
             )}
 
           </AnimatePresence>
