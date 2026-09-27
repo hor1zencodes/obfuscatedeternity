@@ -60,19 +60,69 @@ export async function GET(request: NextRequest) {
             } catch {}
         }
 
-        // Map KV users into the expected admin panel format
-        const liveUsers = kvUsers.map((u: any) => ({
-            user: u.username,
-            timestamp: u.lastPing || Date.now(),
-            isActive: true,
-            executor: u.executor || executorsMap[u.username?.toLowerCase()] || "Unknown",
-            gameName: u.gameName || null,
-            placeId: u.placeId || null,
-            jobId: u.jobId || "",
-            isPlaying: !!(u.placeId)
-        }));
+        // If Worker KV returned users, map and return them
+        if (kvUsers.length > 0) {
+            const liveUsers = kvUsers.map((u: any) => ({
+                user: u.username,
+                timestamp: u.lastPing || Date.now(),
+                isActive: true,
+                executor: u.executor || executorsMap[u.username?.toLowerCase()] || "Unknown",
+                gameName: u.gameName || null,
+                placeId: u.placeId || null,
+                jobId: u.jobId || "",
+                isPlaying: !!(u.placeId)
+            }));
+            return NextResponse.json({ success: true, liveUsers });
+        }
 
-        return NextResponse.json({ success: true, liveUsers });
+        // --- Fallback: If KV returned 0 users or KV quota reached, fetch directly from Supabase ---
+        if (supabase) {
+            try {
+                const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
+                const { data: liveUsersData } = await supabase
+                    .from('live_users')
+                    .select('username, last_ping')
+                    .gte('last_ping', twoMinutesAgo);
+
+                if (liveUsersData && liveUsersData.length > 0) {
+                    const { data: activityData } = await supabase
+                        .from('stats')
+                        .select('key, value')
+                        .ilike('key', 'eternity:activity:%');
+
+                    const activityMap: Record<string, any> = {};
+                    if (activityData) {
+                        activityData.forEach(item => {
+                            const usr = item.key.replace('eternity:activity:', '').toLowerCase();
+                            try {
+                                activityMap[usr] = typeof item.value === 'string' ? JSON.parse(item.value) : item.value;
+                            } catch {}
+                        });
+                    }
+
+                    const sbLiveUsers = liveUsersData.map(row => {
+                        const uLower = row.username.toLowerCase();
+                        const act = activityMap[uLower];
+                        return {
+                            user: row.username,
+                            timestamp: new Date(row.last_ping).getTime(),
+                            isActive: true,
+                            executor: act?.executor || executorsMap[uLower] || executorsMap[row.username] || "Unknown",
+                            gameName: act?.gameName || null,
+                            placeId: act?.placeId || null,
+                            jobId: act?.jobId || "",
+                            isPlaying: !!(act?.placeId)
+                        };
+                    });
+
+                    return NextResponse.json({ success: true, liveUsers: sbLiveUsers });
+                }
+            } catch (sbErr) {
+                console.error("Supabase fallback fetch failed:", sbErr);
+            }
+        }
+
+        return NextResponse.json({ success: true, liveUsers: [] });
 
     } catch (e) {
         console.error("Live users API error:", e);
