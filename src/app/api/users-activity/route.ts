@@ -93,13 +93,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Otherwise, fetch all live users' activity within the last 300 seconds (5 minutes)
-        const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
+        // Otherwise, fetch all live users' activity within the last 120 seconds (2 minutes)
+        const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
 
         const { data: liveUsersData, error: liveError } = await supabase
             .from('live_users')
             .select('username, last_ping')
-            .gte('last_ping', fiveMinutesAgo);
+            .gte('last_ping', twoMinutesAgo);
 
         if (liveError) {
             console.error("Supabase error fetching live_users:", liveError);

@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
             }
 
-            // Fetch live users active within the last 300 seconds (5 minutes)
-            const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
+            // Fetch live users active within the last 120 seconds (2 minutes)
+            const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
 
             const { data: liveUsersData, error } = await supabase
                 .from('live_users')
                 .select('username, last_ping')
-                .gte('last_ping', fiveMinutesAgo);
+                .gte('last_ping', twoMinutesAgo);
 
             if (error) {
                 console.error(error);
@@ -81,10 +81,10 @@ export async function GET(request: NextRequest) {
                 };
             });
 
-            // Auto-clean: Purge any user who has had no game data for more than 5 minutes
+            // Auto-clean: Purge any user who has had no game data for more than 2 minutes
             const activeUsers = liveUsers.filter(u => {
                 if (!u.placeId) {
-                    const isIdleTooLong = (Date.now() - u.timestamp) > 300000;
+                    const isIdleTooLong = (Date.now() - u.timestamp) > 120000;
                     if (isIdleTooLong && supabase) {
                         supabase.from('live_users').delete().eq('username', u.user).then(() => {});
                         return false;
@@ -115,5 +115,36 @@ export async function GET(request: NextRequest) {
     } catch (e) {
         console.error("Live users API error:", e);
         return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
+    }
+}
+
+// DELETE: Purge idle users immediately
+export async function DELETE(request: NextRequest) {
+    try {
+        const token = request.cookies.get('admin_token')?.value;
+        if (!token) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (!supabase) {
+            return NextResponse.json({ success: true, purged: 0 });
+        }
+
+        const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
+        
+        // Delete users whose last ping is older than 2 minutes
+        const { error } = await supabase
+            .from('live_users')
+            .delete()
+            .lt('last_ping', twoMinutesAgo);
+
+        if (error) {
+            console.error("Error purging idle users:", error);
+            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true, message: "Idle users purged successfully" });
+    } catch (err: any) {
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }
