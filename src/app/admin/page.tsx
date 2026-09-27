@@ -1113,6 +1113,41 @@ export default function AdminDashboard() {
                       <span>Kick User</span>
                     </button>
                     <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/admin/live-users", { method: "DELETE" });
+                          const data = await res.json();
+                          if (data.success) {
+                            showToast("All idle sessions older than 2 minutes purged!");
+                            fetchData(false);
+                          } else {
+                            showToast("Failed to purge idle users", "error");
+                          }
+                        } catch {
+                          showToast("Error purging idle users", "error");
+                        }
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        border: '1px solid rgba(234, 179, 8, 0.25)',
+                        borderRadius: '8px',
+                        color: '#eab308',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-fira-code)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      title="Purge all idle sessions (> 2 minutes without game data)"
+                    >
+                      <Trash2 size={13} />
+                      <span>Purge Idle</span>
+                    </button>
+                    <button
                       onClick={() => fetchData(false)}
                       disabled={isRefreshing}
                       style={{
