@@ -1,6 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+function cleanGameName(name: string | null | undefined): string | null {
+    if (!name || typeof name !== 'string') return null;
+    let s = name;
+
+    // 1. Emoji replacements for common UTF-8 byte sequences
+    s = s.replace(/F0\s+9F\s+94\s+8A/gi, '🔊');
+    s = s.replace(/F0\s+9F\s+9B\s+B9/gi, '🛹');
+    s = s.replace(/F0\s+9F\s+87\s+AB\s+F0\s+9F\s+87\s+B7/gi, '🇫🇷');
+    s = s.replace(/F0\s+9F\s+8E\s+AF/gi, '🎯');
+    s = s.replace(/F0\s+9F\s+92\s+A5/gi, '💥');
+    s = s.replace(/F0\s+9F\s+94\s+A5/gi, '🔥');
+    s = s.replace(/E2\s+9C\s+A8/gi, '✨');
+    s = s.replace(/E2\s+AD\s+90/gi, '⭐');
+
+    // Generic 4-byte UTF-8 emoji matcher (F0 xx xx xx)
+    s = s.replace(/\bF0\s+([89A-F][0-9A-F])\s+([89A-F][0-9A-F])\s+([89A-F][0-9A-F])\b/gi, (_, b1, b2, b3) => {
+        try {
+            const bytes = [0xF0, parseInt(b1, 16), parseInt(b2, 16), parseInt(b3, 16)];
+            return Buffer.from(bytes).toString('utf8');
+        } catch {
+            return _;
+        }
+    });
+
+    // 2. Bracket and plus replacements
+    // 5B18 2B 5D -> [18+]
+    s = s.replace(/5B(\d+)\s*2B\s*5D/gi, '[$1+]');
+    s = s.replace(/5B([A-Za-z0-9]+)\s*5D/gi, '[$1]');
+    s = s.replace(/\b5B\b/gi, '[');
+    s = s.replace(/\b5D\b/gi, ']');
+    s = s.replace(/(?:^|\s)B(?=\s+[🎯🔊🛹🔥✨⭐\[])/gi, ' [');
+    s = s.replace(/\b2B\b/gi, '+');
+
+    // 3. Usernames or IDs
+    s = s.replace(/%5F/gi, '_').replace(/(?:^|\s)5F/gi, '_');
+
+    // Clean remaining isolated bracket codes
+    s = s.replace(/\b5B/gi, '[').replace(/5D\b/gi, ']');
+
+    return s.replace(/\s{2,}/g, ' ').trim();
+}
+
+function cleanUsername(username: string | null | undefined): string {
+    if (!username || typeof username !== 'string') return '';
+    return username.replace(/(?:\s|^)5F/gi, '_').replace(/%5F/gi, '_').trim();
+}
+
 export async function GET(request: NextRequest) {
     try {
         // Authenticate admin session
@@ -33,8 +80,20 @@ export async function GET(request: NextRequest) {
 
                 if (liveUsersData && liveUsersData.length > 0) {
                     // Build targeted key lists for only the live users (avoids Supabase 1000-row default limit)
-                    const activityKeys = liveUsersData.map(r => `eternity:activity:${r.username.toLowerCase()}`);
-                    const executorKeys = liveUsersData.map(r => `eternity:executor:${r.username}`);
+                    const activityKeys: string[] = [];
+                    const executorKeys: string[] = [];
+                    liveUsersData.forEach(r => {
+                        const rawLower = r.username.toLowerCase();
+                        const cleanLower = cleanUsername(r.username).toLowerCase();
+                        activityKeys.push(`eternity:activity:${rawLower}`);
+                        if (cleanLower !== rawLower) {
+                            activityKeys.push(`eternity:activity:${cleanLower}`);
+                        }
+                        executorKeys.push(`eternity:executor:${r.username}`);
+                        if (cleanLower !== rawLower) {
+                            executorKeys.push(`eternity:executor:${cleanUsername(r.username)}`);
+                        }
+                    });
 
                     // Fetch activity data only for live users
                     const { data: activityData } = await supabase
@@ -67,21 +126,34 @@ export async function GET(request: NextRequest) {
                     }
 
                     const liveUsers = liveUsersData.map(row => {
-                        const uLower = row.username.toLowerCase();
-                        const act = activityMap[uLower];
+                        const cleanUser = cleanUsername(row.username);
+                        const rawLower = row.username.toLowerCase();
+                        const cleanLower = cleanUser.toLowerCase();
+                        const act = activityMap[cleanLower] || activityMap[rawLower];
                         return {
-                            user: row.username,
+                            user: cleanUser,
                             timestamp: new Date(row.last_ping).getTime(),
                             isActive: true,
-                            executor: act?.executor || executorsMap[uLower] || "Unknown",
-                            gameName: act?.gameName || null,
+                            executor: act?.executor || executorsMap[cleanLower] || executorsMap[rawLower] || "Unknown",
+                            gameName: cleanGameName(act?.gameName) || null,
                             placeId: act?.placeId || null,
-                            jobId: act?.jobId || "",
+                            jobId: (act?.jobId ? String(act.jobId).replace(/(?:\s|^)2D/gi, "-") : ""),
                             isPlaying: !!(act?.placeId)
                         };
                     });
 
-                    return NextResponse.json({ success: true, liveUsers });
+                    // Deduplicate in case a user exists as both raw and clean
+                    const dedupedMap = new Map<string, typeof liveUsers[0]>();
+                    liveUsers.forEach(u => {
+                        const key = u.user.toLowerCase();
+                        const existing = dedupedMap.get(key);
+                        if (!existing || u.timestamp > existing.timestamp) {
+                            dedupedMap.set(key, u);
+                        }
+                    });
+                    const finalUsers = Array.from(dedupedMap.values());
+
+                    return NextResponse.json({ success: true, liveUsers: finalUsers });
                 }
             } catch (sbErr) {
                 console.error("Supabase fetch failed:", sbErr);

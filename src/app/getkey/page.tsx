@@ -34,6 +34,28 @@ export default function GetKeyPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isNavigatingToAd, setIsNavigatingToAd] = useState(false);
+
+  // Tab-switch anti-bypass enforcement: kill session if user switches tabs away from getkey
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isNavigatingToAd && !key) {
+        const storedToken = typeof window !== "undefined" ? localStorage.getItem("etn_cp_token") : null;
+        if (storedToken) {
+          try { localStorage.removeItem("etn_cp_token"); } catch {}
+          fetch("/api/key/checkpoint", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "reset" }),
+          }).catch(() => {});
+          setBypassWarning("Tab switch detected! Your checkpoint session was terminated for security. Please complete checkpoints in an active tab.");
+          setCurrentStep(1);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isNavigatingToAd, key]);
 
   // Initialize and verify checkpoint progression with server Anti-Bypass
   useEffect(() => {
@@ -47,6 +69,7 @@ export default function GetKeyPage() {
       try {
         const params = new URLSearchParams(window.location.search);
         const stepParam = params.get("step");
+        const hashParam = params.get("hash");
         const savedKey = localStorage.getItem("etn_active_key");
         const savedExpiry = localStorage.getItem("etn_key_expiry");
         const storedToken = localStorage.getItem("etn_cp_token");
@@ -69,7 +92,7 @@ export default function GetKeyPage() {
                 "Content-Type": "application/json",
                 ...(storedToken ? { "Authorization": `Bearer ${storedToken}` } : {})
               },
-              body: JSON.stringify({ action: "verify_cp2", token: storedToken }),
+              body: JSON.stringify({ action: "verify_cp2", token: storedToken, hash: hashParam }),
             });
             const data = await res.json();
             if (data.success) {
@@ -79,7 +102,7 @@ export default function GetKeyPage() {
               setCurrentStep(3);
               await generateKey(data.token || storedToken);
             } else {
-              // Direct access or bypass attempt: skipped Checkpoint 1
+              // Direct access or bypass attempt: skipped Checkpoint 1 or invalid Linkvertise hash
               setBypassWarning(data.error || "Checkpoint sequence incomplete. You must complete Checkpoint 1 and Checkpoint 2 in order.");
               setCurrentStep(1);
             }
@@ -102,7 +125,7 @@ export default function GetKeyPage() {
                 "Content-Type": "application/json",
                 ...(storedToken ? { "Authorization": `Bearer ${storedToken}` } : {})
               },
-              body: JSON.stringify({ action: "verify_cp1", token: storedToken }),
+              body: JSON.stringify({ action: "verify_cp1", token: storedToken, hash: hashParam }),
             });
             const data = await res.json();
             if (data.success) {
@@ -111,8 +134,8 @@ export default function GetKeyPage() {
               }
               setCurrentStep(2);
             } else {
-              // Direct access to step 2 without starting CP1
-              setBypassWarning(data.error || "Checkpoint 1 was skipped. Please start from Checkpoint 1.");
+              // Direct access to step 2 without starting CP1 or invalid Linkvertise hash
+              setBypassWarning(data.error || "Checkpoint 1 was skipped or invalid. Please start from Checkpoint 1.");
               setCurrentStep(1);
             }
           } catch {
@@ -175,6 +198,7 @@ export default function GetKeyPage() {
   };
 
   const handleStartCP1 = async () => {
+    setIsNavigatingToAd(true);
     setStartingCP(1);
     setBypassWarning(null);
     try {
@@ -194,6 +218,7 @@ export default function GetKeyPage() {
   };
 
   const handleStartCP2 = async () => {
+    setIsNavigatingToAd(true);
     setStartingCP(2);
     setBypassWarning(null);
     const storedToken = typeof window !== "undefined" ? localStorage.getItem("etn_cp_token") : null;
@@ -211,6 +236,7 @@ export default function GetKeyPage() {
         setBypassWarning(data.error || "Checkpoint 1 must be completed before starting Checkpoint 2.");
         setCurrentStep(1);
         setStartingCP(null);
+        setIsNavigatingToAd(false);
         return;
       }
       if (data?.token) {

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-    const username = request.nextUrl.searchParams.get('username');
+    const rawUsername = request.nextUrl.searchParams.get('username');
     const fallbackImage = 'https://tr.rbxcdn.com/38c6edcb50633730ff4cf39ac8859840/420/420/AvatarHeadshot/Png';
 
-    if (!username) return NextResponse.redirect(fallbackImage, { status: 302 });
+    if (!rawUsername) return NextResponse.redirect(fallbackImage, { status: 302 });
+    const username = rawUsername.replace(/(?:\s|^)5F/gi, '_').replace(/%5F/gi, '_').trim();
 
     try {
         const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
