@@ -31,10 +31,23 @@ export default function GetKeyPage() {
   const [verifying, setVerifying] = useState(false);
   const [startingCP, setStartingCP] = useState<1 | 2 | null>(null);
   const [bypassWarning, setBypassWarning] = useState<string | null>(null);
+  const [bypassModalOpen, setBypassModalOpen] = useState(false);
+  const [bypassModalReason, setBypassModalReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isNavigatingToAd, setIsNavigatingToAd] = useState(false);
+
+  const triggerBypassPopup = (reason: string) => {
+    try { localStorage.removeItem("etn_cp_token"); } catch {}
+    if (typeof window !== "undefined" && window.history?.replaceState) {
+      window.history.replaceState({}, document.title, "/getkey");
+    }
+    setBypassModalReason(reason);
+    setBypassModalOpen(true);
+    setBypassWarning(reason);
+    setCurrentStep(1);
+  };
 
   // Tab-switch anti-bypass enforcement: kill session if user switches tabs away from getkey
   useEffect(() => {
@@ -42,14 +55,12 @@ export default function GetKeyPage() {
       if (document.hidden && !isNavigatingToAd && !key) {
         const storedToken = typeof window !== "undefined" ? localStorage.getItem("etn_cp_token") : null;
         if (storedToken) {
-          try { localStorage.removeItem("etn_cp_token"); } catch {}
           fetch("/api/key/checkpoint", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "reset" }),
           }).catch(() => {});
-          setBypassWarning("Tab switch detected! Your checkpoint session was terminated for security. Please complete checkpoints in an active tab.");
-          setCurrentStep(1);
+          triggerBypassPopup("Tab switch detected! Your checkpoint session was terminated for security. Please complete checkpoints in an active browser tab.");
         }
       }
     };
@@ -103,12 +114,10 @@ export default function GetKeyPage() {
               await generateKey(data.token || storedToken);
             } else {
               // Direct access or bypass attempt: skipped Checkpoint 1 or invalid Linkvertise hash
-              setBypassWarning(data.error || "Checkpoint sequence incomplete. You must complete Checkpoint 1 and Checkpoint 2 in order.");
-              setCurrentStep(1);
+              triggerBypassPopup(data.error || "Anti-Bypass Protection: Checkpoint 2 was bypassed, skipped, or had an invalid completion hash.");
             }
           } catch {
-            setBypassWarning("Could not verify checkpoints. Please start from Checkpoint 1.");
-            setCurrentStep(1);
+            triggerBypassPopup("Could not verify checkpoints. Please start from Checkpoint 1.");
           } finally {
             setVerifying(false);
           }
@@ -135,12 +144,10 @@ export default function GetKeyPage() {
               setCurrentStep(2);
             } else {
               // Direct access to step 2 without starting CP1 or invalid Linkvertise hash
-              setBypassWarning(data.error || "Checkpoint 1 was skipped or invalid. Please start from Checkpoint 1.");
-              setCurrentStep(1);
+              triggerBypassPopup(data.error || "Anti-Bypass Protection: Checkpoint 1 was skipped or completed through a bypass tool (bypass.tools).");
             }
           } catch {
-            setBypassWarning("Verification failed. Please start from Checkpoint 1.");
-            setCurrentStep(1);
+            triggerBypassPopup("Verification failed. Please start from Checkpoint 1.");
           } finally {
             setVerifying(false);
           }
@@ -233,8 +240,7 @@ export default function GetKeyPage() {
       });
       const data = await res.json();
       if (!data.success) {
-        setBypassWarning(data.error || "Checkpoint 1 must be completed before starting Checkpoint 2.");
-        setCurrentStep(1);
+        triggerBypassPopup(data.error || "Checkpoint 1 must be completed before starting Checkpoint 2.");
         setStartingCP(null);
         setIsNavigatingToAd(false);
         return;
@@ -1209,6 +1215,195 @@ export default function GetKeyPage() {
           </a>
         </div>
       </motion.div>
+
+      {/* BYPASS DETECTED POPUP MODAL */}
+      <AnimatePresence>
+        {bypassModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "rgba(0, 0, 0, 0.82)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 10 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              style={{
+                width: "100%",
+                maxWidth: "430px",
+                background: "linear-gradient(180deg, #171013 0%, #0d090b 100%)",
+                border: "1px solid rgba(239, 68, 68, 0.45)",
+                boxShadow: "0 25px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(239, 68, 68, 0.22)",
+                borderRadius: "22px",
+                padding: "32px 26px 26px 26px",
+                textAlign: "center",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* Top ambient red accent */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "20%",
+                  right: "20%",
+                  height: "2px",
+                  background: "linear-gradient(90deg, transparent, #ef4444, transparent)",
+                }}
+              />
+
+              {/* Glowing animated red shield */}
+              <div style={{ position: "relative", display: "inline-block", marginBottom: "16px" }}>
+                <motion.div
+                  animate={{ scale: [1, 1.25, 1], opacity: [0.6, 0.15, 0.6] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    inset: "-8px",
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, transparent 70%)",
+                    filter: "blur(8px)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "relative",
+                    width: "62px",
+                    height: "62px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(20, 10, 12, 0.8) 100%)",
+                    border: "1.5px solid rgba(239, 68, 68, 0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 25px rgba(239, 68, 68, 0.35)",
+                  }}
+                >
+                  <ShieldAlert size={30} color="#ef4444" strokeWidth={2.2} />
+                </div>
+              </div>
+
+              {/* Security Badge */}
+              <div style={{ marginBottom: "10px" }}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                    background: "rgba(239, 68, 68, 0.15)",
+                    border: "1px solid rgba(239, 68, 68, 0.35)",
+                    color: "#f87171",
+                    fontSize: "10.5px",
+                    fontWeight: 800,
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ef4444", boxShadow: "0 0 6px #ef4444" }} />
+                  Security Alert
+                </span>
+              </div>
+
+              {/* Title */}
+              <h2
+                style={{
+                  fontSize: "21px",
+                  fontWeight: 900,
+                  letterSpacing: "0.5px",
+                  color: "#ffffff",
+                  margin: "0 0 10px 0",
+                  textTransform: "uppercase",
+                }}
+              >
+                Bypass Detected!
+              </h2>
+
+              {/* Detailed message */}
+              <p
+                style={{
+                  fontSize: "13px",
+                  lineHeight: "1.55",
+                  color: "rgba(255, 255, 255, 0.85)",
+                  margin: "0 0 14px 0",
+                }}
+              >
+                {bypassModalReason || "Our Anti-Bypass security system detected an unauthorized bypass or skipped checkpoint. Third-party bypass bots (e.g. bypass.tools) and link scrapers are blocked."}
+              </p>
+
+              {/* Notice callout */}
+              <div
+                style={{
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  borderRadius: "12px",
+                  padding: "12px 14px",
+                  marginBottom: "20px",
+                  textAlign: "left",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#fca5a5", marginBottom: "3px" }}>
+                  Session Revoked & Reset
+                </div>
+                <div style={{ fontSize: "11.5px", color: "rgba(255, 255, 255, 0.65)", lineHeight: "1.45" }}>
+                  Linkvertise requires a legitimate completion hash to grant key access. Automated scrapers cannot provide this. Please complete the steps legitimately.
+                </div>
+              </div>
+
+              {/* Action Button: Restart Checkpoint 1 */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setBypassModalOpen(false);
+                  setBypassWarning(null);
+                  setCurrentStep(1);
+                  try { localStorage.removeItem("etn_cp_token"); } catch {}
+                  if (typeof window !== "undefined" && window.history?.replaceState) {
+                    window.history.replaceState({}, document.title, "/getkey");
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  padding: "14px 20px",
+                  borderRadius: "12px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "#ffffff",
+                  fontSize: "13.5px",
+                  fontWeight: 800,
+                  letterSpacing: "0.5px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  boxShadow: "0 8px 25px rgba(239, 68, 68, 0.35)",
+                }}
+              >
+                <span>I Understand &bull; Restart Checkpoint 1</span>
+                <ArrowRight size={16} strokeWidth={2.5} />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     if (action === 'verify_cp1') {
       if (!session || !session.cp1Started) {
         return NextResponse.json(
-          { success: false, error: 'Checkpoint 1 was skipped. Please start from Checkpoint 1.' },
+          { success: false, bypassDetected: true, error: 'Checkpoint 1 was skipped or accessed directly. Bypass attempt blocked.' },
           { status: 403, headers: corsHeaders }
         );
       }
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       const isValid = await verifyLinkvertiseHash(hash);
       if (!isValid) {
         return NextResponse.json(
-          { success: false, error: 'Anti-Bypass verification failed. Linkvertise completion hash is invalid, expired, or bypassed.' },
+          { success: false, bypassDetected: true, error: 'Linkvertise Anti-Bypass verification failed. Completion hash was invalid or generated via a bypass tool (bypass.tools).' },
           { status: 403, headers: corsHeaders }
         );
       }
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     if (action === 'start_cp2') {
       if (!session || !session.cp1Completed) {
         return NextResponse.json(
-          { success: false, error: 'Checkpoint 1 must be completed before starting Checkpoint 2.' },
+          { success: false, bypassDetected: true, error: 'Checkpoint 1 must be completed before starting Checkpoint 2.' },
           { status: 403, headers: corsHeaders }
         );
       }
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     if (action === 'verify_cp2') {
       if (!session || !session.cp1Completed || !session.cp2Started) {
         return NextResponse.json(
-          { success: false, error: 'Checkpoints were skipped. Complete both checkpoints in order.' },
+          { success: false, bypassDetected: true, error: 'Checkpoints were skipped. Sequence bypass attempt blocked.' },
           { status: 403, headers: corsHeaders }
         );
       }
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       const isValid = await verifyLinkvertiseHash(hash);
       if (!isValid) {
         return NextResponse.json(
-          { success: false, error: 'Anti-Bypass verification failed. Linkvertise completion hash is invalid, expired, or bypassed.' },
+          { success: false, bypassDetected: true, error: 'Linkvertise Anti-Bypass verification failed. Completion hash was invalid or generated via a bypass tool (bypass.tools).' },
           { status: 403, headers: corsHeaders }
         );
       }
