@@ -102,11 +102,12 @@ export async function GET(request: NextRequest) {
                 }
             }
 
-            // Fetch activity logs
+            // Fetch activity logs (limit raised to capture all recent logs)
             const { data: logData } = await supabase
                 .from('stats')
                 .select('key, value')
-                .ilike('key', 'eternity:log:%');
+                .ilike('key', 'eternity:log:%')
+                .limit(5000);
 
             if (logData) {
                 const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
@@ -152,11 +153,12 @@ export async function GET(request: NextRequest) {
                 });
             }
 
-            // Fetch executor market share
+            // Fetch executor market share (all entries needed for accurate pie chart)
             const { data: execData } = await supabase
                 .from('stats')
                 .select('value')
-                .ilike('key', 'eternity:executor:%');
+                .ilike('key', 'eternity:executor:%')
+                .limit(10000);
             if (execData) {
                 const share: Record<string, number> = {};
                 execData.forEach(row => {
@@ -185,11 +187,12 @@ export async function GET(request: NextRequest) {
                     .slice(0, 5);
             }
 
-            // Fetch globe locations
+            // Fetch globe locations (all entries for complete globe)
             const { data: locationData } = await supabase
                 .from('stats')
                 .select('value')
-                .ilike('key', 'eternity:geo:%');
+                .ilike('key', 'eternity:geo:%')
+                .limit(10000);
             if (locationData) {
                 locationData.forEach(row => {
                     try {

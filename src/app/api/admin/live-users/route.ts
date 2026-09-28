@@ -32,11 +32,15 @@ export async function GET(request: NextRequest) {
                     .gte('last_ping', twoMinutesAgo);
 
                 if (liveUsersData && liveUsersData.length > 0) {
-                    // Fetch activity data (current game)
+                    // Build targeted key lists for only the live users (avoids Supabase 1000-row default limit)
+                    const activityKeys = liveUsersData.map(r => `eternity:activity:${r.username.toLowerCase()}`);
+                    const executorKeys = liveUsersData.map(r => `eternity:executor:${r.username}`);
+
+                    // Fetch activity data only for live users
                     const { data: activityData } = await supabase
                         .from('stats')
                         .select('key, value')
-                        .ilike('key', 'eternity:activity:%');
+                        .in('key', activityKeys);
 
                     const activityMap: Record<string, any> = {};
                     if (activityData) {
@@ -48,11 +52,11 @@ export async function GET(request: NextRequest) {
                         });
                     }
 
-                    // Fetch executor data
+                    // Fetch executor data only for live users
                     const { data: executorData } = await supabase
                         .from('stats')
                         .select('key, value')
-                        .ilike('key', 'eternity:executor:%');
+                        .in('key', executorKeys);
 
                     const executorsMap: Record<string, string> = {};
                     if (executorData) {
