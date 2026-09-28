@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
                             user: row.username,
                             timestamp: new Date(row.last_ping).getTime(),
                             isActive: true,
-                            executor: executorsMap[uLower] || "Unknown",
+                            executor: act?.executor || executorsMap[uLower] || "Unknown",
                             gameName: act?.gameName || null,
                             placeId: act?.placeId || null,
                             jobId: act?.jobId || "",
