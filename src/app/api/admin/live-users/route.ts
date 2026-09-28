@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-const WORKER_URL = "https://zeternity.online";
-
 export async function GET(request: NextRequest) {
     try {
         // Authenticate admin session
@@ -24,58 +22,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // --- Fetch live users from Cloudflare Worker (KV-backed, not Supabase) ---
-        // This fixes the 0-users bug after KV migration
-        let kvUsers: any[] = [];
-        try {
-            const res = await fetch(`${WORKER_URL}/api/users-activity`, {
-                headers: { "Accept": "application/json" },
-                next: { revalidate: 0 }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.success && Array.isArray(data.users)) {
-                    kvUsers = data.users;
-                }
-            }
-        } catch (e) {
-            console.error("KV worker fetch failed:", e);
-        }
-
-        // --- Also fetch executor info from Supabase (rare, not per-ping) ---
-        const executorsMap: Record<string, string> = {};
-        if (supabase) {
-            try {
-                const { data: executorData } = await supabase
-                    .from('stats')
-                    .select('key, value')
-                    .ilike('key', 'eternity:executor:%');
-
-                if (executorData) {
-                    executorData.forEach(e => {
-                        const usr = e.key.split(':')[2];
-                        if (usr) executorsMap[usr.toLowerCase()] = typeof e.value === 'string' ? e.value : (e.value?.toString() || 'Unknown');
-                    });
-                }
-            } catch {}
-        }
-
-        // If Worker KV returned users, map and return them
-        if (kvUsers.length > 0) {
-            const liveUsers = kvUsers.map((u: any) => ({
-                user: u.username,
-                timestamp: u.lastPing || Date.now(),
-                isActive: true,
-                executor: u.executor || executorsMap[u.username?.toLowerCase()] || "Unknown",
-                gameName: u.gameName || null,
-                placeId: u.placeId || null,
-                jobId: u.jobId || "",
-                isPlaying: !!(u.placeId)
-            }));
-            return NextResponse.json({ success: true, liveUsers });
-        }
-
-        // --- Fallback: If KV returned 0 users or KV quota reached, fetch directly from Supabase ---
+        // --- Fetch live users directly from Supabase (no worker/KV dependency) ---
         if (supabase) {
             try {
                 const twoMinutesAgo = new Date(Date.now() - 120000).toISOString();
@@ -85,6 +32,7 @@ export async function GET(request: NextRequest) {
                     .gte('last_ping', twoMinutesAgo);
 
                 if (liveUsersData && liveUsersData.length > 0) {
+                    // Fetch activity data (current game)
                     const { data: activityData } = await supabase
                         .from('stats')
                         .select('key, value')
@@ -100,14 +48,28 @@ export async function GET(request: NextRequest) {
                         });
                     }
 
-                    const sbLiveUsers = liveUsersData.map(row => {
+                    // Fetch executor data
+                    const { data: executorData } = await supabase
+                        .from('stats')
+                        .select('key, value')
+                        .ilike('key', 'eternity:executor:%');
+
+                    const executorsMap: Record<string, string> = {};
+                    if (executorData) {
+                        executorData.forEach(e => {
+                            const usr = e.key.split(':')[2];
+                            if (usr) executorsMap[usr.toLowerCase()] = typeof e.value === 'string' ? e.value : (e.value?.toString() || 'Unknown');
+                        });
+                    }
+
+                    const liveUsers = liveUsersData.map(row => {
                         const uLower = row.username.toLowerCase();
                         const act = activityMap[uLower];
                         return {
                             user: row.username,
                             timestamp: new Date(row.last_ping).getTime(),
                             isActive: true,
-                            executor: act?.executor || executorsMap[uLower] || executorsMap[row.username] || "Unknown",
+                            executor: executorsMap[uLower] || "Unknown",
                             gameName: act?.gameName || null,
                             placeId: act?.placeId || null,
                             jobId: act?.jobId || "",
@@ -115,10 +77,10 @@ export async function GET(request: NextRequest) {
                         };
                     });
 
-                    return NextResponse.json({ success: true, liveUsers: sbLiveUsers });
+                    return NextResponse.json({ success: true, liveUsers });
                 }
             } catch (sbErr) {
-                console.error("Supabase fallback fetch failed:", sbErr);
+                console.error("Supabase fetch failed:", sbErr);
             }
         }
 
