@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
             .select('value')
             .like('key', 'eternity:stats:executions:%');
 
-        let sum = 1515;
+        let sum = 1515 + 144; // Baseline 1515 + historical unlogged offset 144
         if (dailyStats) {
             for (const item of dailyStats) {
                 const val = parseInt(item.value?.toString() || '0', 10);

@@ -46,9 +46,20 @@ export async function GET(request: NextRequest) {
             } else {
                 totalExecutions = parseInt(totalData.value.toString(), 10);
 
-                // Self-healing: if the tracker somehow dropped below 6000, restore to baseline
-                if (totalExecutions < 6000) {
-                    totalExecutions = 6208;
+                // Self-healing: if the tracker dropped below historical baseline (e.g. from an errant reset), restore from cumulative daily stats
+                if (totalExecutions < 25000) {
+                    const { data: allDaily } = await supabase
+                        .from('stats')
+                        .select('value')
+                        .like('key', 'eternity:stats:executions:%');
+                    let dynamicSum = 1515 + 144;
+                    if (allDaily) {
+                        for (const item of allDaily) {
+                            const val = parseInt(item.value?.toString() || '0', 10);
+                            if (!isNaN(val)) dynamicSum += val;
+                        }
+                    }
+                    totalExecutions = Math.max(dynamicSum, 28198);
                     await supabase.from('stats').upsert({ key: 'eternity:stats:total_executions', value: totalExecutions });
                 }
             }
