@@ -7,26 +7,17 @@ export function proxy(request: NextRequest) {
   const accept = (request.headers.get('accept') || '').toLowerCase();
   const secFetchDest = (request.headers.get('sec-fetch-dest') || '').toLowerCase();
 
-  // 2. Check if the request is from a Roblox executor or Lua HttpGet
-  const isRoblox =
-    userAgent.includes('roblox') ||
-    userAgent.includes('synapse') ||
-    userAgent.includes('krnl') ||
-    userAgent.includes('fluxus') ||
-    userAgent.includes('wave') ||
-    userAgent.includes('macsploit') ||
-    userAgent.includes('swift') ||
-    userAgent.includes('real') ||
-    userAgent.includes('delta') ||
-    userAgent.includes('arceus') ||
-    userAgent.includes('codex') ||
-    userAgent.includes('solara') ||
-    userAgent.includes('celery') ||
-    userAgent.includes('hydrogen') ||
-    userAgent.includes('appleware') ||
-    userAgent.includes('vega') ||
-    userAgent.includes('xeno') ||
-    userAgent.includes('wininet');
+  // 2. Roblox engine & WhatExpsAre.Online (WEAO) tracked executor signatures
+  const WEAO_EXECUTORS = [
+    'roblox', 'wininet', // Core Roblox engine HttpGet
+    'potassium', 'photon', 'sirhurt', 'matrix', 'ronin', 'melatonin',
+    'opiumware', 'cosmic', 'real', 'solara', 'wave', 'codex',
+    'dx9ware', 'volt', 'velocity', 'delta', 'volcano', 'serotonin',
+    'synapse', 'vega', 'lumen', 'matcha', 'xeno', 'seliware',
+    'severe', 'macsploit', 'madium', 'axis', 'isaeva', 'madius'
+  ];
+
+  const isRoblox = WEAO_EXECUTORS.some(sig => userAgent.includes(sig));
 
   const isBrowser = accept.includes('text/html') && (secFetchDest === 'document' || (userAgent.includes('mozilla') && !isRoblox));
 
