@@ -58,9 +58,10 @@ export async function GET(request: NextRequest) {
             const lat = request.headers.get('x-vercel-ip-latitude');
             const lon = request.headers.get('x-vercel-ip-longitude');
             if (lat && lon) {
+                const geoRand = Math.random().toString(36).substring(2, 9);
                 promises.push(
                     supabase.from('stats').upsert({
-                        key: `eternity:geo:${user}`,
+                        key: `eternity:geo:anon_${Date.now()}_${geoRand}`,
                         value: JSON.stringify({ lat: parseFloat(lat), lon: parseFloat(lon), country: country || "Unknown" })
                     })
                 );
