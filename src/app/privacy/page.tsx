@@ -1,5 +1,8 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion } from "motion/react";
 import { 
   ShieldCheck, 
   Lock, 
@@ -8,474 +11,647 @@ import {
   Trash2, 
   UserX, 
   ExternalLink, 
-  ArrowLeft,
   CheckCircle2,
-  AlertCircle
-} from 'lucide-react';
+  FileText,
+  AlertCircle,
+  Radio,
+  KeyRound,
+  Cpu
+} from "lucide-react";
+import { ThreeJsBackground } from "@/components/ThreeJsBackground";
+import { RandomLetterSwap } from "@/components/ui/random-letter-swap";
+import { AmbientSound } from "@/components/AmbientSound";
+import { LiquidMetalButton } from "@/components/ui/LiquidMetalButton";
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | Eternity',
-  description: 'Understand how Eternity handles telemetry, coarse geographic analytics, and session data with complete transparency.',
-};
+const DISCORD_INVITE_URL = "https://discord.gg/4c9N49jtXq";
 
 export default function PrivacyPolicyPage() {
+  const [isScrolled, setIsScrolled] = useState(false);
   const lastUpdated = "October 2026";
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#07080b',
-      color: '#e4e4e7',
-      fontFamily: 'var(--font-montserrat), sans-serif',
-      position: 'relative',
-      overflowX: 'hidden',
-      paddingBottom: '80px'
-    }}>
-      {/* Background radial glow */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '1000px',
-        height: '500px',
-        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 70%)',
-        pointerEvents: 'none',
+    <div className="eb-clean-wrapper" style={{ position: "relative", minHeight: "100vh", backgroundColor: "#000000", color: "#ffffff", overflowX: "hidden" }}>
+      {/* 1. Dynamic 3D Starfield Background */}
+      <ThreeJsBackground />
+
+      {/* 2. Ambient Cyber Glow */}
+      <div className="eb-ambient-glow" aria-hidden="true" style={{
+        position: "fixed",
+        top: "20%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "700px",
+        height: "500px",
+        background: "radial-gradient(circle, rgba(115, 100, 245, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 70%)",
+        filter: "blur(90px)",
+        pointerEvents: "none",
         zIndex: 0
       }} />
 
-      {/* Top Navigation Header */}
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        backgroundColor: 'rgba(7, 8, 11, 0.75)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
-        padding: '16px 24px'
-      }}>
-        <div style={{
-          maxWidth: '960px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <Link 
-            href="/" 
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              textDecoration: 'none',
-              color: '#ffffff'
-            }}
-          >
-            <img 
-              src="/eternity.png" 
-              alt="Eternity Logo" 
-              style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-            />
-            <span style={{
-              fontFamily: 'var(--font-poppins), sans-serif',
-              fontWeight: 800,
-              fontSize: '16px',
-              letterSpacing: '2px',
-              background: 'linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textTransform: 'uppercase'
-            }}>
-              ETERNITY
-            </span>
-          </Link>
+      {/* 3. Official Floating Glass Navbar */}
+      <header>
+        <nav className={`saas-navbar ${isScrolled ? "scrolled" : ""}`}>
+          <div className="nav-content">
+            <div className="nav-logo">
+              <Link href="/" id="btn-nav-logo" aria-label="Eternity Home">
+                <img src="/eternity.png" alt="Eternity" />
+              </Link>
+            </div>
 
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'rgba(255, 255, 255, 0.7)',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Home</span>
-          </Link>
-        </div>
+            <div className="nav-links">
+              <div className="nav-page-links">
+                <Link href="/" id="btn-nav-home">
+                  <RandomLetterSwap
+                    label="Home"
+                    staggerDuration={0.025}
+                    transition={{ duration: 0.6, type: "spring" }}
+                  />
+                </Link>
+                <Link href="/#features" id="btn-nav-features">
+                  <RandomLetterSwap
+                    label="Features"
+                    staggerDuration={0.025}
+                    transition={{ duration: 0.6, type: "spring" }}
+                  />
+                </Link>
+                <Link href="/#pricing" id="btn-nav-pricing">
+                  <RandomLetterSwap
+                    label="Pricing"
+                    staggerDuration={0.025}
+                    transition={{ duration: 0.6, type: "spring" }}
+                  />
+                </Link>
+                <Link
+                  href="/privacy"
+                  id="btn-nav-privacy-active"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span style={{ color: "#fff", fontWeight: 600 }}>Privacy</span>
+                  <span className="eb-nav-badge">Legal</span>
+                </Link>
+              </div>
+
+              <div className="nav-actions">
+                <AmbientSound />
+                <a
+                  href={DISCORD_INVITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="btn-nav-discord"
+                  aria-label="Join Discord Server"
+                  style={{ textDecoration: "none" }}
+                >
+                  <LiquidMetalButton label="Discord" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
       </header>
 
-      {/* Main Content Area */}
-      <main style={{
-        maxWidth: '860px',
-        margin: '0 auto',
-        padding: '48px 24px 0 24px',
-        position: 'relative',
-        zIndex: 1
-      }}>
-        {/* Title Header */}
-        <div style={{ marginBottom: '40px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            borderRadius: '20px',
-            padding: '4px 14px',
-            marginBottom: '16px'
-          }}>
-            <ShieldCheck size={14} color="#10b981" />
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-              Transparency & Security
+      {/* 4. Main Hero Section */}
+      <main style={{ position: "relative", zIndex: 1, maxWidth: "1080px", margin: "0 auto", padding: "140px 24px 60px 24px" }}>
+        
+        {/* Header Hero Area */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
+          style={{ textAlign: "center", marginBottom: "50px", display: "flex", flexDirection: "column", alignItems: "center" }}
+        >
+          {/* Cyber Status Badge */}
+          <div className="hero-badge-mono" style={{ marginBottom: "20px" }}>
+            <div className="pulse-dot-green" />
+            <span style={{ fontFamily: "var(--font-fira-code)", letterSpacing: "1px" }}>
+              ETERNITY PROTOCOL // TRANSPARENCY & DATA PRIVACY
             </span>
           </div>
 
-          <h1 style={{
-            fontFamily: 'var(--font-poppins), sans-serif',
-            fontSize: 'clamp(28px, 4vw, 42px)',
-            fontWeight: 800,
-            margin: '0 0 12px 0',
-            letterSpacing: '-0.02em',
-            color: '#ffffff',
-            lineHeight: 1.15
-          }}>
-            Privacy Policy
+          {/* Cinematic Title */}
+          <h1 className="hero-title-wrapper" style={{ margin: "0 0 16px 0", justifyContent: "center" }}>
+            <span 
+              className="hero-word" 
+              style={{
+                fontFamily: "var(--font-poppins)",
+                fontSize: "clamp(38px, 6vw, 64px)",
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                background: "linear-gradient(180deg, #ffffff 10%, #a1a1aa 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+              }}
+            >
+              Privacy
+            </span>
+            <span 
+              className="hero-word" 
+              style={{
+                fontFamily: "var(--font-poppins)",
+                fontSize: "clamp(38px, 6vw, 64px)",
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                color: "#ffffff"
+              }}
+            >
+              Policy
+            </span>
           </h1>
 
           <p style={{
-            fontSize: '14px',
-            color: 'rgba(255, 255, 255, 0.5)',
-            margin: 0,
-            lineHeight: 1.6
+            fontSize: "clamp(14px, 1.8vw, 16px)",
+            color: "rgba(255, 255, 255, 0.55)",
+            maxWidth: "680px",
+            lineHeight: 1.65,
+            margin: "0 0 12px 0",
+            fontFamily: "var(--font-montserrat)"
           }}>
-            Last updated: {lastUpdated} • Applicable to Eternity script loader, API services, and the eternity web portal.
+            Zero invasive tracking. Transparent edge telemetry. Clear data retention rules built directly into the Eternity ecosystem.
           </p>
-        </div>
 
-        {/* Quick Highlights Summary Cards */}
+          <span style={{
+            fontSize: "12px",
+            fontFamily: "var(--font-fira-code)",
+            color: "rgba(255, 255, 255, 0.35)",
+            letterSpacing: "0.5px"
+          }}>
+            REVISION: {lastUpdated} • APPLIES TO ZETERNITY.ONLINE & WEB APP
+          </span>
+        </motion.div>
+
+        {/* 5. The 3 Cyber Cards (Eternity Theme Signature) */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '16px',
-          marginBottom: '48px'
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))",
+          gap: "20px",
+          marginBottom: "50px"
         }}>
-          <div style={{
-            backgroundColor: 'rgba(18, 20, 29, 0.6)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '14px',
-            padding: '20px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <UserX size={18} color="#38bdf8" />
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: 0 }}>No Raw IP Stored</h3>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', margin: 0, lineHeight: 1.5 }}>
-              We never log or retain raw IP addresses in our databases.
-            </p>
-          </div>
+          {/* Card 1: Zero IP Logging */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            style={{
+              position: "relative",
+              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "20px",
+              padding: "28px 24px",
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+            }}
+          >
+            {/* Top Shine */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: "10%",
+              right: "10%",
+              height: "1px",
+              background: "linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent)"
+            }} />
 
-          <div style={{
-            backgroundColor: 'rgba(18, 20, 29, 0.6)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '14px',
-            padding: '20px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <Globe2 size={18} color="#10b981" />
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: 0 }}>Coarse Edge GeoIP</h3>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "12px",
+                background: "rgba(56, 189, 248, 0.1)",
+                border: "1px solid rgba(56, 189, 248, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
+                <UserX size={22} color="#38bdf8" />
+              </div>
+              <span style={{
+                fontFamily: "var(--font-fira-code)",
+                fontSize: "11px",
+                color: "#38bdf8",
+                background: "rgba(56, 189, 248, 0.08)",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                border: "1px solid rgba(56, 189, 248, 0.2)"
+              }}>
+                [NO_IP_LOGS]
+              </span>
             </div>
-            <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', margin: 0, lineHeight: 1.5 }}>
-              Approximate regional coordinates (city/country) feed aggregate server telemetry. No device GPS is accessed.
-            </p>
-          </div>
 
-          <div style={{
-            backgroundColor: 'rgba(18, 20, 29, 0.6)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '14px',
-            padding: '20px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <Trash2 size={18} color="#f59e0b" />
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff', margin: 0 }}>Auto 24h Expiry</h3>
-            </div>
-            <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', margin: 0, lineHeight: 1.5 }}>
-              Generated checkpoint keys and ephemeral logs expire and are purged automatically.
+            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#ffffff", margin: "0 0 8px 0" }}>
+              Zero Raw IP Storage
+            </h3>
+            <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.6, margin: 0 }}>
+              Neither our Cloudflare Worker nor the web database stores client IP addresses. Network requests are processed at the edge without saving raw IPs.
             </p>
-          </div>
+          </motion.div>
+
+          {/* Card 2: Coarse Edge Geo-Matrix */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{
+              position: "relative",
+              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "20px",
+              padding: "28px 24px",
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+            }}
+          >
+            {/* Top Shine */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: "10%",
+              right: "10%",
+              height: "1px",
+              background: "linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent)"
+            }} />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "12px",
+                background: "rgba(16, 185, 129, 0.1)",
+                border: "1px solid rgba(16, 185, 129, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
+                <Globe2 size={22} color="#10b981" />
+              </div>
+              <span style={{
+                fontFamily: "var(--font-fira-code)",
+                fontSize: "11px",
+                color: "#10b981",
+                background: "rgba(16, 185, 129, 0.08)",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                border: "1px solid rgba(16, 185, 129, 0.2)"
+              }}>
+                [EDGE_GEO_MATRIX]
+              </span>
+            </div>
+
+            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#ffffff", margin: "0 0 8px 0" }}>
+              Coarse Edge GeoIP
+            </h3>
+            <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.6, margin: 0 }}>
+              Approximate city/country coordinates derived from edge CDN routing feed the 3D Global Geo-Matrix map. <span style={{ color: "#10b981" }}>No device GPS is accessed</span>.
+            </p>
+          </motion.div>
+
+          {/* Card 3: 24h Auto Expiration */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            style={{
+              position: "relative",
+              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "20px",
+              padding: "28px 24px",
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+            }}
+          >
+            {/* Top Shine */}
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: "10%",
+              right: "10%",
+              height: "1px",
+              background: "linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.5), transparent)"
+            }} />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <div style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "12px",
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1px solid rgba(245, 158, 11, 0.25)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}>
+                <Trash2 size={22} color="#f59e0b" />
+              </div>
+              <span style={{
+                fontFamily: "var(--font-fira-code)",
+                fontSize: "11px",
+                color: "#f59e0b",
+                background: "rgba(245, 158, 11, 0.08)",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                border: "1px solid rgba(245, 158, 11, 0.2)"
+              }}>
+                [24H_AUTO_PURGE]
+              </span>
+            </div>
+
+            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#ffffff", margin: "0 0 8px 0" }}>
+              Automatic Key Expiry
+            </h3>
+            <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.6, margin: 0 }}>
+              Generated checkpoint tokens, HMAC nonces, and session logs automatically expire and are purged from database records every 24 hours.
+            </p>
+          </motion.div>
         </div>
 
-        {/* Policy Document Body */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          
-          {/* Section 1 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              <span>1. Information We Collect</span>
-            </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: '0 0 12px 0' }}>
-                When you execute Eternity or access our key system, our services process minimal technical telemetry required to deliver scripts and prevent abuse:
-              </p>
-              <ul style={{ paddingLeft: '20px', margin: '0 0 12px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <li>
-                  <strong style={{ color: '#fff' }}>Roblox Usernames:</strong> Provided by your client runtime when connecting to our authentication servers to verify key validation and whitelist entitlement.
-                </li>
-                <li>
-                  <strong style={{ color: '#fff' }}>Executor Runtime Signatures:</strong> The software client name (e.g., Wave, Solara, Codex) reported via user-agent to ensure scripts deliver compatible bytecode.
-                </li>
-                <li>
-                  <strong style={{ color: '#fff' }}>Coarse Geographic Telemetry:</strong> Approximate latitude, longitude, and country codes provided by Cloudflare and Vercel edge networks. This is derived from network routing hubs, <span style={{ color: '#f59e0b' }}>not physical device sensors or GPS</span>.
-                </li>
-                <li>
-                  <strong style={{ color: '#fff' }}>Timestamp & Heartbeats:</strong> Basic session connectivity timestamps to power live-user counters.
-                </li>
-              </ul>
-            </div>
-          </section>
+        {/* 6. Policy Specification Sections (Terminal Grid Cards) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
-          {/* Section 2 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
+          {/* SPEC 01: Information Ingested */}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "18px",
+            padding: "30px 28px",
+            overflow: "hidden"
           }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0'
-            }}>
-              2. Information We NEVER Collect
+            {/* Terminal Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+                SEC_SPEC_01 // TELEMETRY_INGESTION
+              </span>
+            </div>
+
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0", letterSpacing: "-0.01em" }}>
+              1. Information We Collect
             </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: '0 0 12px 0' }}>
-                We believe in zero invasive tracking. Eternity explicitly does <strong>not</strong> collect:
-              </p>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: '10px',
-                marginTop: '12px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px' }}>
-                  <CheckCircle2 size={15} />
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>No raw IP addresses logged</span>
+
+            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.7, margin: "0 0 14px 0" }}>
+              When your executor or browser communicates with Eternity services (`zeternity.online` or `zeneternity.vercel.app`), only strictly required operational telemetry is processed:
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                <KeyRound size={16} color="#818cf8" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <div>
+                  <strong style={{ color: "#fff", fontSize: "13.5px" }}>Roblox Username & Session Handle:</strong>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
+                    Passed by the script during key verification and whitelist entitlement checks.
+                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px' }}>
-                  <CheckCircle2 size={15} />
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>No passwords or .ROBLOSECURITY cookies</span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                <Cpu size={16} color="#38bdf8" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <div>
+                  <strong style={{ color: "#fff", fontSize: "13.5px" }}>Executor Runtime Signature:</strong>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
+                    User-agent headers identifying your executor (Wave, Solara, Codex, etc.) to ensure compatible bytecode delivery.
+                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px' }}>
-                  <CheckCircle2 size={15} />
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>No hardware MAC addresses or HWIDs</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px' }}>
-                  <CheckCircle2 size={15} />
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>No private files or local disk data</span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                <Radio size={16} color="#10b981" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <div>
+                  <strong style={{ color: "#fff", fontSize: "13.5px" }}>Approximate Edge Coordinates:</strong>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
+                    Coarse latitude, longitude, and country attached by Cloudflare/Vercel edge POPs to route telemetry to our global 3D matrix.
+                  </p>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* Section 3 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
+          {/* SPEC 02: Zero Invasive Logging */}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "18px",
+            padding: "30px 28px",
+            overflow: "hidden"
           }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0'
-            }}>
-              3. How We Use Information
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+                SEC_SPEC_02 // ZERO_INVASIVE_POLICY
+              </span>
+            </div>
+
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0" }}>
+              2. What We Explicitly NEVER Collect
             </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: '0 0 10px 0' }}>The telemetry collected is utilized strictly for:</p>
-              <ul style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <li><strong>Authentication:</strong> Validating 24-hour key access and permanent whitelist memberships.</li>
-                <li><strong>Service Reliability:</strong> Measuring server load, execution volume, and uptime health.</li>
-                <li><strong>Global Geo-Matrix Visualization:</strong> Plotting approximate points on an interactive 3D world globe in the admin panel to monitor global server network usage.</li>
-                <li><strong>Abuse Mitigation:</strong> Preventing automated API abuse, key-bypass bots, and DDoS flooding.</li>
-              </ul>
-            </div>
-          </section>
 
-          {/* Section 4 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0'
+            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.7, margin: "0 0 16px 0" }}>
+              Eternity operates under a strict minimal-data philosophy. We never touch, inspect, or log:
+            </p>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "12px"
             }}>
-              4. Third-Party Infrastructure
-            </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: '0 0 10px 0' }}>
-                Eternity utilizes industry-standard cloud providers to ensure rapid worldwide content delivery:
-              </p>
-              <ul style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <li><strong>Cloudflare Workers:</strong> Acts as our global reverse proxy and security gateway (`zeternity.online`).</li>
-                <li><strong>Vercel:</strong> Hosts our web dashboard and key retrieval portals.</li>
-                <li><strong>Supabase:</strong> Provides encrypted PostgreSQL database storage for whitelists and execution counts.</li>
-                <li><strong>Linkvertise / Link Hub:</strong> Used for checkpoint ad-verification when obtaining free 24-hour keys. Third-party advertising platforms maintain their own independent privacy policies.</li>
-              </ul>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Raw IP Addresses Logged</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Passwords or .ROBLOSECURITY</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Hardware MAC or HWIDs</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#10b981" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Local Files or Disk Browsing</span>
+              </div>
             </div>
-          </section>
+          </div>
 
-          {/* Section 5 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
+          {/* SPEC 03: Global Geo-Matrix */}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "18px",
+            padding: "30px 28px",
+            overflow: "hidden"
           }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0'
-            }}>
-              5. Data Retention & Deletion Rights
-            </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: '0 0 10px 0' }}>
-                All generated session keys automatically expire 24 hours after issuance. Ephemeral execution logs and live user presence entries are regularly cleared.
-              </p>
-              <p style={{ margin: 0 }}>
-                If you wish to have any historical logs containing your username permanently expunged from our database records, please reach out directly through our Discord community.
-              </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+                SEC_SPEC_03 // GLOBAL_GEO_MATRIX
+              </span>
             </div>
-          </section>
 
-          {/* Section 6 */}
-          <section style={{
-            backgroundColor: 'rgba(13, 15, 22, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '16px',
-            padding: '28px 24px'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#ffffff',
-              margin: '0 0 14px 0'
-            }}>
-              6. Children&apos;s Privacy (COPPA Notice)
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0" }}>
+              3. Telemetry & The Global Geo-Matrix
             </h2>
-            <div style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.7 }}>
-              <p style={{ margin: 0 }}>
-                Eternity does not knowingly collect, store, or solicit personal information from children under the age of 13. Because our service operates without requiring personal registration (names, email addresses, phone numbers, or passwords), no child-identifying personal data is harvested.
-              </p>
-            </div>
-          </section>
 
-          {/* Section 7 */}
-          <section style={{
-            backgroundColor: 'rgba(16, 20, 32, 0.8)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
-            borderRadius: '16px',
-            padding: '28px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: '16px'
+            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.7, margin: "0 0 12px 0" }}>
+              Our administration panel features an interactive 3D WebGL globe known as the <strong>GLOBAL GEO-MATRIX</strong>.
+            </p>
+            <ul style={{ paddingLeft: "20px", margin: 0, display: "flex", flexDirection: "column", gap: "8px", fontSize: "13.5px", color: "rgba(255,255,255,0.7)" }}>
+              <li>
+                Coordinates represent <strong style={{ color: "#fff" }}>regional ISP edge routing</strong> (approximate metropolitan area or data center hub), not precise physical addresses.
+              </li>
+              <li>
+                This data allows our engineering team to balance Cloudflare worker regions, analyze CDN latency across continents, and forecast compute requirements.
+              </li>
+              <li>
+                Location points are kept strictly for operational telemetry and are never sold or shared with marketing third parties.
+              </li>
+            </ul>
+          </div>
+
+          {/* SPEC 04: Infrastructure & Third-Parties */}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "18px",
+            padding: "30px 28px",
+            overflow: "hidden"
           }}>
-            <div>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: 700,
-                color: '#ffffff',
-                margin: '0 0 6px 0'
-              }}>
-                7. Contact & Inquiries
-              </h2>
-              <p style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.7)', margin: 0, lineHeight: 1.6 }}>
-                For any privacy inquiries, data deletion requests, or questions regarding this policy, contact the developer directly via Discord.
-              </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+                SEC_SPEC_04 // CLOUD_INFRASTRUCTURE
+              </span>
             </div>
+
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff", margin: "0 0 14px 0" }}>
+              4. Cloud Infrastructure & Edge Providers
+            </h2>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "12px" }}>
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#f97316", fontSize: "12px", fontWeight: 700 }}>CLOUDFLARE</span>
+                <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
+                  Acts as the primary reverse proxy and security firewall at `zeternity.online`.
+                </p>
+              </div>
+
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12px", fontWeight: 700 }}>VERCEL EDGE</span>
+                <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
+                  Hosts the Next.js web application and key portal with serverless edge compute.
+                </p>
+              </div>
+
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#10b981", fontSize: "12px", fontWeight: 700 }}>SUPABASE</span>
+                <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
+                  Encrypted PostgreSQL storage for whitelist records and 24-hour token verification.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* SPEC 05: Data Rights & Discord Contact */}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(180deg, rgba(20, 24, 38, 0.85) 0%, rgba(11, 13, 22, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(129, 140, 248, 0.25)",
+            borderRadius: "18px",
+            padding: "32px 28px",
+            overflow: "hidden",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.1)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px" }}>
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "#818cf8" }}>
+                SEC_SPEC_05 // USER_RIGHTS_&_CONTACT
+              </span>
+            </div>
+
+            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff", margin: "0 0 8px 0" }}>
+              5. Your Rights & Data Deletion
+            </h2>
+
+            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.65)", lineHeight: 1.65, margin: "0 0 20px 0", maxWidth: "700px" }}>
+              You may request immediate manual deletion of any historical logs or whitelist associations linked to your Roblox username at any time. Simply open a ticket in our official Discord community.
+            </p>
 
             <a
-              href="https://discord.gg/4c9N49jtXq"
+              href={DISCORD_INVITE_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: '#5865F2',
-                color: '#ffffff',
-                fontSize: '13px',
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#5865F2",
+                color: "#ffffff",
+                fontSize: "13px",
                 fontWeight: 600,
-                padding: '10px 20px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                boxShadow: '0 4px 15px rgba(88, 101, 242, 0.35)',
-                transition: 'transform 0.2s ease'
+                padding: "10px 22px",
+                borderRadius: "10px",
+                textDecoration: "none",
+                boxShadow: "0 4px 18px rgba(88, 101, 242, 0.4)",
+                transition: "all 0.2s ease"
               }}
             >
-              <span>Join Official Discord</span>
+              <span>Join Official Discord Server</span>
               <ExternalLink size={14} />
             </a>
-          </section>
+          </div>
 
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{
-        maxWidth: '860px',
-        margin: '64px auto 0 auto',
-        padding: '24px',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
-        fontSize: '12.5px',
-        color: 'rgba(255, 255, 255, 0.4)'
-      }}>
-        <div>
-          &copy; {new Date().getFullYear()} Eternity. All rights reserved.
+      {/* 7. Official Eternity SaaS Footer */}
+      <footer className="saas-footer" style={{ marginTop: "40px" }}>
+        <div className="footer-content">
+          <div className="footer-brand">
+            <Link href="/" aria-label="Go to top">
+              <img src="/eternity.png" alt="Eternity" className="footer-logo" />
+            </Link>
+            <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
+            <div style={{ display: "flex", gap: "20px", marginTop: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+              <Link href="/" style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "13px", textDecoration: "none" }}>Home</Link>
+              <Link href="/getkey" style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "13px", textDecoration: "none" }}>Get Key</Link>
+              <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "13px", textDecoration: "none" }}>Discord</a>
+              <Link href="/privacy" style={{ color: "#ffffff", fontSize: "13px", textDecoration: "none", fontWeight: 600 }}>Privacy Policy</Link>
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <Link href="/" style={{ color: 'rgba(255, 255, 255, 0.6)', textDecoration: 'none' }}>Home</Link>
-          <Link href="/getkey" style={{ color: 'rgba(255, 255, 255, 0.6)', textDecoration: 'none' }}>Get Key</Link>
-          <Link href="/privacy" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</Link>
+        <div className="footer-bottom">
+          <p>&copy; {new Date().getFullYear()} Eternity. All rights reserved.</p>
+          <div className="status-indicator">
+            <div className="status-dot" style={{ backgroundColor: "#10b981", boxShadow: "0 0 8px rgba(16,185,129,0.8)" }} />
+            <span>Script Status: <strong style={{ color: "#10b981" }}>Operational</strong></span>
+          </div>
         </div>
       </footer>
     </div>

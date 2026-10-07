@@ -1003,8 +1003,8 @@ export default function Home() {
                     <a href="#pricing">
                       <RandomLetterSwap label="Pricing" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
                     </a>
-                    <a href="/eternityblox" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      <RandomLetterSwap label="EternityBlox" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
+                    <a href="/privacy" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <RandomLetterSwap label="Privacy" staggerDuration={0.025} transition={{ duration: 0.6, type: "spring" }} />
                       <span style={{ 
                         fontSize: '9px', 
                         fontWeight: 700, 
@@ -1015,7 +1015,7 @@ export default function Home() {
                         color: '#ffffff', 
                         border: '1px solid rgba(255, 255, 255, 0.25)',
                         textTransform: 'uppercase'
-                      }}>App</span>
+                      }}>Policy</span>
                     </a>
                   </div>
                   <div className="nav-actions">
