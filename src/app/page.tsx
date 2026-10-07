@@ -1576,6 +1576,11 @@ export default function Home() {
                     <img src="/eternity.png" alt="Eternity" className="footer-logo" />
                   </a>
                   <p>Redefining execution for the modern era. Undetected. Fast. Reliable.</p>
+                  <div style={{ display: 'flex', gap: '20px', marginTop: '12px' }}>
+                    <a href="/getkey" style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '13px', textDecoration: 'none' }}>Get Key</a>
+                    <a href="https://discord.gg/4c9N49jtXq" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '13px', textDecoration: 'none' }}>Discord</a>
+                    <a href="/privacy" style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '13px', textDecoration: 'none' }}>Privacy Policy</a>
+                  </div>
                 </div>
               </div>
               <div className="footer-bottom">
