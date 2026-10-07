@@ -39,10 +39,10 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="eb-clean-wrapper" style={{ position: "relative", minHeight: "100vh", backgroundColor: "#000000", color: "#ffffff", overflowX: "hidden" }}>
-      {/* 1. Dynamic 3D Starfield Background */}
+      {/* 1. Dynamic 3D Starfield Background (Monochrome Stars) */}
       <ThreeJsBackground />
 
-      {/* 2. Ambient Cyber Glow */}
+      {/* 2. Pure Monochrome Ambient Glow */}
       <div className="eb-ambient-glow" aria-hidden="true" style={{
         position: "fixed",
         top: "20%",
@@ -50,7 +50,7 @@ export default function PrivacyPolicyPage() {
         transform: "translateX(-50%)",
         width: "700px",
         height: "500px",
-        background: "radial-gradient(circle, rgba(115, 100, 245, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 70%)",
+        background: "radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%)",
         filter: "blur(90px)",
         pointerEvents: "none",
         zIndex: 0
@@ -117,7 +117,7 @@ export default function PrivacyPolicyPage() {
         </nav>
       </header>
 
-      {/* 4. Main Hero Section */}
+      {/* 4. Main Content Area */}
       <main style={{ position: "relative", zIndex: 1, maxWidth: "1080px", margin: "0 auto", padding: "140px 24px 60px 24px" }}>
         
         {/* Header Hero Area */}
@@ -127,15 +127,25 @@ export default function PrivacyPolicyPage() {
           transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
           style={{ textAlign: "center", marginBottom: "50px", display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          {/* Cyber Status Badge */}
-          <div className="hero-badge-mono" style={{ marginBottom: "20px" }}>
-            <div className="pulse-dot-green" />
-            <span style={{ fontFamily: "var(--font-fira-code)", letterSpacing: "1px" }}>
+          {/* Monochrome Cyber Status Badge */}
+          <div className="hero-badge-mono" style={{ 
+            marginBottom: "20px",
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.18)"
+          }}>
+            <div style={{
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              backgroundColor: "#ffffff",
+              boxShadow: "0 0 10px rgba(255, 255, 255, 0.9)"
+            }} />
+            <span style={{ fontFamily: "var(--font-fira-code)", letterSpacing: "1px", color: "#ffffff" }}>
               ETERNITY PROTOCOL // TRANSPARENCY & DATA PRIVACY
             </span>
           </div>
 
-          {/* Cinematic Title */}
+          {/* Cinematic Monochrome Title */}
           <h1 className="hero-title-wrapper" style={{ margin: "0 0 16px 0", justifyContent: "center" }}>
             <span 
               className="hero-word" 
@@ -144,7 +154,7 @@ export default function PrivacyPolicyPage() {
                 fontSize: "clamp(38px, 6vw, 64px)",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
-                background: "linear-gradient(180deg, #ffffff 10%, #a1a1aa 100%)",
+                background: "linear-gradient(180deg, #ffffff 10%, #888888 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent"
               }}
@@ -167,7 +177,7 @@ export default function PrivacyPolicyPage() {
 
           <p style={{
             fontSize: "clamp(14px, 1.8vw, 16px)",
-            color: "rgba(255, 255, 255, 0.55)",
+            color: "rgba(255, 255, 255, 0.6)",
             maxWidth: "680px",
             lineHeight: 1.65,
             margin: "0 0 12px 0",
@@ -186,7 +196,7 @@ export default function PrivacyPolicyPage() {
           </span>
         </motion.div>
 
-        {/* 5. The 3 Cyber Cards (Eternity Theme Signature) */}
+        {/* 5. The 3 Cyber Cards (Pure Black & White / Silver Glass) */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))",
@@ -200,24 +210,24 @@ export default function PrivacyPolicyPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             style={{
               position: "relative",
-              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              background: "linear-gradient(180deg, rgba(20, 20, 24, 0.75) 0%, rgba(10, 10, 12, 0.95) 100%)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
               borderRadius: "20px",
               padding: "28px 24px",
               overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
             }}
           >
-            {/* Top Shine */}
+            {/* Top Monochrome Shine */}
             <div style={{
               position: "absolute",
               top: 0,
               left: "10%",
               right: "10%",
               height: "1px",
-              background: "linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent)"
+              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)"
             }} />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
@@ -225,22 +235,22 @@ export default function PrivacyPolicyPage() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "12px",
-                background: "rgba(56, 189, 248, 0.1)",
-                border: "1px solid rgba(56, 189, 248, 0.25)",
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center"
               }}>
-                <UserX size={22} color="#38bdf8" />
+                <UserX size={22} color="#ffffff" />
               </div>
               <span style={{
                 fontFamily: "var(--font-fira-code)",
                 fontSize: "11px",
-                color: "#38bdf8",
-                background: "rgba(56, 189, 248, 0.08)",
+                color: "#ffffff",
+                background: "rgba(255, 255, 255, 0.08)",
                 padding: "3px 8px",
                 borderRadius: "6px",
-                border: "1px solid rgba(56, 189, 248, 0.2)"
+                border: "1px solid rgba(255, 255, 255, 0.18)"
               }}>
                 [NO_IP_LOGS]
               </span>
@@ -261,24 +271,24 @@ export default function PrivacyPolicyPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             style={{
               position: "relative",
-              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              background: "linear-gradient(180deg, rgba(20, 20, 24, 0.75) 0%, rgba(10, 10, 12, 0.95) 100%)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
               borderRadius: "20px",
               padding: "28px 24px",
               overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
             }}
           >
-            {/* Top Shine */}
+            {/* Top Monochrome Shine */}
             <div style={{
               position: "absolute",
               top: 0,
               left: "10%",
               right: "10%",
               height: "1px",
-              background: "linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent)"
+              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)"
             }} />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
@@ -286,22 +296,22 @@ export default function PrivacyPolicyPage() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "12px",
-                background: "rgba(16, 185, 129, 0.1)",
-                border: "1px solid rgba(16, 185, 129, 0.25)",
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center"
               }}>
-                <Globe2 size={22} color="#10b981" />
+                <Globe2 size={22} color="#ffffff" />
               </div>
               <span style={{
                 fontFamily: "var(--font-fira-code)",
                 fontSize: "11px",
-                color: "#10b981",
-                background: "rgba(16, 185, 129, 0.08)",
+                color: "#ffffff",
+                background: "rgba(255, 255, 255, 0.08)",
                 padding: "3px 8px",
                 borderRadius: "6px",
-                border: "1px solid rgba(16, 185, 129, 0.2)"
+                border: "1px solid rgba(255, 255, 255, 0.18)"
               }}>
                 [EDGE_GEO_MATRIX]
               </span>
@@ -311,7 +321,7 @@ export default function PrivacyPolicyPage() {
               Coarse Edge GeoIP
             </h3>
             <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.6, margin: 0 }}>
-              Approximate city/country coordinates derived from edge CDN routing feed the 3D Global Geo-Matrix map. <span style={{ color: "#10b981" }}>No device GPS is accessed</span>.
+              Approximate city/country coordinates derived from edge CDN routing feed the 3D Global Geo-Matrix map. No device GPS is accessed.
             </p>
           </motion.div>
 
@@ -322,24 +332,24 @@ export default function PrivacyPolicyPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             style={{
               position: "relative",
-              background: "linear-gradient(180deg, rgba(18, 19, 28, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%)",
+              background: "linear-gradient(180deg, rgba(20, 20, 24, 0.75) 0%, rgba(10, 10, 12, 0.95) 100%)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
               borderRadius: "20px",
               padding: "28px 24px",
               overflow: "hidden",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
             }}
           >
-            {/* Top Shine */}
+            {/* Top Monochrome Shine */}
             <div style={{
               position: "absolute",
               top: 0,
               left: "10%",
               right: "10%",
               height: "1px",
-              background: "linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.5), transparent)"
+              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)"
             }} />
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
@@ -347,22 +357,22 @@ export default function PrivacyPolicyPage() {
                 width: "44px",
                 height: "44px",
                 borderRadius: "12px",
-                background: "rgba(245, 158, 11, 0.1)",
-                border: "1px solid rgba(245, 158, 11, 0.25)",
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center"
               }}>
-                <Trash2 size={22} color="#f59e0b" />
+                <Trash2 size={22} color="#ffffff" />
               </div>
               <span style={{
                 fontFamily: "var(--font-fira-code)",
                 fontSize: "11px",
-                color: "#f59e0b",
-                background: "rgba(245, 158, 11, 0.08)",
+                color: "#ffffff",
+                background: "rgba(255, 255, 255, 0.08)",
                 padding: "3px 8px",
                 borderRadius: "6px",
-                border: "1px solid rgba(245, 158, 11, 0.2)"
+                border: "1px solid rgba(255, 255, 255, 0.18)"
               }}>
                 [24H_AUTO_PURGE]
               </span>
@@ -377,25 +387,25 @@ export default function PrivacyPolicyPage() {
           </motion.div>
         </div>
 
-        {/* 6. Policy Specification Sections (Terminal Grid Cards) */}
+        {/* 6. Policy Specification Sections (Monochrome Cyber Specs) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
           {/* SPEC 01: Information Ingested */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            background: "linear-gradient(180deg, rgba(16, 17, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "18px",
             padding: "30px 28px",
             overflow: "hidden"
           }}>
-            {/* Terminal Header */}
+            {/* Monochrome Terminal Header */}
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
-              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.25)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.4)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.7)" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px" }}>
                 SEC_SPEC_01 // TELEMETRY_INGESTION
               </span>
             </div>
@@ -409,8 +419,8 @@ export default function PrivacyPolicyPage() {
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <KeyRound size={16} color="#818cf8" style={{ marginTop: "2px", flexShrink: 0 }} />
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <KeyRound size={16} color="#ffffff" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <div>
                   <strong style={{ color: "#fff", fontSize: "13.5px" }}>Roblox Username & Session Handle:</strong>
                   <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
@@ -419,8 +429,8 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <Cpu size={16} color="#38bdf8" style={{ marginTop: "2px", flexShrink: 0 }} />
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <Cpu size={16} color="#ffffff" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <div>
                   <strong style={{ color: "#fff", fontSize: "13.5px" }}>Executor Runtime Signature:</strong>
                   <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
@@ -429,8 +439,8 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <Radio size={16} color="#10b981" style={{ marginTop: "2px", flexShrink: 0 }} />
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <Radio size={16} color="#ffffff" style={{ marginTop: "2px", flexShrink: 0 }} />
                 <div>
                   <strong style={{ color: "#fff", fontSize: "13.5px" }}>Approximate Edge Coordinates:</strong>
                   <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)" }}>
@@ -444,18 +454,18 @@ export default function PrivacyPolicyPage() {
           {/* SPEC 02: Zero Invasive Logging */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            background: "linear-gradient(180deg, rgba(16, 17, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "18px",
             padding: "30px 28px",
             overflow: "hidden"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
-              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.25)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.4)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.7)" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px" }}>
                 SEC_SPEC_02 // ZERO_INVASIVE_POLICY
               </span>
             </div>
@@ -473,21 +483,21 @@ export default function PrivacyPolicyPage() {
               gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
               gap: "12px"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
-                <CheckCircle2 size={16} color="#10b981" />
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Raw IP Addresses Logged</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#ffffff" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>No Raw IP Addresses Logged</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
-                <CheckCircle2 size={16} color="#10b981" />
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Passwords or .ROBLOSECURITY</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#ffffff" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>No Passwords or .ROBLOSECURITY</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
-                <CheckCircle2 size={16} color="#10b981" />
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Hardware MAC or HWIDs</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#ffffff" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>No Hardware MAC or HWIDs</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "10px", padding: "12px 14px" }}>
-                <CheckCircle2 size={16} color="#10b981" />
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7" }}>No Local Files or Disk Browsing</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "10px", padding: "12px 14px" }}>
+                <CheckCircle2 size={16} color="#ffffff" />
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>No Local Files or Disk Browsing</span>
               </div>
             </div>
           </div>
@@ -495,18 +505,18 @@ export default function PrivacyPolicyPage() {
           {/* SPEC 03: Global Geo-Matrix */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            background: "linear-gradient(180deg, rgba(16, 17, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "18px",
             padding: "30px 28px",
             overflow: "hidden"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
-              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.25)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.4)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.7)" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px" }}>
                 SEC_SPEC_03 // GLOBAL_GEO_MATRIX
               </span>
             </div>
@@ -534,18 +544,18 @@ export default function PrivacyPolicyPage() {
           {/* SPEC 04: Infrastructure & Third-Parties */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(180deg, rgba(14, 15, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
+            background: "linear-gradient(180deg, rgba(16, 17, 22, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
             borderRadius: "18px",
             padding: "30px 28px",
             overflow: "hidden"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff5f56" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ffbd2e" }} />
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#27c93f" }} />
-              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.4)", marginLeft: "10px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.25)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.4)" }} />
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.7)" }} />
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px" }}>
                 SEC_SPEC_04 // CLOUD_INFRASTRUCTURE
               </span>
             </div>
@@ -555,22 +565,22 @@ export default function PrivacyPolicyPage() {
             </h2>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginTop: "12px" }}>
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
-                <span style={{ fontFamily: "var(--font-fira-code)", color: "#f97316", fontSize: "12px", fontWeight: 700 }}>CLOUDFLARE</span>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px" }}>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12px", fontWeight: 700 }}>CLOUDFLARE</span>
                 <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
                   Acts as the primary reverse proxy and security firewall at `zeternity.online`.
                 </p>
               </div>
 
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px" }}>
                 <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12px", fontWeight: 700 }}>VERCEL EDGE</span>
                 <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
                   Hosts the Next.js web application and key portal with serverless edge compute.
                 </p>
               </div>
 
-              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px" }}>
-                <span style={{ fontFamily: "var(--font-fira-code)", color: "#10b981", fontSize: "12px", fontWeight: 700 }}>SUPABASE</span>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px" }}>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12px", fontWeight: 700 }}>SUPABASE</span>
                 <p style={{ margin: "6px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
                   Encrypted PostgreSQL storage for whitelist records and 24-hour token verification.
                 </p>
@@ -581,16 +591,16 @@ export default function PrivacyPolicyPage() {
           {/* SPEC 05: Data Rights & Discord Contact */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(180deg, rgba(20, 24, 38, 0.85) 0%, rgba(11, 13, 22, 0.95) 100%)",
+            background: "linear-gradient(180deg, rgba(22, 22, 28, 0.85) 0%, rgba(12, 12, 16, 0.95) 100%)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(129, 140, 248, 0.25)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
             borderRadius: "18px",
             padding: "32px 28px",
             overflow: "hidden",
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.1)"
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.7)"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px" }}>
-              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "#818cf8" }}>
+              <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>
                 SEC_SPEC_05 // USER_RIGHTS_&_CONTACT
               </span>
             </div>
@@ -611,19 +621,19 @@ export default function PrivacyPolicyPage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                background: "#5865F2",
-                color: "#ffffff",
+                background: "#ffffff",
+                color: "#000000",
                 fontSize: "13px",
-                fontWeight: 600,
+                fontWeight: 700,
                 padding: "10px 22px",
                 borderRadius: "10px",
                 textDecoration: "none",
-                boxShadow: "0 4px 18px rgba(88, 101, 242, 0.4)",
+                boxShadow: "0 4px 20px rgba(255, 255, 255, 0.2)",
                 transition: "all 0.2s ease"
               }}
             >
               <span>Join Official Discord Server</span>
-              <ExternalLink size={14} />
+              <ExternalLink size={14} color="#000000" />
             </a>
           </div>
 
@@ -649,8 +659,8 @@ export default function PrivacyPolicyPage() {
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Eternity. All rights reserved.</p>
           <div className="status-indicator">
-            <div className="status-dot" style={{ backgroundColor: "#10b981", boxShadow: "0 0 8px rgba(16,185,129,0.8)" }} />
-            <span>Script Status: <strong style={{ color: "#10b981" }}>Operational</strong></span>
+            <div className="status-dot" style={{ backgroundColor: "#ffffff", boxShadow: "0 0 8px rgba(255,255,255,0.8)" }} />
+            <span>Script Status: <strong style={{ color: "#ffffff" }}>Operational</strong></span>
           </div>
         </div>
       </footer>
