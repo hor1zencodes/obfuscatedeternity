@@ -459,7 +459,7 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <strong style={{ color: "#ffffff", fontSize: "13.5px" }}>Anonymous 3D Globe Telemetry</strong>
                   <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
-                    Cloudflare edge headers supply approximate coordinates (<code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.latitude</code>, <code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.longitude</code>, <code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.country</code>) which are stored under an anonymous randomized key (<code style={{ color: "rgba(255,255,255,0.85)", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>eternity:geo:anon_&lt;timestamp&gt;_&lt;random&gt;</code>) completely detached from your username, Roblox account, or IP address.
+                    Approximate country-level edge coordinates for the 3D globe visualization. Stored anonymously under randomized pins, completely detached from your username or IP.
                   </p>
                 </div>
               </div>
@@ -595,120 +595,7 @@ export default function PrivacyPolicyPage() {
           </div>
         </div>
 
-        {/* 8. Architecture & Code-Level Privacy Verification */}
-        <div style={{
-          position: "relative",
-          background: "linear-gradient(180deg, rgba(16, 17, 24, 0.8) 0%, rgba(9, 10, 14, 0.95) 100%)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          borderRadius: "20px",
-          padding: "30px 28px",
-          marginBottom: "46px"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "12px" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.25)" }} />
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.4)" }} />
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.7)" }} />
-            <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "11px", color: "rgba(255,255,255,0.45)", marginLeft: "10px" }}>
-              SPEC // ARCHITECTURAL_CODE_AUDIT
-            </span>
-          </div>
-
-          <h2 style={{ fontSize: "19px", fontWeight: 700, color: "#ffffff", margin: "0 0 10px 0" }}>
-            4. Architecture & Code-Level Privacy Audit
-          </h2>
-          <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.65)", lineHeight: 1.6, margin: "0 0 22px 0", maxWidth: "800px" }}>
-            Real technical proof directly from our codebase, edge serverless functions, and database schemas:
-          </p>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "18px" }}>
-            {/* Audit 1: Cloudflare Worker */}
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Server size={16} color="#ffffff" />
-                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#ffffff" }}>1. Cloudflare Worker Gateway</span>
-                </div>
-                <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "10.5px", color: "#ffffff", background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: "4px" }}>
-                  zeternity.online
-                </span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", color: "rgba(255,255,255,0.6)", lineHeight: 1.65, display: "flex", flexDirection: "column", gap: "6px" }}>
-                <li>
-                  <strong style={{ color: "#ffffff" }}>Zero IP Header Access:</strong> Neither <code style={{ color: "#ef4444", fontSize: "11px" }}>cf-connecting-ip</code> nor <code style={{ color: "#ef4444", fontSize: "11px" }}>x-forwarded-for</code> is ever captured or logged.
-                </li>
-                <li>
-                  <strong style={{ color: "#ffffff" }}>Anonymous 3D Globe Telemetry:</strong> In lines 2389–2393, edge coordinates (<code style={{ color: "#10b981", fontSize: "11px" }}>cf.latitude</code>, <code style={{ color: "#10b981", fontSize: "11px" }}>cf.longitude</code>, <code style={{ color: "#10b981", fontSize: "11px" }}>cf.country</code>) are stored under an anonymous randomized key (<code style={{ color: "rgba(255,255,255,0.8)", fontSize: "11px" }}>eternity:geo:anon_*</code>) completely detached from usernames or IPs.
-                </li>
-              </ul>
-            </div>
-
-            {/* Audit 2: Next.js Web App */}
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Zap size={16} color="#ffffff" />
-                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#ffffff" }}>2. Next.js Web App & API Routes</span>
-                </div>
-                <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "10.5px", color: "#ffffff", background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: "4px" }}>
-                  obfuscatedeternity
-                </span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", color: "rgba(255,255,255,0.6)", lineHeight: 1.65, display: "flex", flexDirection: "column", gap: "6px" }}>
-                <li>
-                  In <code style={{ color: "#10b981", fontSize: "11px" }}>/api/authenticate/route.ts</code>, only edge city/country coordinates (<code style={{ color: "#10b981", fontSize: "11px" }}>x-vercel-ip-country</code>, <code style={{ color: "#10b981", fontSize: "11px" }}>x-vercel-ip-latitude</code>, <code style={{ color: "#10b981", fontSize: "11px" }}>x-vercel-ip-longitude</code>) are read for the globe animation. The client&apos;s IP is never read or stored.
-                </li>
-                <li>
-                  None of the admin routes (<code style={{ color: "rgba(255,255,255,0.8)", fontSize: "11px" }}>/api/admin/logs</code>, <code style={{ color: "rgba(255,255,255,0.8)", fontSize: "11px" }}>/api/admin/live-users</code>, <code style={{ color: "rgba(255,255,255,0.8)", fontSize: "11px" }}>/api/admin/whitelist</code>) reference or persist IP addresses.
-                </li>
-              </ul>
-            </div>
-
-            {/* Audit 3: Supabase Database */}
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Database size={16} color="#10b981" />
-                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#10b981" }}>3. Supabase Database Schema</span>
-                </div>
-                <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "10.5px", color: "#10b981", background: "rgba(16,185,129,0.08)", padding: "2px 6px", borderRadius: "4px" }}>
-                  PostgreSQL
-                </span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", color: "rgba(255,255,255,0.6)", lineHeight: 1.65, display: "flex", flexDirection: "column", gap: "6px" }}>
-                <li>
-                  <strong style={{ color: "#ffffff" }}>Zero IP Columns:</strong> The 4 operational tables (<code style={{ color: "#ffffff", fontSize: "11px" }}>whitelist</code>, <code style={{ color: "#ffffff", fontSize: "11px" }}>keys</code>, <code style={{ color: "#ffffff", fontSize: "11px" }}>live_users</code>, <code style={{ color: "#ffffff", fontSize: "11px" }}>stats</code>) contain zero <code style={{ color: "#ef4444", fontSize: "11px" }}>ip</code> or network identifier columns.
-                </li>
-                <li>
-                  <strong style={{ color: "#ffffff" }}>RLS Hardening:</strong> Public anon keys are strictly read-only for whitelist validation, preventing any malicious client schema injection or writes.
-                </li>
-              </ul>
-            </div>
-
-            {/* Audit 4: Lua Script Sandbox */}
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Terminal size={16} color="#ffffff" />
-                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#ffffff" }}>4. Client-Side Lua Sandbox</span>
-                </div>
-                <span style={{ fontFamily: "var(--font-fira-code)", fontSize: "10.5px", color: "#ffffff", background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: "4px" }}>
-                  eternitymain.lua
-                </span>
-              </div>
-              <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12.5px", color: "rgba(255,255,255,0.6)", lineHeight: 1.65, display: "flex", flexDirection: "column", gap: "6px" }}>
-                <li>
-                  Transmits only Roblox <code style={{ color: "#ffffff", fontSize: "11px" }}>UserId</code>, <code style={{ color: "#ffffff", fontSize: "11px" }}>DisplayName</code>, game <code style={{ color: "#ffffff", fontSize: "11px" }}>PlaceId</code>, <code style={{ color: "#ffffff", fontSize: "11px" }}>JobId</code>, and executor signature directly to Supabase.
-                </li>
-                <li>
-                  <strong style={{ color: "#ffffff" }}>No IP Echo Services:</strong> Zero external IP requests (never calls <code style={{ color: "#ef4444", fontSize: "11px" }}>ipify</code>, <code style={{ color: "#ef4444", fontSize: "11px" }}>checkip</code>, or <code style={{ color: "#ef4444", fontSize: "11px" }}>httpbin</code>). Purely memory-sandboxed within Roblox.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* 9. Direct Developer Contact & Right to Deletion (Hero Style Card) */}
+        {/* 4. Direct Developer Contact & Right to Deletion (Hero Style Card) */}
         <div style={{
           position: "relative",
           background: "linear-gradient(180deg, rgba(22, 24, 32, 0.85) 0%, rgba(12, 13, 18, 0.98) 100%)",
