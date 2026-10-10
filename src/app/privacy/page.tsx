@@ -25,7 +25,8 @@ import {
   ArrowRight,
   Sparkles,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
+  Globe
 } from "lucide-react";
 import { ThreeJsBackground } from "@/components/ThreeJsBackground";
 import { RandomLetterSwap } from "@/components/ui/random-letter-swap";
@@ -306,7 +307,7 @@ export default function PrivacyPolicyPage() {
               Zero IP Address Logging
             </h3>
             <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.62)", lineHeight: 1.6, margin: 0 }}>
-              Neither our Cloudflare Worker nor our Supabase database stores your IP address. Requests are validated at the edge in volatile memory and instantly discarded.
+              Neither our Cloudflare Worker nor our Supabase database stores your IP address. Requests are validated at the edge in volatile memory and instantly discarded. Location metrics for our 3D globe use only detached, anonymous coordinate pins.
             </p>
           </motion.div>
 
@@ -505,6 +506,16 @@ export default function PrivacyPolicyPage() {
                   </p>
                 </div>
               </div>
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px 14px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <Globe size={17} color="#ffffff" style={{ marginTop: "2px", flexShrink: 0 }} />
+                <div>
+                  <strong style={{ color: "#ffffff", fontSize: "13.5px" }}>Anonymous 3D Globe Telemetry</strong>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
+                    Cloudflare edge headers supply approximate coordinates (<code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.latitude</code>, <code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.longitude</code>, <code style={{ color: "#10b981", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>cf.country</code>) which are stored under an anonymous randomized key (<code style={{ color: "rgba(255,255,255,0.85)", fontSize: "11px", background: "rgba(255,255,255,0.06)", padding: "1px 5px", borderRadius: "4px" }}>eternity:geo:anon_&lt;timestamp&gt;_&lt;random&gt;</code>) completely detached from your username, Roblox account, or IP address.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -608,10 +619,10 @@ export default function PrivacyPolicyPage() {
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                 <Server size={16} color="#ffffff" />
-                <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12.5px", fontWeight: 700 }}>CLOUDFLARE EDGE</span>
+                <span style={{ fontFamily: "var(--font-fira-code)", color: "#ffffff", fontSize: "12.5px", fontWeight: 700 }}>CLOUDFLARE EDGE GATEWAY</span>
               </div>
               <p style={{ margin: 0, fontSize: "12.5px", color: "rgba(255,255,255,0.55)", lineHeight: 1.55 }}>
-                Serves as the gateway (`zeternity.online`). Detects executor traffic and provides edge DDoS protection.
+                Serves as primary entrypoint (`zeternity.online`). Validates executor traffic in volatile memory, supplies detached anonymous globe pins (<code style={{ color: "#10b981", fontSize: "11px" }}>cf.latitude/lon</code>), and never logs IP addresses.
               </p>
             </div>
 
