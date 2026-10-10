@@ -165,23 +165,6 @@ export default function PrivacyPolicyPage() {
           transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
           style={{ textAlign: "center", marginBottom: "48px", display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          {/* Cyber Status Badge */}
-          <div className="hero-badge-mono" style={{ 
-            marginBottom: "20px",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.18)",
-            padding: "6px 18px",
-            borderRadius: "30px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px"
-          }}>
-            <span className="pulse-dot-green" />
-            <span style={{ fontFamily: "var(--font-fira-code)", letterSpacing: "1px", color: "#ffffff", fontSize: "11.5px" }}>
-              PROTOCOL // ZERO BLUFFS • ABSOLUTE PRIVACY
-            </span>
-          </div>
-
           {/* Cinematic TrueFocus Title */}
           <div className="hero-title-wrapper" style={{ margin: "0 0 16px 0", justifyContent: "center" }}>
             <TrueFocus
@@ -201,47 +184,11 @@ export default function PrivacyPolicyPage() {
             color: "rgba(255, 255, 255, 0.68)",
             maxWidth: "720px",
             lineHeight: 1.65,
-            margin: "0 0 16px 0",
+            margin: "0",
             fontFamily: "var(--font-montserrat)"
           }}>
             No corporate legal jargon. No deceptive tracking. Exactly what Eternity processes to run the script, what is never touched, and how your data remains safe.
           </p>
-
-          {/* Telemetry Highlights Bar (Hero Style) */}
-          <div className="hero-telemetry-bar" style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "14px",
-            padding: "8px 20px",
-            background: "rgba(255, 255, 255, 0.04)",
-            border: "1px solid rgba(255, 255, 255, 0.12)",
-            borderRadius: "100px",
-            backdropFilter: "blur(16px)",
-            fontSize: "12px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            marginTop: "6px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <UserX size={14} color="#ffffff" />
-              <span><strong>0</strong> IP Logs Stored</span>
-            </div>
-            <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>•</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Clock size={14} color="#10b981" />
-              <span><strong>24h</strong> Auto Key Purge</span>
-            </div>
-            <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>•</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <ShieldCheck size={14} color="#ffffff" />
-              <span><strong>RLS-Locked</strong> Database</span>
-            </div>
-            <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>•</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Lock size={14} color="#10b981" />
-              <span><strong>Zero</strong> Credential Scraping</span>
-            </div>
-          </div>
         </motion.div>
 
         {/* 5. The 3 Sleek Overview Cards (Hero Glass Vibe) */}
